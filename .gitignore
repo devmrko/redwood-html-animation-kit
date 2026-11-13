@@ -1,0 +1,16 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+__pycache__/
+*.pyc
+*.log
+*.zip
+/html-depth-slide*/
+/vendor/three/
+/assets/*
+!/assets/redwood-template-pattern.jpg
+!/assets/redwood-template-oracle.png
+!/assets/REDWOOD-SOURCE.txt
+!/assets/preview.png

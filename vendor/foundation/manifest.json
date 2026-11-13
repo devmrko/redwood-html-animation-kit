@@ -1,0 +1,23 @@
+{
+  "package": "@devmrko/react-foundation-core",
+  "version": "0.1.0",
+  "source": "react-foundation/packages/core/src",
+  "modules": {
+    "depth.js": "f62695a16d39bb08a388a4d67e451593b3a9c7e304a7eb57339156e1514daf26",
+    "presentation-timeline.js": "c3bf8b8d619077f211b469caf8aef879bbfda04537c30f4a0030521cbbfc81a3",
+    "presentation-flow.js": "5a9114a474c46a0b878dd7d07654432ef250b46027a9df7236c855e3f3ba3008",
+    "presentation-effects.js": "cf8da2b500ee1db269a9a82cced54d80d41a80451898b5fd6d3bd3dd58815839",
+    "presentation-gallery.js": "7a116b9a37eca2094808a498f222adea694af50176feee19b9854b948cd41f4d",
+    "presentation-recipes.js": "30d76735bdf9fe09113572a36714acf1b77aba50a909d6906352cf82b4934018",
+    "ui-components.js": "7fd7967774ded18265c2f1e93b91028712d6580f7279e562c03641564ce9d9d5",
+    "presentation-chart.js": "9fc0a38e9c55bf35bbc1ad7aee5cfefcdd0532d47f0d27c54f8f1a836cbc52e8",
+    "presentation-fullscreen.js": "73c0d5369c444a77c54ded436c5a42e0e6e169082481e59b35468a136289f85c"
+  },
+  "styles": {
+    "ui/tokens.css": "96b14e8643a2540ea0f041538b1a7e7a20a7068adcd027906b52cc4117f45a9c",
+    "ui/ui.css": "48e1c1b83b4b35f32dff9d2a9fc48baeb11ccec42f36fa09cf33009d2922cfaa",
+    "ui/components.css": "9cbf9a015473318059576d84d7dc8940563f0d2aea69eb88fd71ec9630bda0c3"
+  },
+  "package_sha256": "2b2f4719c93597f73925b4dfb69e1e3a897454a6e49385d6698d11f227240ce3",
+  "status": "local development build; not published"
+}

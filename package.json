@@ -1,0 +1,15 @@
+{
+  "name": "redwood-html-animation-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable HTML animation samples and Redwood-inspired components",
+  "scripts": {
+    "start": "python3 start.py",
+    "check": "node scripts/check.mjs",
+    "build:framework": "tsc -p framework/tsconfig.json && node scripts/sync-ui.mjs"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}
