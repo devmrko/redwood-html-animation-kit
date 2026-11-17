@@ -228,3 +228,22 @@ body.is-toc-collapsed .reveal { left: 0; }
 .flow-answer h2 { font-size: 33px; }
 .flow-source h2 { font-size: 22px; white-space: nowrap; }
 .flow-slide .slide-footer { margin-top: -44px; }
+
+/* POTX slide 6 cover and slide 46 closing, scaled from the source EMU positions. */
+.reveal .slides .bookend-slide { padding: 0; }
+.reveal .slides .bookend-slide::before { display: none; }
+.reveal .slides .cover-slide { background: url('./assets/redwood-cover.jpeg') center/cover no-repeat; }
+.cover-panel { position: absolute; inset: 80px 96px; background: #e0e2e1; }
+.cover-logo { position: absolute; left: 136px; top: 110px; width: 174px; height: auto; }
+.bookend-slide .bookend-content { position: absolute; inset: 0; }
+.reveal .slides .cover-slide h1 { position: absolute; left: 138px; top: 298px; width: 1322px; margin: 0; font: 400 73px/1.1 Georgia, 'AppleMyungjo', serif; color: #4e3629; letter-spacing: normal; }
+.cover-subtitle { position: absolute; left: 138px; top: 422px; margin: 0; font-size: 40px; font-weight: 700; line-height: 1.3; }
+.cover-presenter { position: absolute; left: 138px; top: 511px; margin: 0; color: #805b2d; font-size: 27px; line-height: 1.5; }
+.reveal .slides .closing-slide { background: #723e49; color: #fff; }
+.closing-art { position: absolute; top: 0; right: 0; width: 800px; height: 900px; object-fit: cover; }
+.reveal .slides .closing-slide h1 { position: absolute; left: 101px; top: 411px; margin: 0; font: 400 67px/1.1 Georgia, serif; color: #fff; letter-spacing: normal; }
+.closing-presenter { position: absolute; left: 101px; top: 688px; width: 558px; font-size: 24px; line-height: 1.4; }
+.closing-presenter::before { content: ''; position: absolute; top: -54px; width: 41px; height: 5px; background: #e6ac58; }
+.closing-presenter p { margin: 0 0 16px; }
+.closing-name { font-weight: 700; }
+.sidebar #page-navigation { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #66615b transparent; }

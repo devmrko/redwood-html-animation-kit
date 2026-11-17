@@ -4,6 +4,7 @@ import { createPositioningSlide } from './slides/positioning.js';
 import { createFlowSlide } from './slides/flow.js';
 import { createEffectsSlide } from './slides/effects.js';
 import { createCatalogSlide } from './slides/catalog.js';
+import { createBookendSlide } from './slides/bookend.js';
 import { createChartsSlide } from './slides/charts.js';
 
 await Reveal.initialize({width:1600,height:900,margin:0.025,hash:true,controls:false,progress:false,center:true,transition:'fade'});
@@ -13,25 +14,29 @@ const previous = document.querySelector('#previous');
 const next = document.querySelector('#next');
 const sidebar = document.querySelector('#toc');
 const tocButton = document.querySelector('#toc-toggle');
-const durations = [15,18,12,14,14,14,14,3];
+const durations = [1,15,18,12,14,14,14,14,3,1];
 let current = Reveal.getIndices().h;
 function onState(index,state) {
   if(index!==current) return;
   const status = {idle:'재생 준비',running:`재생 중 · ${durations[index]}초`,paused:'일시정지',finished:'마지막 장면',destroyed:''};
-  stateLabel.textContent = index>=2 && state==='running' ? '효과 재생 중' : index>=2 && state==='finished' ? '재생 완료 · 효과별 버튼으로 다시 재생' : status[state];
+  const bookend = index===0 || index===durations.length-1;
+  const gallery = index>=3 && !bookend;
+  stateLabel.textContent = bookend ? `${index===0 ? '표지' : '마지막 장'} · ${state==='running' ? '재생 중' : state==='paused' ? '일시정지' : index===0 ? '다음 장은 직접 이동' : '재생 완료'}` : gallery && state==='running' ? '효과 재생 중' : gallery && state==='finished' ? '재생 완료 · 효과별 버튼으로 다시 재생' : status[state];
   pauseButton.textContent = state==='paused' ? '계속 재생' : '일시정지';
   pauseButton.disabled = state==='finished';
 }
 const factories = [
-  ()=>createPositioningSlide(document.querySelector('#positioning'),state=>onState(0,state)),
-  ()=>createFlowSlide(document.querySelector('#knowledge-flow'),state=>onState(1,state)),
-  ()=>createEffectsSlide(document.querySelector('#effect-presets'),state=>onState(2,state)),
-  ...['motion-effects','text-effects','svg-effects','metric-effects'].map((id,i)=>()=>createCatalogSlide(document.getElementById(id),state=>onState(i+3,state))),
-  ()=>createChartsSlide(document.querySelector('#charts'),state=>onState(7,state)),
+  ()=>createBookendSlide(document.querySelector('#cover'),state=>onState(0,state)),
+  ()=>createPositioningSlide(document.querySelector('#positioning'),state=>onState(1,state)),
+  ()=>createFlowSlide(document.querySelector('#knowledge-flow'),state=>onState(2,state)),
+  ()=>createEffectsSlide(document.querySelector('#effect-presets'),state=>onState(3,state)),
+  ...['motion-effects','text-effects','svg-effects','metric-effects'].map((id,i)=>()=>createCatalogSlide(document.getElementById(id),state=>onState(i+4,state))),
+  ()=>createChartsSlide(document.querySelector('#charts'),state=>onState(8,state)),
+  ()=>createBookendSlide(document.querySelector('#closing'),state=>onState(9,state)),
 ];
 const slides = Array(factories.length).fill(null);
 const getSlide = index=>slides[index]??=factories[index]();
-const names = ['지식관리 구성','정보 흐름','기본 효과','동작 효과','텍스트 효과','SVG 효과','수치·배치','차트'];
+const names = ['표지','지식관리 구성','정보 흐름','기본 효과','동작 효과','텍스트 효과','SVG 효과','수치·배치','차트','마지막 장'];
 const navButtons = names.map((label,index)=>{
   const button=createUiButton(document,{label});button.className='rf-sidebar__item';
   const number=document.createElement('span');number.className='rf-sidebar__number';number.textContent=String(index+1).padStart(2,'0');button.prepend(number);

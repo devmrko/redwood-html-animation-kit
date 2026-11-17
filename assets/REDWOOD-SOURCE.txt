@@ -6,3 +6,9 @@ No font files or the complete source template are included. Do not infer redistr
 
 Oracle wordmark: oracle-logo.png, unchanged bytes from "Oracle logo.png" in https://www.oracle.com/a/pr/docs/oracle-logo.zip (downloaded 2026-11-17).
 Official download page: https://www.oracle.com/news/resources/
+
+Bookend assets from the same user-provided POTX, unchanged bytes (inspected 2026-11-17):
+redwood-cover.jpeg: ppt/media/image5.jpeg, slide 6 / Light Title slide with picture border.
+redwood-wordmark.png: ppt/media/image3.png, original Oracle wordmark on the cover layout.
+redwood-closing.jpg: ppt/media/image14.jpg, slide 46 / Dark Thank you 2.
+HTML bookends adapt the original 1600x900-scaled layout coordinates. Text stays editable; presenter fields are placeholders.
