@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFile(resolve(root,path),'utf8');
 const html=await read('index.html');
-if((html.match(/<section /g)||[]).length!==10)throw Error('Expected 10 pages');
+if((html.match(/<section /g)||[]).length!==13)throw Error('Expected 13 pages');
 if((html.match(/data-effect-play=/g)||[]).length!==30 || (html.match(/data-chart-play=/g)||[]).length!==3)throw Error('Expected 33 click samples');
 for(const name of ['index.html','main.js','README.md','components.html'])if(/제네시스랩|Genesislab|슬립박스|\/Users\//i.test(await read(name)))throw Error(`Unshared content in ${name}`);
 const manifest=JSON.parse(await read('vendor/foundation/manifest.json'));
@@ -23,4 +23,4 @@ async function inspect(path){
  for(const ref of refs){if(!ref||/^(?:https?:|data:|#)/.test(ref))continue;const next=resolve(dirname(path),ref.split(/[?#]/)[0]);await stat(next);if(['.js','.css','.html'].includes(extname(next)))await inspect(next);}
 }
 await inspect(resolve(root,'index.html'));await inspect(resolve(root,'components.html'));
-console.log(`Passed: 10 pages, 33 samples, branding cleanup, module/CSS hashes and ${visited.size} linked files.`);
+console.log(`Passed: 13 pages, 33 samples, branding cleanup, module/CSS hashes and ${visited.size} linked files.`);

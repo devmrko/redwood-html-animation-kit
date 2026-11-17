@@ -12,7 +12,7 @@ body { margin: 0; }
 .heading-line { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .slide h1 { font-size: var(--rf-slide-title); font-weight: 750; letter-spacing: -1.8px; margin: 0; line-height: 1.3; }
 .brands { display: flex; align-items: center; gap: 13px; font-size: var(--rf-slide-subheading); font-weight: 750; white-space: nowrap; }
-.oracle { display: block; width: 190px; height: auto; object-fit: contain; flex-shrink: 0; }
+.oracle { display: block; width: 152px; height: auto; object-fit: contain; flex-shrink: 0; }
 .times { color: #8b847a; font-weight: 400; }
 .subtitle { font-size: 23px; line-height: 1.55; color: #315f70; margin: 17px 0 0; letter-spacing: -.35px; }
 .depth-viewport { position: relative; height: 684px; margin: 0 18px; }
@@ -160,7 +160,8 @@ body { margin: 0; }
 .reveal { inset: 64px 0 0 236px; }
 .reveal .slides .slide { width: 1600px; height: 900px; padding: var(--rf-slide-padding-y) var(--rf-slide-padding-x); background: var(--rf-slide-bg); overflow: hidden; color: var(--rf-slide-text); font-family: var(--rf-font-slide); }
 .reveal .slides .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 33.333px; background: var(--rf-slide-art) center/100% 100% no-repeat; }
-.reveal .slides .slide::after { content: ''; position: absolute; right: 30px; bottom: 0; width: 60px; height: 60px; background: url('./assets/redwood-template-oracle.png') center/contain no-repeat; }
+.oracle-badge { position: absolute; right: 30px; bottom: 0; width: 60px; height: 60px; background: #c74634; display: grid; place-items: center; }
+.oracle-badge::before { content: ''; width: 35px; height: 35px; background: #fff; mask: url('./assets/oracle-o.svg') center/contain no-repeat; -webkit-mask: url('./assets/oracle-o.svg') center/contain no-repeat; }
 .slide-header { height: 190px; margin: 0; padding: 28px 0 0; overflow: visible; background: none; }
 .slide-header::before,.slide-header::after { display: none; }
 .slide h1 { font-family: var(--rf-font-slide); font-size: var(--rf-slide-title); font-weight: 700; letter-spacing: normal; color: var(--rf-slide-text); }
@@ -191,12 +192,13 @@ body { margin: 0; }
 .chart-demo .rf-button { font-size: 17px; }
 body.is-toc-collapsed .sidebar { display: none; }
 body.is-toc-collapsed .reveal { left: 0; }
-:fullscreen .sidebar { display: none; }
-:fullscreen .reveal { inset: 0; }
-:fullscreen .toolbar { left: auto; right: 16px; top: 12px; width: auto; height: auto; padding: 0; border: 0; background: transparent; }
-:fullscreen .toolbar > :not(#fullscreen) { display: none; }
-:fullscreen #fullscreen { opacity: .35; font-size: 12px; min-height: 32px; padding: 8px; }
-:fullscreen #fullscreen:hover,:fullscreen #fullscreen:focus-visible { opacity: 1; }
+/* App-mode presentation is an ordinary resizable window, without browser chrome. */
+.is-audience-window .sidebar { display: none; }
+.is-audience-window .reveal { inset: 0; }
+.is-audience-window .toolbar { left: auto; right: 16px; top: 12px; width: auto; height: auto; padding: 0; border: 0; background: transparent; }
+.is-audience-window .toolbar > :not(#presenter) { display: none; }
+.is-audience-window #presenter { opacity: .15; font-size: 12px; min-height: 32px; padding: 8px; }
+.is-audience-window #presenter:hover,.is-audience-window #presenter:focus-visible { opacity: 1; }
 @media (max-width: 1000px) { .app-name,.hint,.component-link { display: none; } }
 @media (max-width: 800px) { .sidebar { display: none; box-shadow: 6px 0 24px #0003; } .reveal { left: 0; } body.is-toc-open .sidebar { display: flex; } .toolbar .rf-button { min-height: 40px; padding: 8px; } }
 /* Reveal defines width:100%; fixed side insets need an automatic width. */
@@ -247,3 +249,19 @@ body.is-toc-collapsed .reveal { left: 0; }
 .closing-presenter p { margin: 0 0 16px; }
 .closing-name { font-weight: 700; }
 .sidebar #page-navigation { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #66615b transparent; }
+
+/* POTX slides 34-35: full-slide agenda with the active section highlighted. */
+.reveal .slides .agenda-slide { padding: 0; background: #26251f; color: #fff; }
+.agenda-art { position: absolute; left: 832px; top: 74px; width: 768px; height: 416px; object-fit: contain; opacity: .2; }
+.agenda-slide .bookend-content { position: absolute; inset: 0; }
+.reveal .slides .agenda-slide h1 { position: absolute; left: 101px; top: 112px; margin: 0; color: #fff; font-size: 44px; font-weight: 700; letter-spacing: normal; }
+.agenda-topics { position: absolute; top: 302px; left: 192px; margin: 0; padding: 0; list-style: none; }
+.agenda-topics::before { content: ''; position: absolute; left: -92px; top: -57px; width: 41px; height: 5px; background: #e6ac58; }
+.agenda-topics li { display: flex; gap: 36px; align-items: baseline; min-height: 68px; color: #ffffff60; font-size: 40px; line-height: 1.3; }
+.agenda-number { width: 22px; color: #e6ac5860; font-size: 27px; }
+.agenda-topics .is-current { color: #fff; }
+.agenda-topics .is-current .agenda-number { color: #e6ac58; }
+
+/* Speaker preview frames contain only slides, without the application's controls. */
+.is-speaker-preview .toolbar,.is-speaker-preview .sidebar { display: none; }
+.is-speaker-preview .reveal { inset: 0; }

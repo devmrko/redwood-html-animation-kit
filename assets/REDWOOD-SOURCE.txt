@@ -12,3 +12,9 @@ redwood-cover.jpeg: ppt/media/image5.jpeg, slide 6 / Light Title slide with pict
 redwood-wordmark.png: ppt/media/image3.png, original Oracle wordmark on the cover layout.
 redwood-closing.jpg: ppt/media/image14.jpg, slide 46 / Dark Thank you 2.
 HTML bookends adapt the original 1600x900-scaled layout coordinates. Text stays editable; presenter fields are placeholders.
+
+redwood-agenda-art.png: ppt/media/image18.png, unchanged bytes from the user-provided POTX (2026-11-17).
+Agenda dividers adapt slides 34-35 / Dark Title and numbered list: full-slide agenda, active topic bright and other topics dimmed. Three topics replace the five placeholder topics.
+
+oracle-wordmark.svg: ppt/media/image4.svg, unchanged bytes from the user-provided POTX (2026-11-17); vector artwork used for slide headers and cover.
+oracle-o.svg: unchanged bytes from https://static.oracle.com/cdn/fnd/gallery/2610.0.0/images/ico-oracle-o.svg (2026-11-17). Used as a white CSS mask on the red footer badge, replacing the 52x52 PNG.

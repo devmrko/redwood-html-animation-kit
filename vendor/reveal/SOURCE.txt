@@ -1,0 +1,4 @@
+Reveal.js 5.2.1 speaker notes plugin (MIT):
+https://raw.githubusercontent.com/hakimel/reveal.js/5.2.1/plugin/notes/notes.js
+Downloaded unchanged on 2026-11-17. Uses the adjacent reveal.js LICENSE.
+Bundled marked parser uses marked-LICENSE.md from https://raw.githubusercontent.com/markedjs/marked/v4.3.0/LICENSE.md
