@@ -3,3 +3,6 @@ redwood-template-pattern.jpg: ppt/media/image1.jpg, unchanged bytes.
 redwood-template-oracle.png: ppt/media/image2.png, unchanged bytes.
 These Oracle brand assets are application-owned reference assets, not MIT/Apache library assets.
 No font files or the complete source template are included. Do not infer redistribution rights from bundled open-source library licenses.
+
+Oracle wordmark: oracle-logo.png, unchanged bytes from "Oracle logo.png" in https://www.oracle.com/a/pr/docs/oracle-logo.zip (downloaded 2026-11-17).
+Official download page: https://www.oracle.com/news/resources/

@@ -12,6 +12,7 @@ __pycache__/
 /assets/*
 !/assets/redwood-template-pattern.jpg
 !/assets/redwood-template-oracle.png
+!/assets/oracle-logo.png
 !/assets/REDWOOD-SOURCE.txt
 !/assets/preview.png
 !/assets/preview.gif
