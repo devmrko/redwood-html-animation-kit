@@ -72,3 +72,4 @@
 .rf-document-slide--cards .rf-document-item{justify-content:flex-start;padding-top:44px}
 .rf-document-slide--section .rf-document-logo{filter:brightness(0) invert(1)}
 .rf-document-slide--closing .rf-document-footer>span:last-child{background:#4b2328dc;color:#fff;padding:4px 8px;border-radius:4px}
+.rf-document-slide--authored .rf-document-body{display:block!important}

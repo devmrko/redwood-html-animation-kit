@@ -32,4 +32,6 @@ deck.slides[0].player.play();
 // 호스트는 자신의 페이지 전환기에 연결하고 종료 시 deck.destroy()를 호출합니다.
 ```
 
-JSON은 내용·스크립트·레이아웃 종류·사진 참조를 관리합니다. 새 배치나 효과는 `src/presentation-document-view.ts`와 `ui/presentation.css`에 추가하며, 앱에서 장표별 HTML을 복사하지 않습니다. Python의 `presentation_document`는 선택형 LLM 구성, `presentation_projects`는 서로 다른 브라우저 사이의 임시 프로젝트 전달을 담당합니다.
+JSON은 제목·목차·핵심 내용·스크립트·사진·제작 요청을 관리합니다. 실제 페이지는 신뢰하는 로컬 모듈에서 작성하고 호스트가 `DocumentRenderOptions.pages`로 주입합니다. 페이지 팩터리는 `{root,body,slide,assets,document}`를 받아 `{player,stepTimes?}`를 반환합니다. `player.describe()`의 내용·등장 시각은 공통 자막·시간 계산에 연결됩니다. JSON의 `authored:true` 페이지에 등록된 코드가 없으면 오류로 표시합니다. JSON에는 실행할 모듈 경로를 넣지 않습니다.
+
+Python의 `presentation_document`는 선택형 내용 정리, `presentation_authoring`은 제작용 프로젝트 ZIP, `presentation_projects`는 브라우저 간 임시 프로젝트 전달을 담당합니다. ZIP은 호스트의 명시된 런타임 파일과 선택한 프로젝트만 포함합니다. 템플릿·키·HTTP 경로는 호스트가 소유합니다. 제작·검수 계약은 [페이지 제작 지침](../authoring/AUTHORING.md)을 참조하세요.

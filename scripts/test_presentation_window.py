@@ -87,8 +87,17 @@ class PresentationWindowTest(unittest.TestCase):
                 connection.close()
 
     def test_other_origins_cannot_generate_or_create_exports(self):
-        for path in ('/api/subtitles/draft', '/api/video-exports', '/api/presentation-draft'):
+        for path in ('/api/subtitles/draft', '/api/video-exports', '/api/presentation-draft','/api/authoring-bundle'):
             self.assertEqual(self.request('https://example.com', {}, path)[0], 403)
+
+    def test_authoring_workspace_download_is_a_zip_and_rejects_invalid_projects(self):
+        import io
+        import zipfile
+        value=json.loads((Path(__file__).resolve().parents[1]/'examples/presentation-project.json').read_text())
+        status,data=self.request(self.origin,value,'/api/authoring-bundle')
+        self.assertEqual(status,200)
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:self.assertIn('AGENTS.md',archive.namelist())
+        self.assertEqual(self.request(self.origin,{},'/api/authoring-bundle')[0],400)
 
     @patch('start.browser_executable', return_value='/browser')
     def test_generated_project_is_preserved_in_presentation_window(self, browser):

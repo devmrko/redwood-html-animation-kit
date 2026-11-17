@@ -3,8 +3,9 @@ export type DocumentLayout = typeof documentLayouts[number];
 export interface DocumentSlide {
   id: string; layout: DocumentLayout; section: string; title: string; subtitle: string;
   items: string[]; notes: string; imageId?: string; imageAlt: string; duration?: number;
+  design?: string; authored?: boolean;
 }
-export interface PresentationDocument { version: 1; id: string; title: string; presenter: string; scenario: string; slides: DocumentSlide[] }
+export interface PresentationDocument { version: 1; id: string; title: string; presenter: string; scenario: string; brief?: string; slides: DocumentSlide[] }
 export interface PresentationAsset { id: string; name: string; type: 'image/png' | 'image/jpeg' | 'image/webp'; dataUrl: string }
 export interface PresentationProject { document: PresentationDocument; assets: PresentationAsset[] }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -30,10 +31,12 @@ export function validatePresentationDocument(input: unknown): PresentationDocume
     if (imageId && !/^[a-z0-9-]+$/.test(imageId)) throw Error('사진 ID를 확인해 주세요.');
     const duration = s.duration;
     if (duration !== undefined && (typeof duration !== 'number' || !Number.isFinite(duration) || duration < 1 || duration > 600)) throw Error('장표 시간은 1~600초로 입력해 주세요.');
+    if(s.authored!==undefined && typeof s.authored!=='boolean')throw Error('페이지 제작 상태를 확인해 주세요.');
     return { id, layout: s.layout as DocumentLayout, section: text(s.section ?? '', 120), title: text(s.title, 100, true), subtitle: text(s.subtitle ?? '', 220),
-      items: s.items.map(item => text(item, 240, true)), notes: text(s.notes ?? '', 6000), imageId, imageAlt: text(s.imageAlt ?? '', 240), duration };
+      items: s.items.map(item => text(item, 240, true)), notes: text(s.notes ?? '', 6000), imageId, imageAlt: text(s.imageAlt ?? '', 240), duration,
+      design:s.design===undefined?undefined:text(s.design,4000), authored:s.authored as boolean | undefined };
   });
-  return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), slides };
+  return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), brief:doc.brief===undefined?undefined:text(doc.brief,4000), slides };
 }
 function sniff(bytes: Uint8Array): PresentationAsset['type'] | undefined {
   if ([137,80,78,71,13,10,26,10].every((n,i) => bytes[i] === n)) return 'image/png';
@@ -85,7 +88,7 @@ export function firstContentSlide(document: PresentationDocument): number {
 }
 /** Drafts may be edited with empty fields, but cannot be presented as complete pages. */
 export function assertPresentationContent(document: PresentationDocument): void {
-  const empty=document.slides.find(slide=>!['cover','section','closing'].includes(slide.layout) && !slide.items.length && !slide.imageId);
+  const empty=document.slides.find(slide=>!['cover','section','closing'].includes(slide.layout) && !slide.items.length && !slide.imageId && !slide.authored);
   if(empty)throw Error(`‘${empty.title}’ 장표의 본문이 없습니다. 본문 항목이나 사진을 넣어 주세요.`);
 }
 /** Generated decks always include the template's highlighted agenda dividers. */

@@ -71,3 +71,11 @@ test('generated decks insert the template agenda before each section of body con
  assert.deepEqual(document.slides.filter(s=>s.layout==='section').map(s=>s.title),['등록','확인']);
  assert.equal(firstContentSlide(document),2);
 });
+test('agent-authored pages keep code separate while metadata survives JSON round trips',()=>{
+ const document=createDocumentFromScenario(scenario,[],{id});
+ document.brief='표와 SVG로 제작';const slide=document.slides.find(s=>s.layout==='steps');
+ slide.authored=true;slide.design='가로 도식과 순차 강조';slide.items=[];
+ const result=validatePresentationProject(JSON.parse(JSON.stringify({document,assets:[]})));
+ assert.equal(result.document.brief,document.brief);assert.equal(result.document.slides.find(s=>s.id===slide.id).design,slide.design);assertPresentationContent(result.document);
+ slide.authored='https://example.test/code.js';assert.throws(()=>validatePresentationDocument(document));
+});

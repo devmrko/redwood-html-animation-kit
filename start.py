@@ -12,6 +12,7 @@ import urllib.parse
 import webbrowser
 from framework.python.presentation_export import VideoExportJobs, generate_subtitles, load_settings
 from framework.python.presentation_document import generate_document_plan
+from framework.python.presentation_authoring import create_authoring_bundle, validate_authoring_project
 from framework.python.presentation_projects import TemporaryPresentationProjects, PROJECT_ID, MAX_PROJECT_BYTES
 
 
@@ -117,6 +118,20 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
+            if self.path == '/api/authoring-bundle':
+                if not 0 < length <= MAX_PROJECT_BYTES:
+                    raise ValueError('프로젝트 JSON은 36MB 이내여야 합니다.')
+                self.connection.settimeout(30)
+                data=self.rfile.read(length)
+                if len(data)!=length:raise ValueError('프로젝트 업로드가 중단됐습니다.')
+                bundle=create_authoring_bundle(self.directory,json.loads(data))
+                self.send_response(200)
+                self.send_header('Content-Type','application/zip')
+                self.send_header('Content-Disposition','attachment; filename="presentation-authoring.zip"')
+                self.send_header('Content-Length',str(len(bundle)))
+                self.send_header('Cache-Control','no-store')
+                self.end_headers();self.wfile.write(bundle)
+                return
             project = re.fullmatch(r'/api/projects/(' + PROJECT_ID + r')', self.path)
             if project:
                 if not 0 < length <= MAX_PROJECT_BYTES:
@@ -181,6 +196,12 @@ def main():
         server.export_jobs = VideoExportJobs()
         server.projects = TemporaryPresentationProjects()
         url = f"http://127.0.0.1:{args.port}/"
+        source=root/'presentation-project.json'
+        if source.is_file():
+            if source.stat().st_size>MAX_PROJECT_BYTES:raise SystemExit('프로젝트 JSON은 36MB 이내여야 합니다.')
+            project=validate_authoring_project(json.loads(source.read_text()))
+            server.projects.put(project['document']['id'],json.dumps(project,ensure_ascii=False).encode())
+            url+=f'deck.html?project={project["document"]["id"]}'
         print(f"Open {url}\nStop with Ctrl+C", flush=True)
         if not args.no_browser:
             webbrowser.open(url)

@@ -1,4 +1,5 @@
 import { presentationTheme, projectSections } from './template-theme.js';
+import { getAuthoredPages } from './authored-pages.js';
 import { renderPresentationDocument } from './vendor/foundation/presentation-document-view.js';
 import { openAppProjectStore } from './project-store.js';
 import { validProjectId } from './vendor/foundation/presentation-document.js';
@@ -12,7 +13,7 @@ try{
  if(!project)throw Error('이 브라우저에 프로젝트가 없습니다. 장표 만들기에서 JSON을 불러와 주세요.');
  document.title=project.document.title;
  $('edit').href=`./builder.html?project=${id}`;$('export').href=`./export.html?project=${id}`;
- const rendered=renderPresentationDocument(project,$('document-slides'),presentationTheme),slides=rendered.slides;
+ const rendered=renderPresentationDocument(project,$('document-slides'),presentationTheme,{pages:getAuthoredPages(id)}),slides=rendered.slides;
  slides.forEach(slide=>slide.player.finish());
  await Reveal.initialize({plugins:[RevealNotes],width:1600,height:900,margin:0,center:false,hash:true,controls:false,progress:false,transition:'none'});
  let current=Reveal.getIndices().h;

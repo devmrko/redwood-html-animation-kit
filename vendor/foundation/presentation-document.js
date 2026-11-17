@@ -29,10 +29,13 @@ export function validatePresentationDocument(input) {
         const duration = s.duration;
         if (duration !== undefined && (typeof duration !== 'number' || !Number.isFinite(duration) || duration < 1 || duration > 600))
             throw Error('장표 시간은 1~600초로 입력해 주세요.');
+        if (s.authored !== undefined && typeof s.authored !== 'boolean')
+            throw Error('페이지 제작 상태를 확인해 주세요.');
         return { id, layout: s.layout, section: text(s.section ?? '', 120), title: text(s.title, 100, true), subtitle: text(s.subtitle ?? '', 220),
-            items: s.items.map(item => text(item, 240, true)), notes: text(s.notes ?? '', 6000), imageId, imageAlt: text(s.imageAlt ?? '', 240), duration };
+            items: s.items.map(item => text(item, 240, true)), notes: text(s.notes ?? '', 6000), imageId, imageAlt: text(s.imageAlt ?? '', 240), duration,
+            design: s.design === undefined ? undefined : text(s.design, 4000), authored: s.authored };
     });
-    return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), slides };
+    return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), brief: doc.brief === undefined ? undefined : text(doc.brief, 4000), slides };
 }
 function sniff(bytes) {
     if ([137, 80, 78, 71, 13, 10, 26, 10].every((n, i) => bytes[i] === n))
@@ -103,7 +106,7 @@ export function firstContentSlide(document) {
 }
 /** Drafts may be edited with empty fields, but cannot be presented as complete pages. */
 export function assertPresentationContent(document) {
-    const empty = document.slides.find(slide => !['cover', 'section', 'closing'].includes(slide.layout) && !slide.items.length && !slide.imageId);
+    const empty = document.slides.find(slide => !['cover', 'section', 'closing'].includes(slide.layout) && !slide.items.length && !slide.imageId && !slide.authored);
     if (empty)
         throw Error(`‘${empty.title}’ 장표의 본문이 없습니다. 본문 항목이나 사진을 넣어 주세요.`);
 }

@@ -1,10 +1,13 @@
-import { validatePresentationProject, type PresentationProject } from './presentation-document.js';
+import { validatePresentationProject, type PresentationProject, type DocumentSlide, type PresentationAsset } from './presentation-document.js';
 import { createPresentationTimeline, type PresentationTimeline, type PresentationTrack } from './presentation-timeline.js';
 import { extractPresentationContent, estimatePresentationMinimum, describePresentationStructure, type PresentationEvent } from './presentation-context.js';
 
 export interface TemplateTextBox { width: number; height: number; fontSize: number; lineHeight: number; minFontSize: number }
 export interface DocumentTheme { id?: string; logo?: string; logoAlt?: string; coverArt?: string; closingArt?: string; agendaArt?: string; bodyArt?: string; badge?: string; agendaTitle?: string; coverTitleBox?: TemplateTextBox; coverSubtitleBox?: TemplateTextBox }
-export interface DocumentRenderOptions { pageOffset?: number; totalSlides?: number; sections?: readonly string[] }
+export interface DocumentPageContext { root: HTMLElement; body: HTMLElement; slide: DocumentSlide; assets: ReadonlyMap<string,PresentationAsset>; document: Document }
+export interface DocumentPage { player: PresentationTimeline; stepTimes?: readonly number[] }
+export type DocumentPageFactory = (context: DocumentPageContext) => DocumentPage;
+export interface DocumentRenderOptions { pageOffset?: number; totalSlides?: number; sections?: readonly string[]; pages?: ReadonlyMap<string,DocumentPageFactory> }
 export interface DocumentSlideView { root: HTMLElement; player: PresentationTimeline; stepCount: number; step: number; goToStep(step: number): void; metadata(): object; destroy(): void }
 export function renderPresentationDocument(input: PresentationProject, mount: HTMLElement, theme: DocumentTheme = {}, options: DocumentRenderOptions = {}): { slides: DocumentSlideView[]; destroy(): void } {
   const project = validatePresentationProject(input), doc = mount.ownerDocument, view = doc.defaultView!;
@@ -31,6 +34,8 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
   const result: DocumentSlideView[]=[];
   mount.replaceChildren();
   project.document.slides.forEach((slide,index) => {
+    const factory=slide.authored ? options.pages?.get(slide.id) : undefined;
+    if(slide.authored && !factory)throw Error(`‘${slide.title}’ 페이지 코드가 없습니다. 제작용 프로젝트 폴더에서 실행해 주세요. JSON만으로 페이지 코드를 전달할 수는 없습니다.`);
     const root=el('section',`slide rf-document-slide rf-document-slide--${slide.layout}`);
     if(theme.id)root.dataset.template=theme.id;
     if(theme.bodyArt)root.style.setProperty('--rf-document-template-band',`url("${new URL(theme.bodyArt,doc.baseURI).href}")`);
@@ -44,7 +49,7 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
     if (slide.subtitle) head.append(el('p','rf-document-subtitle',slide.subtitle));
     root.append(head);
     const body=el('div','rf-document-body'), copy=el('div','rf-document-copy');
-    const image=slide.imageId ? assets.get(slide.imageId) : undefined;
+    const image=!factory && slide.imageId ? assets.get(slide.imageId) : undefined;
     if(image && !slide.items.length)root.classList.add('rf-document-slide--photo-only');
     if(slide.layout==='content' && !image && slide.items.length>=2 && slide.items.length<=3 && slide.items.every(item=>/^([^:：]{1,24})[:：]\s*.+$/u.test(item)))root.classList.add('rf-document-slide--cards');
     if (image) { const figure=el('figure','rf-document-photo'),img=el('img');img.src=image.dataUrl;img.alt=slide.imageAlt || image.name;figure.append(img);body.append(figure); }
@@ -53,9 +58,9 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
       const art=slide.layout==='cover' ? theme.coverArt : theme.closingArt;
       if(art) { const artwork=el('img','rf-document-art');artwork.src=art;artwork.alt='';root.append(artwork); }
     }
-    const stepCount=slide.layout==='steps' ? slide.items.length : 0;
+    const stepCount=!factory && slide.layout==='steps' ? slide.items.length : 0;
     const list=el(stepCount ? 'ol' : 'ul','rf-document-items');
-    const itemElements=slide.items.map((text,i)=>{
+    const itemElements=(factory?[]:slide.items).map((text,i)=>{
       const item=el('li','rf-document-item');
       const label = ['content','comparison'].includes(slide.layout) ? /^([^:：]{1,24})[:：]\s*(.+)$/u.exec(text) : null;
       if(label)item.append(el('strong','rf-document-item-title',label[1]),el('span','rf-document-item-text',label[2]));
@@ -72,7 +77,7 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
       topics.forEach((topic,i)=>{const row=el('li','',topic);row.prepend(el('span','rf-document-agenda-number',String(i+1)));if(topic===slide.title){row.classList.add('is-current');row.setAttribute('aria-current','step');}agenda.append(row);});
       body.append(agenda);
     }
-    if(!['cover','closing','section'].includes(slide.layout) && !slide.items.length && !image){
+    if(!factory && !['cover','closing','section'].includes(slide.layout) && !slide.items.length && !image){
       const empty=el('p','rf-document-empty','이 장표에 본문이 없습니다. 장표 편집에서 내용을 입력해 주세요.');
       body.append(empty);root.classList.add('rf-document-slide--empty');
     }
@@ -101,8 +106,13 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
     const footer=el('footer','rf-document-footer');footer.append(el('span','',slide.section || project.document.title));
     const progress=el('span','rf-document-step-state');footer.append(progress,el('span','',`${index+1+(options.pageOffset ?? 0)} / ${options.totalSlides ?? project.document.slides.length}`));root.append(footer);mount.append(root);
     if(slide.layout==='cover'){fitTemplateText(head.querySelector('h1'),theme.coverTitleBox);fitTemplateText(head.querySelector('.rf-document-subtitle'),theme.coverSubtitleBox);}
-    const nativeDuration=stepCount ? 2+stepCount*3.5 : Math.max(1.5,1+itemElements.length*.45);
-    const duration=nativeDuration*1000, events: PresentationEvent[]=[{at:0,text:slide.title}];
+    if(factory){root.classList.add('rf-document-slide--authored');body.replaceChildren();}
+    const custom=factory?.({root,body,slide,assets,document:doc}),timing=custom?.player.describe();
+    const nativeDuration=timing?.duration ?? (stepCount ? 2+stepCount*3.5 : Math.max(1.5,1+itemElements.length*.45));
+    const pageSteps=custom?.stepTimes??[],displaySteps=custom?pageSteps.length:stepCount;
+    if(pageSteps.length>80 || pageSteps.some((at,i)=>!Number.isFinite(at)||at<0||at>nativeDuration||(i>0&&at<=pageSteps[i-1]!)))throw Error('페이지의 단계 시간을 확인해 주세요.');
+    if(displaySteps)root.dataset.steps=String(displaySteps);
+    const duration=nativeDuration*1000, events: PresentationEvent[]=[{at:0,text:slide.title},...(timing?.events??[])];
     // Keep source content readable even when loaded in a hidden tab, paused,
     // or displayed before the playback clock is started.
     const tracks: PresentationTrack[]=[{element:head,keyframes:[{offset:0,translate:'0 8px',opacity:1},{offset:500/duration,translate:'0 0',opacity:1},{offset:1,translate:'0 0',opacity:1}]}];
@@ -117,23 +127,24 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
     let frame=0,step=0;
     function updateStep(time: number): void {
       const previousStep=step;
-      step=stepCount ? Math.min(stepCount,Math.max(1,Math.floor((time/1000-1)/3.5)+1)) : 0;
+      step=custom ? displaySteps?Math.max(1,pageSteps.filter(at=>at<=time/1000).length):0 : stepCount ? Math.min(stepCount,Math.max(1,Math.floor((time/1000-1)/3.5)+1)) : 0;
       itemElements.forEach((element,i)=>{element.classList.toggle('is-current',i===step-1);if(stepCount)element.setAttribute('aria-current',i===step-1?'step':'false');});
       diagramItems.forEach((element,i)=>element.classList.toggle('is-current',i===step-1));
-      progress.textContent=stepCount ? `단계 ${step} / ${stepCount}` : '';
+      progress.textContent=displaySteps ? `단계 ${step} / ${displaySteps}` : '';
       if(step!==previousStep)root.dispatchEvent(new view.CustomEvent('presentationstepchange',{bubbles:true}));
     }
     function tick(): void { updateStep(player.currentTime); if(player.state==='running') frame=view.requestAnimationFrame(tick); }
-    const player=createPresentationTimeline({duration,tracks,onStateChange:state=>{
+    const player=custom?.player ?? createPresentationTimeline({duration,tracks,onStateChange:state=>{
       view.cancelAnimationFrame(frame);
       if(state==='running')frame=view.requestAnimationFrame(tick);
       else updateStep(state==='finished'?duration:player.currentTime);
     }});
-    const port: PresentationTimeline={get state(){return player.state;},get currentTime(){return player.currentTime;},describe:()=>({duration:nativeDuration,events}),setPlaybackRate:rate=>player.setPlaybackRate(rate),seek:time=>player.seek(time),play:()=>player.play(),pause:()=>player.pause(),restart:()=>player.restart(),finish:()=>player.finish(),destroy:()=>player.destroy()};
+    function followCustom(){view.cancelAnimationFrame(frame);updateStep(player.currentTime);if(player.state==='running')frame=view.requestAnimationFrame(followCustom);}
+    const port: PresentationTimeline={get state(){return player.state;},get currentTime(){return player.currentTime;},describe:()=>({duration:nativeDuration,events}),setPlaybackRate:rate=>player.setPlaybackRate(rate),seek:time=>{player.seek(time);updateStep(player.currentTime);},play:()=>{player.play();if(custom)followCustom();},pause:()=>{player.pause();updateStep(player.currentTime);},restart:()=>{player.restart();if(custom)followCustom();},finish:()=>{player.finish();updateStep(player.currentTime);},destroy:()=>player.destroy()};
     updateStep(0);
-    const slideView: DocumentSlideView={root,player:port,stepCount,get step(){return step;},
-      goToStep(value){player.pause();player.seek((1.45+Math.max(0,Math.min(stepCount-1,value-1))*3.5)*1000);updateStep(player.currentTime);},
-      metadata(){const content=extractPresentationContent(root),minimumDuration=estimatePresentationMinimum({content,events,animationDuration:nativeDuration,...describePresentationStructure(root)});return {id:slide.id,title:slide.title,notes:slide.notes,content,events,animationDuration:nativeDuration,minimumDuration,duration:Math.max(slide.duration ?? 0,minimumDuration)};},
+    const slideView: DocumentSlideView={root,player:port,stepCount:displaySteps,get step(){return step;},
+      goToStep(value){player.pause();const position=Math.max(0,Math.min(displaySteps-1,value-1));player.seek((custom?pageSteps[position]??0:1.45+position*3.5)*1000);updateStep(player.currentTime);},
+      metadata(){const content=extractPresentationContent(root),minimumDuration=estimatePresentationMinimum({content,events,animationDuration:nativeDuration,...describePresentationStructure(root),stepCount:displaySteps});return {id:slide.id,title:slide.title,notes:slide.notes,content,events,animationDuration:nativeDuration,minimumDuration,duration:Math.max(slide.duration ?? 0,minimumDuration)};},
       destroy(){view.cancelAnimationFrame(frame);player.destroy();root.remove();},
     };
     result.push(slideView);
