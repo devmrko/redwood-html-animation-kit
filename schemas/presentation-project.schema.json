@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Presentation project v1",
+  "type": "object",
+  "required": ["document", "assets"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "required": ["version", "id", "title", "slides"],
+      "properties": {
+        "version": {"const": 1},
+        "id": {"type": "string", "format": "uuid"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 100},
+        "presenter": {"type": "string", "maxLength": 200},
+        "scenario": {"type": "string", "maxLength": 30000},
+        "slides": {
+          "type": "array", "minItems": 1, "maxItems": 60,
+          "items": {
+            "type": "object", "required": ["id", "layout", "title", "items"],
+            "properties": {
+              "id": {"type": "string", "pattern": "^[a-z0-9-]{1,80}$"},
+              "layout": {"enum": ["cover", "section", "content", "photo", "steps", "comparison", "closing"]},
+              "section": {"type": "string", "maxLength": 120},
+              "title": {"type": "string", "minLength": 1, "maxLength": 100},
+              "subtitle": {"type": "string", "maxLength": 220},
+              "items": {"type": "array", "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 240}},
+              "notes": {"type": "string", "maxLength": 6000},
+              "imageId": {"type": ["string", "null"], "pattern": "^[a-z0-9-]{1,80}$"},
+              "imageAlt": {"type": "string", "maxLength": 240},
+              "duration": {"type": "number", "minimum": 1, "maximum": 600}
+            }
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "array", "maxItems": 20,
+      "items": {
+        "type": "object", "required": ["id", "name", "type", "dataUrl"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9-]{1,80}$"},
+          "name": {"type": "string", "minLength": 1, "maxLength": 200},
+          "type": {"enum": ["image/png", "image/jpeg", "image/webp"]},
+          "dataUrl": {"type": "string", "maxLength": 7000000, "pattern": "^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"}
+        }
+      }
+    }
+  },
+  "$comment": "The runtime also checks unique IDs, image references, MIME signatures and decoded image sizes."
+}

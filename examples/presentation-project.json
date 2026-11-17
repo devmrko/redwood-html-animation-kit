@@ -1,0 +1,17 @@
+{
+  "document": {
+    "version": 1,
+    "id": "9d87dd54-bd8d-43d8-b14f-dd2554dab371",
+    "title": "시나리오 기반 발표",
+    "presenter": "발표자",
+    "scenario": "처리 순서와 적용 전후를 설명합니다.",
+    "slides": [
+      {"id":"cover","layout":"cover","section":"","title":"시나리오 기반 발표","subtitle":"처리 순서와 적용 전후","items":[],"notes":"발표의 목적과 구성을 소개합니다."},
+      {"id":"overview","layout":"section","section":"사용 방법","title":"처리 순서","items":[],"notes":"자료 등록부터 결과 저장까지 살펴봅니다."},
+      {"id":"process","layout":"steps","section":"사용 방법 · 처리 순서","title":"세 단계로 처리합니다","items":["시나리오와 사진 등록","생성된 장표와 스크립트 확인","영상과 SRT 저장"],"notes":"시나리오와 사진을 등록합니다. 생성된 장표와 발표 스크립트를 확인합니다. 영상과 SRT를 저장합니다."},
+      {"id":"compare","layout":"comparison","section":"적용 효과","title":"이전과 이후","items":["이전: 장표마다 내용과 배치를 함께 수정","이후: JSON의 내용을 공통 레이아웃으로 표시"],"notes":"이전에는 장표마다 배치를 수정했습니다. 이후에는 JSON의 내용을 바꿔 같은 레이아웃을 재사용합니다."},
+      {"id":"closing","layout":"closing","section":"","title":"감사합니다.","items":[],"notes":"질문을 받습니다."}
+    ]
+  },
+  "assets": []
+}

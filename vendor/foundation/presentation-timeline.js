@@ -1,3 +1,4 @@
+import { describePresentationTracks } from './presentation-context.js';
 export function createPresentationTimeline(options) {
     const { duration, tracks, onStateChange } = options;
     if (!Number.isFinite(duration) || duration <= 0 || tracks.length === 0) {
@@ -72,7 +73,7 @@ export function createPresentationTimeline(options) {
             animation.currentTime = time;
             animation.play();
             if (typeof now === 'number')
-                animation.startTime = now - time;
+                animation.startTime = now - time / animation.playbackRate;
         }
         emit('running');
     }
@@ -92,6 +93,25 @@ export function createPresentationTimeline(options) {
     reduced.addEventListener('change', onReduced);
     return {
         get state() { return state; },
+        describe: () => describePresentationTracks(duration, tracks),
+        setPlaybackRate(rate) {
+            if (!Number.isFinite(rate) || rate <= 0 || rate > 10)
+                throw new RangeError('Invalid playback rate');
+            for (const animation of animations)
+                animation.playbackRate = rate;
+        },
+        seek(value) {
+            if (state === 'destroyed')
+                return;
+            if (!Number.isFinite(value))
+                throw new RangeError('Invalid seek time');
+            time = Math.max(0, Math.min(duration, value));
+            for (const animation of animations) {
+                animation.pause();
+                animation.currentTime = time;
+            }
+            emit(time === duration ? 'finished' : 'paused');
+        },
         get currentTime() { return state === 'destroyed' ? time : currentTime(); },
         play, pause, finish,
         restart() {

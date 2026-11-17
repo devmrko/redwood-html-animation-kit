@@ -4,20 +4,30 @@
   "source": "react-foundation/packages/core/src",
   "modules": {
     "depth.js": "f62695a16d39bb08a388a4d67e451593b3a9c7e304a7eb57339156e1514daf26",
-    "presentation-timeline.js": "c3bf8b8d619077f211b469caf8aef879bbfda04537c30f4a0030521cbbfc81a3",
+    "presentation-timeline.js": "1e6522671589ee72a8ebfb19a76e29db1db052a88554fd5b8de27d520428f582",
     "presentation-flow.js": "5a9114a474c46a0b878dd7d07654432ef250b46027a9df7236c855e3f3ba3008",
     "presentation-effects.js": "cf8da2b500ee1db269a9a82cced54d80d41a80451898b5fd6d3bd3dd58815839",
-    "presentation-gallery.js": "7a116b9a37eca2094808a498f222adea694af50176feee19b9854b948cd41f4d",
-    "presentation-recipes.js": "30d76735bdf9fe09113572a36714acf1b77aba50a909d6906352cf82b4934018",
+    "presentation-gallery.js": "6be9616ae9a57e463e638345b8b0de154841a6c0d517eaef7b1d4ae6d7428cd5",
+    "presentation-recipes.js": "fc7b51a216be45389d0963d5ca4dda721bccb40bf094d429b548d5e07348ca8d",
     "ui-components.js": "7fd7967774ded18265c2f1e93b91028712d6580f7279e562c03641564ce9d9d5",
     "presentation-chart.js": "9fc0a38e9c55bf35bbc1ad7aee5cfefcdd0532d47f0d27c54f8f1a836cbc52e8",
-    "presentation-fullscreen.js": "73c0d5369c444a77c54ded436c5a42e0e6e169082481e59b35468a136289f85c"
+    "presentation-fullscreen.js": "73c0d5369c444a77c54ded436c5a42e0e6e169082481e59b35468a136289f85c",
+    "index.js": "3d6b5e6c9b49b828fe811a50953bc56cf0a6c9b9fad1022a9182c698b00b3761",
+    "presentation-subtitles.js": "dcfdb30a427530ffcaaaf4c6e220216e1518bbf1216ec2e7223d1b4b66819c89",
+    "presentation-video.js": "6d02c09da4a244289bde26f6e57886b8d8c7c9f0ae6077f8f8fc9e80b317d4cf",
+    "presentation-window.js": "b43a95c211d7be3646225c9dac7cc8480b229fb0e405755f58561d91fc7f7907",
+    "presentation-context.js": "09d37b3e6a4b19c7d7d5fddd32deb4fe65d5175afe8f7b6a1ef1d07a13a4a869",
+    "presentation-document-view.js": "4d4dfd3401cfa7f9f46d060ab0f7f0579ffcb64002cd9759261c37301cff4e6c",
+    "presentation-document.js": "4ef5e8889f1148960eccda251f485dd91d140e81a027257ff7576bd1735facaa",
+    "presentation-project-store.js": "25ac4de1921cf7873ea100fcc750ca33ce3b7546c3048fbc0899d929885a3927"
   },
   "styles": {
     "ui/tokens.css": "96b14e8643a2540ea0f041538b1a7e7a20a7068adcd027906b52cc4117f45a9c",
-    "ui/ui.css": "48e1c1b83b4b35f32dff9d2a9fc48baeb11ccec42f36fa09cf33009d2922cfaa",
-    "ui/components.css": "9cbf9a015473318059576d84d7dc8940563f0d2aea69eb88fd71ec9630bda0c3"
+    "ui/ui.css": "41894b2e63b5759c802646075b8c161ac793b96f3555a0d5600ca853628ece5a",
+    "ui/components.css": "9cbf9a015473318059576d84d7dc8940563f0d2aea69eb88fd71ec9630bda0c3",
+    "ui/presentation.css": "aba8ee9d706d4056fba9afdee5821d8a4bc820d3a26b9ba702bdea6950453063"
   },
   "package_sha256": "2b2f4719c93597f73925b4dfb69e1e3a897454a6e49385d6698d11f227240ce3",
-  "status": "local development build; not published"
+  "status": "rebuilt from the bundled presentation source; upstream tarball is retained as provenance",
+  "browser_source": "framework/src"
 }

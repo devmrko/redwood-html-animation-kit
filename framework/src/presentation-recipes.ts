@@ -4,6 +4,7 @@ import type { PresentationState, PresentationTimeline } from './presentation-tim
 export interface AnimeHandle {
   duration: number;
   currentTime: number;
+  speed: number;
   add(target: object | readonly object[], parameters: Record<string, unknown>, position?: number): AnimeHandle;
   play(): unknown;
   pause(): unknown;
@@ -179,6 +180,15 @@ export function createRichPresentation(options: RichPresentationOptions): Presen
   doc.addEventListener('visibilitychange', visibility); reduced.addEventListener('change', preference);
   return {
     get state() { return state; }, get currentTime() { return timeline.currentTime; }, play, pause, finish,
+    describe: () => ({ duration: duration / 1000, events: effects.map(effect => ({ at: effect.start / 1000, text: (effect.target.textContent ?? effect.target.getAttribute('aria-label') ?? '').replace(/\s+/g, ' ').trim().slice(0, 600) })).filter(event => event.text).slice(0, 80) }),
+    setPlaybackRate(rate) {
+      if (!Number.isFinite(rate) || rate <= 0 || rate > 10) throw new RangeError('Invalid playback rate');
+      timeline.speed = rate;
+    },
+    seek(time) {
+      if (!Number.isFinite(time)) throw new RangeError('Invalid seek time');
+      if (state !== 'destroyed') { timeline.pause(); timeline.seek(Math.max(0, Math.min(duration, time))); emit(time >= duration ? 'finished' : 'paused'); }
+    },
     restart() { if (state !== 'destroyed') { timeline.pause(); timeline.seek(0); emit('idle'); play(); } },
     destroy() {
       if (state === 'destroyed') return;

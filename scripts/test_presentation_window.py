@@ -6,11 +6,13 @@ import json
 from pathlib import Path
 import sys
 import threading
+import tempfile
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from start import PresentationHandler, presentation_command
+from framework.python.presentation_projects import TemporaryPresentationProjects
 
 
 class QuietHandler(PresentationHandler):
@@ -24,6 +26,8 @@ class PresentationWindowTest(unittest.TestCase):
         cls.server = http.server.ThreadingHTTPServer(
             ("127.0.0.1", 0), functools.partial(QuietHandler, directory=str(Path(__file__).resolve().parents[1])))
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
+        cls.projects_temp = tempfile.TemporaryDirectory()
+        cls.server.projects = TemporaryPresentationProjects(cls.projects_temp.name)
         cls.thread.start()
         cls.origin = f"http://127.0.0.1:{cls.server.server_port}"
 
@@ -32,6 +36,7 @@ class PresentationWindowTest(unittest.TestCase):
         cls.server.shutdown()
         cls.server.server_close()
         cls.thread.join()
+        cls.projects_temp.cleanup()
 
     def request(self, origin, payload, path="/api/presentation-window"):
         connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port)
@@ -70,6 +75,46 @@ class PresentationWindowTest(unittest.TestCase):
     def test_missing_browser_reports_failure(self, launch, browser):
         self.assertEqual(self.request(self.origin, {})[0], 503)
         launch.assert_not_called()
+
+    def test_secret_files_cannot_be_downloaded(self):
+        for path in ('/.env', '/%2eenv', '/.git/config'):
+            with self.subTest(path=path):
+                connection = http.client.HTTPConnection('127.0.0.1', self.server.server_port)
+                connection.request('GET', path)
+                response = connection.getresponse()
+                response.read()
+                self.assertEqual(response.status, 403)
+                connection.close()
+
+    def test_other_origins_cannot_generate_or_create_exports(self):
+        for path in ('/api/subtitles/draft', '/api/video-exports', '/api/presentation-draft'):
+            self.assertEqual(self.request('https://example.com', {}, path)[0], 403)
+
+    @patch('start.browser_executable', return_value='/browser')
+    def test_generated_project_is_preserved_in_presentation_window(self, browser):
+        project = '11111111-1111-4111-8111-111111111111'
+        command = presentation_command(self.origin, {'slide':'process', 'project':project})
+        self.assertIn(f'--app={self.origin}/deck.html?project={project}&audience#/process', command)
+        with self.assertRaises(ValueError):
+            presentation_command(self.origin, {'project':'https://example.com'})
+
+    def test_project_json_is_readable_by_another_browser_without_its_indexeddb(self):
+        project = '11111111-1111-4111-8111-111111111111'
+        path = '/api/projects/' + project
+        body = {'document':{'version':1,'id':project,'slides':[]},'assets':[]}
+        self.assertEqual(self.request('https://example.com',body,path)[0],403)
+        self.assertEqual(self.request(self.origin,body,path)[0],200)
+        connection = http.client.HTTPConnection('127.0.0.1',self.server.server_port)
+        connection.request('GET',path)
+        response=connection.getresponse()
+        self.assertEqual(response.status,200)
+        self.assertEqual(json.loads(response.read()),body)
+        connection.close()
+
+    def test_project_id_mismatch_is_rejected(self):
+        path='/api/projects/22222222-2222-4222-8222-222222222222'
+        body={'document':{'version':1,'id':'other'},'assets':[]}
+        self.assertEqual(self.request(self.origin,body,path)[0],400)
 
 
 if __name__ == "__main__":

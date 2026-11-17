@@ -16,10 +16,12 @@ export function createPresentationGallery(options: PresentationGalleryOptions): 
   let destroyed = false;
   const notify = (state: PresentationState): void => { if (state !== 'destroyed') onStateChange?.(state); };
   let current = createOverall(notify);
+  let rate = 1;
   function replace(create: PresentationFactory, finish = false): void {
     if (destroyed) return;
     current.destroy();
     current = create(notify);
+    current.setPlaybackRate(rate);
     if (finish) current.finish(); else current.play();
   }
   const listeners = examples.map(example => {
@@ -30,6 +32,9 @@ export function createPresentationGallery(options: PresentationGalleryOptions): 
   return {
     get state() { return destroyed ? 'destroyed' : current.state; },
     get currentTime() { return current.currentTime; },
+    describe: () => current.describe(),
+    setPlaybackRate(value) { current.setPlaybackRate(value); rate = value; },
+    seek(time) { current.seek(time); },
     play() { if (!destroyed) current.play(); },
     pause() { if (!destroyed) current.pause(); },
     restart() { replace(createOverall); },

@@ -11,7 +11,7 @@ export function createChartsSlide(root,onStateChange){
   function create(selected,notify){
     const charts=selected.map(spec=>createPresentationChart({...spec,root:root.querySelector(`#chart-${spec.type}`)}));
     const player=createPresentationTimeline({duration:2400,tracks:charts.flatMap(chart=>chart.tracks),onStateChange:notify});
-    return {get state(){return player.state;},get currentTime(){return player.currentTime;},play:()=>player.play(),pause:()=>player.pause(),restart:()=>player.restart(),finish:()=>player.finish(),destroy(){player.destroy();charts.forEach(chart=>chart.destroy());}};
+    return {get state(){return player.state;},get currentTime(){return player.currentTime;},describe:()=>player.describe(),setPlaybackRate:rate=>player.setPlaybackRate(rate),seek:time=>player.seek(time),play:()=>player.play(),pause:()=>player.pause(),restart:()=>player.restart(),finish:()=>player.finish(),destroy(){player.destroy();charts.forEach(chart=>chart.destroy());}};
   }
   // Every preview has a static final chart; the owned player replaces selected previews while playing.
   const base=definitions.map(spec=>createPresentationChart({...spec,root:root.querySelector(`#chart-${spec.type}`)}));

@@ -1,3 +1,5 @@
+import { createPresentationWindowControl } from './vendor/foundation/presentation-window.js';
+import { extractPresentationContent, estimatePresentationMinimum, describePresentationStructure } from './vendor/foundation/presentation-context.js';
 import { createUiButton } from './vendor/foundation/ui-components.js';
 import { createPositioningSlide } from './slides/positioning.js';
 import { createFlowSlide } from './slides/flow.js';
@@ -8,8 +10,9 @@ import { createChartsSlide } from './slides/charts.js';
 
 const query = new URLSearchParams(location.search);
 const speakerPreview = query.has('receiver');
+const exportPreview = query.has('export-render');
 const audienceWindow = query.has('audience') && !speakerPreview;
-document.body.classList.toggle('is-speaker-preview', speakerPreview);
+document.body.classList.toggle('is-speaker-preview', speakerPreview || exportPreview);
 document.body.classList.toggle('is-audience-window', audienceWindow);
 if(audienceWindow) document.title = '발표 화면 — Redwood HTML Animation Kit';
 await Reveal.initialize({plugins:[RevealNotes],width:1600,height:900,margin:0.025,hash:true,controls:false,progress:false,center:true,transition:'fade'});
@@ -56,7 +59,7 @@ function navigation(){
   previous.disabled=current===0;next.disabled=current===slides.length-1;
   navButtons.forEach((button,index)=>{if(index===current){button.setAttribute('aria-current','page');button.scrollIntoView({block:'nearest'});}else button.removeAttribute('aria-current');});
 }
-Reveal.on('slidechanged',()=>{getSlide(current).player.pause();current=Reveal.getIndices().h;navigation();if(speakerPreview)getSlide(current).player.finish();else getSlide(current).player.restart();});
+Reveal.on('slidechanged',()=>{getSlide(current).player.pause();current=Reveal.getIndices().h;navigation();if(speakerPreview || exportPreview)getSlide(current).player.finish();else getSlide(current).player.restart();});
 previous.addEventListener('click',()=>Reveal.prev());next.addEventListener('click',()=>Reveal.next());
 document.querySelector('#replay').addEventListener('click',()=>getSlide(current).player.restart());
 pauseButton.addEventListener('click',()=>{const player=getSlide(current).player;if(player.state==='running')player.pause();else player.play();});
@@ -65,21 +68,33 @@ tocButton.addEventListener('click',()=>{
   if(matchMedia('(max-width:800px)').matches){document.body.classList.toggle('is-toc-open');tocButton.setAttribute('aria-expanded',String(document.body.classList.contains('is-toc-open')));}
   else {document.body.classList.toggle('is-toc-collapsed');tocButton.setAttribute('aria-expanded',String(!document.body.classList.contains('is-toc-collapsed')));Reveal.layout();}
 });
-async function openPresentationWindow() {
-  const button = document.querySelector('#present');
-  button.disabled = true;
-  stateLabel.textContent = '발표 창 여는 중…';
-  try {
-    const response = await fetch('/api/presentation-window', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({slide:pages[current].id,width:Math.round(screen.availWidth),height:Math.round(screen.availHeight),left:Math.round(screen.availLeft || 0),top:Math.round(screen.availTop || 0)}),
-    });
+const presentationWindow = createPresentationWindowControl({
+  button:document.querySelector('#present'),
+  request:()=>({slide:pages[current].id,width:Math.round(screen.availWidth),height:Math.round(screen.availHeight),left:Math.round(screen.availLeft || 0),top:Math.round(screen.availTop || 0)}),
+  launch:async request=>{
+    const response=await fetch('/api/presentation-window',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});
     if(!response.ok) throw new Error(response.status===404 || response.status===501 ? 'start.py 서버를 다시 실행해 주세요.' : 'Edge 또는 Chrome으로 발표 창을 열지 못했습니다.');
-    stateLabel.textContent = '별도 발표 창에서 S 키로 발표자 보기를 여세요.';
-  } catch(error) {
-    stateLabel.textContent = `발표 창 열기 실패: ${error instanceof Error ? error.message : String(error)}`;
-  } finally { button.disabled = false; }
-}
-document.querySelector('#present').addEventListener('click',()=>{void openPresentationWindow();});
-window.addEventListener('pagehide',event=>{if(!event.persisted){slides.forEach(slide=>slide?.destroy());}});
-navigation();if(speakerPreview)getSlide(current).player.finish();else getSlide(current).player.play();
+  },
+  onState:(state,error)=>{stateLabel.textContent=state==='opening' ? '발표 창 여는 중…' : state==='opened' ? '별도 발표 창에서 S 키로 발표자 보기를 여세요.' : `발표 창 열기 실패: ${error instanceof Error ? error.message : String(error)}`;},
+});
+async function openPresentationWindow(){await presentationWindow.open();}
+// The export editor consumes this adapter; the reusable recorder knows no Reveal.js IDs.
+window.presentationDeck = {
+  getSlides:()=>pages.map((page,index)=>{
+    const root=document.getElementById(page.id),timing=getSlide(index).player.describe();
+    const content=extractPresentationContent(root),structure=describePresentationStructure(root);
+    const minimumDuration=estimatePresentationMinimum({content,events:timing.events,animationDuration:timing.duration,...structure});
+    return {id:page.id,title:root.querySelector('h1,h2')?.textContent.trim() || page.label,notes:root.dataset.notes || '',content,events:timing.events,animationDuration:timing.duration,minimumDuration,duration:Math.max(minimumDuration,page.duration ?? (page.kind==='template' ? 3 : page.id==='charts' ? 6 : 14))};
+  }),
+  showSlide:(id,play=false,rate=1)=>{
+    const index=pages.findIndex(page=>page.id===id);
+    if(index<0)throw new Error('장표를 찾을 수 없습니다.');
+    Reveal.slide(index);
+    const player=getSlide(index).player;
+    player.setPlaybackRate(rate);
+    if(play)player.restart();else player.finish();
+  },
+  pause:()=>getSlide(current).player.pause(),
+};
+window.addEventListener('pagehide',event=>{if(!event.persisted){slides.forEach(slide=>slide?.destroy());presentationWindow.destroy();}});
+navigation();if(speakerPreview || exportPreview)getSlide(current).player.finish();else getSlide(current).player.play();

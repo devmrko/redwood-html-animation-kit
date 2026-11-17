@@ -1,0 +1,3 @@
+// Application-owned assets and the user's POTX selection. Content stays in project JSON.
+export const presentationTheme={id:'redwood-2019',logo:'./assets/oracle-wordmark.svg',logoAlt:'Oracle',coverArt:'./assets/redwood-cover.jpeg',closingArt:'./assets/redwood-closing.jpg',agendaArt:'./assets/redwood-agenda-art.png',bodyArt:'./assets/redwood-template-pattern.jpg',badge:'./assets/oracle-o.svg',agendaTitle:'목차',coverTitleBox:{width:1322.35,height:119.42,fontSize:73,lineHeight:1.1,minFontSize:32},coverSubtitleBox:{width:1322.35,height:54.6,fontSize:40,lineHeight:1.3,minFontSize:18}};
+export const projectSections=document=>document.slides.filter(slide=>slide.layout==='section').map(slide=>slide.title);

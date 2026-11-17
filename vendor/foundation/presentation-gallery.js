@@ -8,11 +8,13 @@ export function createPresentationGallery(options) {
     const notify = (state) => { if (state !== 'destroyed')
         onStateChange?.(state); };
     let current = createOverall(notify);
+    let rate = 1;
     function replace(create, finish = false) {
         if (destroyed)
             return;
         current.destroy();
         current = create(notify);
+        current.setPlaybackRate(rate);
         if (finish)
             current.finish();
         else
@@ -26,6 +28,9 @@ export function createPresentationGallery(options) {
     return {
         get state() { return destroyed ? 'destroyed' : current.state; },
         get currentTime() { return current.currentTime; },
+        describe: () => current.describe(),
+        setPlaybackRate(value) { current.setPlaybackRate(value); rate = value; },
+        seek(time) { current.seek(time); },
         play() { if (!destroyed)
             current.play(); },
         pause() { if (!destroyed)

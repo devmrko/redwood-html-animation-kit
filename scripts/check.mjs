@@ -20,7 +20,8 @@ async function inspect(path){
  const source=await readFile(path,'utf8');
  if(extname(path)==='.js')execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
  const refs=extname(path)==='.html'?[...source.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1]):extname(path)==='.css'?[...source.matchAll(/(?:url\(\s*|@import\s+)["']?([^"'\s)]+)["']?\)?/g)].map(m=>m[1]):[...source.matchAll(/(?:from\s*|import\s*)["'](\.[^"']+)["']/g)].map(m=>m[1]);
- for(const ref of refs){if(!ref||/^(?:https?:|data:|#)/.test(ref))continue;const next=resolve(dirname(path),ref.split(/[?#]/)[0]);await stat(next);if(['.js','.css','.html'].includes(extname(next)))await inspect(next);}
+ for(const ref of refs){if(!ref||/^(?:https?:|data:|about:|#)/.test(ref))continue;const next=resolve(dirname(path),ref.split(/[?#]/)[0]);await stat(next);if(['.js','.css','.html'].includes(extname(next)))await inspect(next);}
 }
 await inspect(resolve(root,'index.html'));await inspect(resolve(root,'components.html'));
+await inspect(resolve(root,'deck.html'));
 console.log(`Passed: 13 pages, 33 samples, branding cleanup, module/CSS hashes and ${visited.size} linked files.`);

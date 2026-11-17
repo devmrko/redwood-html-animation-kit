@@ -1,3 +1,4 @@
+import { describePresentationTracks, type PresentationTiming } from './presentation-context.js';
 /** A shared clock for declarative DOM animation tracks; no import-time DOM access. */
 export type PresentationState = 'idle' | 'running' | 'paused' | 'finished' | 'destroyed';
 export interface PresentationTrack { element: HTMLElement; keyframes: Keyframe[] }
@@ -9,6 +10,9 @@ export interface PresentationTimelineOptions {
 export interface PresentationTimeline {
   readonly state: PresentationState;
   readonly currentTime: number;
+  describe(): PresentationTiming;
+  setPlaybackRate(rate: number): void;
+  seek(time: number): void;
   play(): void;
   pause(): void;
   restart(): void;
@@ -74,7 +78,7 @@ export function createPresentationTimeline(options: PresentationTimelineOptions)
     for (const animation of animations) {
       animation.currentTime = time;
       animation.play();
-      if (typeof now === 'number') animation.startTime = now - time;
+      if (typeof now === 'number') animation.startTime = now - time / animation.playbackRate;
     }
     emit('running');
   }
@@ -91,6 +95,18 @@ export function createPresentationTimeline(options: PresentationTimelineOptions)
   reduced.addEventListener('change', onReduced);
   return {
     get state() { return state; },
+    describe: () => describePresentationTracks(duration, tracks),
+    setPlaybackRate(rate) {
+      if (!Number.isFinite(rate) || rate <= 0 || rate > 10) throw new RangeError('Invalid playback rate');
+      for (const animation of animations) animation.playbackRate = rate;
+    },
+    seek(value) {
+      if (state === 'destroyed') return;
+      if (!Number.isFinite(value)) throw new RangeError('Invalid seek time');
+      time = Math.max(0, Math.min(duration, value));
+      for (const animation of animations) { animation.pause(); animation.currentTime = time; }
+      emit(time === duration ? 'finished' : 'paused');
+    },
     get currentTime() { return state === 'destroyed' ? time : currentTime(); },
     play, pause, finish,
     restart() {
