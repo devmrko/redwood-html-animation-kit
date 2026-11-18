@@ -6,7 +6,7 @@ import {openAppProjectStore} from './project-store.js';
 import {validProjectId} from './vendor/foundation/presentation-document.js';
 import {presentationPath} from './vendor/foundation/presentation-structure.js';
 import {createPresentationWindowControl,createPresentationMirror} from './vendor/foundation/presentation-window.js';
-import {createFlatPresentationLayout} from './vendor/foundation/presentation-layout.js';
+import {createFlatPresentationLayout,createAdaptivePresentationToolbar} from './vendor/foundation/presentation-layout.js';
 import {createEvidenceFigure,guardPresentationDialog} from './vendor/foundation/presentation-evidence.js';
 import {launchPresentation,reportPresentationReady} from './presentation-launch.js';
 import {openPresentationSearch,createPresentationShortcuts} from './vendor/foundation/presentation-search.js';
@@ -27,6 +27,7 @@ try{
  const rendered=renderPresentationDocument(project,$('document-slides'),presentationTheme,{pages:authoredPages,sections:projectSections(project.document),textMotion:!flat,navigate}),slides=rendered.slides;
  slides.forEach(slide=>slide.player.finish());
  await Reveal.initialize({plugins:[RevealNotes],width:1600,height:900,margin:0,center:false,hash:true,controls:false,progress:false,transition:'none',disableLayout:flat,keyboardCondition:()=>!document.querySelector('dialog[open]')});
+ const toolbarLayout=createAdaptivePresentationToolbar(document.querySelector('.deck-toolbar'),{property:'--deck-toolbar-height',onResize:()=>Reveal.layout()});
  const fit=flat?createFlatPresentationLayout(document.querySelector('.reveal'),$('document-slides')):null;
  const find=()=>{slides[current]?.player.pause();$('pause').textContent='계속 재생';openPresentationSearch(document,project,navigate,new Map(slides.map(s=>[s.root.id,s.metadata().content])));};
  const saveProject=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(project,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='presentation-project.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);};
@@ -54,6 +55,6 @@ try{
  window.presentationDeck={getSlideElement:slideId=>slides.find(s=>s.root.id===slideId)?.root,getSlides:()=>slides.map(slide=>slide.metadata()),showSlide:(slideId,play=false,rate=1)=>{const index=project.document.slides.findIndex(s=>s.id===slideId);if(index<0)throw Error('장표를 찾을 수 없습니다.');Reveal.slide(index);const p=slides[index].player;p.setPlaybackRate(rate);if(play)p.restart();else p.finish();status();},pause:()=>slides[current].player.pause()};
  const receiver=query.has('receiver')&&window.frameElement?.parentElement?.id==='current-slide';
  mirror=createPresentationMirror({view:window,project:id,peer:receiver?window.parent.opener:undefined,acceptReceiver:sender=>sender.parent.opener===window&&sender.frameElement?.parentElement?.id==='current-slide',state:()=>({id:project.document.slides[current].id,time:slides[current].player.currentTime}),apply:state=>{const index=project.document.slides.findIndex(s=>s.id===state.id);if(index<0)return;Reveal.slide(index);slides[index].player.seek(state.time);status();},command:name=>({next,previous,pause:togglePause,replay})[name]()});
- const requested=query.get('slide');if(requested)window.presentationDeck.showSlide(requested);else if(preview)slides[current].player.finish();else slides[current].player.play();status();fit?.layout();reportPresentationReady();
- window.addEventListener('pagehide',()=>{rendered.destroy();fit?.destroy();mirror?.destroy();removeShortcuts();windowControl.destroy();store.close();},{once:true});
+ const requested=query.get('slide');if(requested)window.presentationDeck.showSlide(requested);else if(preview)slides[current].player.finish();else slides[current].player.play();status();fit?.layout();reportPresentationReady();if(query.has('ai-edit')&&!preview)$('ai-edit').click();
+ window.addEventListener('pagehide',()=>{rendered.destroy();toolbarLayout.destroy();fit?.destroy();mirror?.destroy();removeShortcuts();windowControl.destroy();store.close();},{once:true});
 }catch(error){$('error').textContent=error.message;reportPresentationReady(error.message);}

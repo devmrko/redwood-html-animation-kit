@@ -78,3 +78,9 @@ python3 scripts/export_presentation.py --root . --output /tmp/presentation-relea
 실행본 ZIP의 기본 진입점은 `index.html`입니다. 프로젝트 데이터·공통 스타일·발표 모듈·등록된 페이지 모듈은 HTML에 포함합니다. 사진 데이터는 프로젝트에 포함하고, 증거·로컬 영상은 등록된 상대 경로로 함께 묶습니다. 목차·상세 이동·효과·검색·증거 확대·영상·발표자 창은 발표용 런타임을 사용합니다.
 
 편집·AI·이력·영상 변환은 `python3 start.py --no-browser`로 실행하고 `deck.html`을 사용합니다. 발표용 HTML은 정적 배포본이라 수정 후 다시 내보내야 합니다. 원격 import·순환 import·변수로 구성한 동적 import와 페이지의 `fetch` 데이터 읽기는 더블클릭 배포에서 거절합니다. 자료는 JSON이나 명시적인 로컬 모듈로 포함하세요. 작성한 페이지가 별도 CSS·자산 파일에 의존하면 배포 manifest에도 등록합니다.
+
+## Python AI 보조 서버
+
+`AI/start-*.command`·`AI/start-*.cmd`는 선택한 제공자를 인수로 `start.py --ai --port 0`에 전달합니다. 생성된 `ai-session.js`는 루프백 주소와 실행 ID만 보관하며 종료 시 자신이 쓴 파일만 정리합니다. 발표용 HTML은 시작 파일을 안내하거나 실행 중인 서버의 `ai-start.html`로 자료와 현재 장표를 연결합니다. 자료 전달은 열린 창의 출처·창 참조·요청 ID를 대조하며, 기존 서버 저장본은 덮어쓰지 않습니다. AI 본문은 검증된 HTML/SVG 구성으로만 전달합니다.
+
+`createPresentationAiConnection`은 화면과 무관한 연결 설정 컴포넌트이고, `ai-connection.js`는 서버 capabilities와 브라우저 저장소를 연결합니다. 편집·목차·자막은 모두 `PresentationAiProviders.generate`를 사용합니다. 기존 API 호출에서 connection을 생략하면 OpenAI 호환 `.env` 설정을 사용합니다.

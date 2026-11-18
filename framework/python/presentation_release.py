@@ -61,7 +61,7 @@ def create_release_bundle(root,output,manifest_name='presentation-release.json')
             for name,path in files.items():result.write(path,name)
             result.writestr('presentation-project.json',json.dumps(project,ensure_ascii=False,indent=2)+'\n')
             result.writestr('presentation-release.json',json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
-            result.writestr('README.md','# 발표 실행본\n\nZIP을 풀고 index.html을 더블클릭하면 발표를 엽니다. 영상·스크린샷 파일은 옆 폴더와 함께 보관합니다. AI 편집·영상 변환은 python3 start.py --no-browser로 실행합니다. 이 폴더 전체로 전달하세요. API 키는 포함하지 않았습니다.\n')
+            result.writestr('README.md','# 발표 실행본\n\nZIP을 풀고 index.html을 더블클릭하면 발표를 엽니다. 영상·스크린샷 파일은 옆 폴더와 함께 보관합니다. AI 편집은 AI 폴더의 시작 파일을 더블클릭합니다. Python 3가 필요합니다. 편집·영상 변환을 직접 실행하려면 python3 start.py --no-browser를 사용합니다. 이 폴더 전체로 전달하세요. API 키는 포함하지 않았습니다.\n')
             portable=root/'presentation-ai-pages.json';pages={}
             if portable.is_file() and not portable.is_symlink():
                 value=json.loads(portable.read_text())

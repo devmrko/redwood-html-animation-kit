@@ -25,3 +25,5 @@ export * from './presentation-powerpoint-editable.js';
 export * from './presentation-typography.js';
 
 export * from './presentation-ai-page.js';
+
+export * from './presentation-ai-connection.js';

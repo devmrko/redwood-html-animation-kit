@@ -13,6 +13,7 @@ import webbrowser
 import time
 import threading
 import tempfile
+import uuid
 from framework.python.presentation_export import VideoExportJobs, generate_subtitles, load_settings
 from framework.python.presentation_document import generate_document_plan
 from framework.python.presentation_authoring import create_authoring_bundle, validate_authoring_project
@@ -146,6 +147,15 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
         if not hasattr(self.server,'ai_workspace'):self.server.ai_workspace=PresentationAiWorkspace(self.directory)
         return self.server.ai_workspace
 
+    def generation_port(self,payload):
+        choice=payload.get('connection',{'provider':'openai'})
+        if not isinstance(choice,dict):raise ValueError('AI 연결 방식을 선택해 주세요.')
+        settings=load_settings(pathlib.Path(self.directory)/'.env')
+        settings['model']=choice.get('model') or (settings['model'] if choice.get('provider')=='openai' else choice.get('tool','OCI'))
+        def request_json(_settings,system,content,max_tokens=1200):
+            return self.ai_workspace().providers.generate(choice,system,content,max_tokens=max_tokens)
+        return settings,request_json
+
     def do_HEAD(self):
         path=urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)
         if path.startswith('/evidence/'):self.serve_evidence(path,True);return
@@ -183,6 +193,14 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 data=self.ai_workspace().archive(archive[1]);self.send_response(200);self.send_header('Content-Type','application/zip');self.send_header('Content-Disposition','attachment; filename="presentation-ai-workspace.zip"');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
             except (ValueError,RuntimeError,OSError) as error:self.json_response({'error':str(error)},400)
+            return
+        thumbnail=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/thumbnail/([a-f0-9]{40})/([A-Za-z0-9_-]{1,100})',path)
+        if thumbnail:
+            try:
+                file=self.ai_workspace().thumbnail_path(*thumbnail.groups())
+                if not file.is_file():self.send_error(404);return
+                data=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/png');self.send_header('Content-Length',str(len(data)));self.send_header('Cache-Control','private, max-age=31536000, immutable');self.end_headers();self.wfile.write(data)
+            except (ValueError,RuntimeError,OSError):self.send_error(404)
             return
         ai=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/(state|history|version/([a-f0-9]{40}))',path)
         if ai:
@@ -238,6 +256,12 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
+            thumbnail=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/thumbnail/([a-f0-9]{40})/([A-Za-z0-9_-]{1,100})',self.path)
+            if thumbnail:
+                if not 0<length<=2800100:raise ValueError('썸네일 용량을 확인해 주세요.')
+                payload=json.loads(self.rfile.read(length))
+                if not isinstance(payload,dict):raise ValueError('썸네일 형식을 확인해 주세요.')
+                self.json_response(self.ai_workspace().save_thumbnail(*thumbnail.groups(),payload.get('image')));return
             ai=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/(init|propose|apply|restore)',self.path)
             if ai:
                 if not 0<length<=MAX_PROJECT_BYTES:raise ValueError('AI 편집 요청 용량을 확인해 주세요.')
@@ -247,7 +271,7 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
                 if action=='init':
                     project=payload.get('project');validate_authoring_project(project)
                     if project['document']['id']!=project_id:raise ValueError('프로젝트 ID가 다릅니다.')
-                    workspace.ensure(project);result={'head':workspace.head(project_id),'snapshot':workspace.read(project_id)}
+                    workspace.ensure(project,initial_pages=payload.get('pages'));result={'head':workspace.head(project_id),'snapshot':workspace.read(project_id)}
                 else:result=getattr(workspace,action)(project_id,payload)
                 self.json_response(result);return
             if self.path=='/api/presentation-window/ready':
@@ -307,13 +331,13 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload, dict):
                 raise ValueError("Expected an object")
             if self.path == "/api/subtitles/draft":
-                settings = load_settings(pathlib.Path(self.directory) / ".env")
-                self.json_response(generate_subtitles(settings, payload))
+                settings,request_json=self.generation_port(payload)
+                self.json_response(generate_subtitles(settings,payload,request_json=request_json))
                 return
             if self.path == '/api/presentation-draft':
-                settings = load_settings(pathlib.Path(self.directory) / '.env')
+                settings,request_json=self.generation_port(payload)
                 principles = (pathlib.Path(self.directory) / 'authoring/SLIDE_PRINCIPLES.md').read_text()
-                self.json_response(generate_document_plan(settings, payload, principles=principles))
+                self.json_response(generate_document_plan(settings,payload,principles=principles,request_json=request_json))
                 return
             if self.path == "/api/video-exports":
                 job_id = self.export_jobs().create(payload)
@@ -339,6 +363,9 @@ def main():
     parser = argparse.ArgumentParser(description="Run the HTML animation samples locally")
     parser.add_argument("--port", type=int, default=4173)
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--ai",action="store_true",help="Open the AI connection and editing launcher")
+    parser.add_argument("--provider",choices=("openai","oci","cli"))
+    parser.add_argument("--tool",choices=("codex","claude"))
     args = parser.parse_args()
     root = pathlib.Path(__file__).resolve().parent
     handler = functools.partial(PresentationHandler, directory=str(root))
@@ -356,6 +383,18 @@ def main():
             project=validate_authoring_project(json.loads(source.read_text()))
             server.projects.put(project['document']['id'],json.dumps(project,ensure_ascii=False).encode())
             url+=f'deck.html?project={project["document"]["id"]}'
+        session_path=None;session_text=None
+        if args.ai:
+            origin=f'http://127.0.0.1:{server.server_port}'
+            selection={}
+            if args.provider:selection['ai-provider']=args.provider
+            if args.tool:selection['ai-tool']=args.tool
+            if source.is_file():selection['project']=project['document']['id']
+            url=origin+'/ai-start.html?'+urllib.parse.urlencode(selection)
+            session_path=root/'ai-session.js'
+            if session_path.is_symlink():raise SystemExit('AI session path must not be a symlink.')
+            session_text='window.redwoodAiSession='+json.dumps({'origin':origin,'id':uuid.uuid4().hex})+';\n'
+            session_path.write_text(session_text)
         print(f"Open {url}\nStop with Ctrl+C", flush=True)
         if not args.no_browser:
             webbrowser.open(url)
@@ -365,6 +404,7 @@ def main():
             pass
         finally:
             server.export_jobs.close()
+            if session_path and session_path.is_file() and not session_path.is_symlink() and session_path.read_text()==session_text:session_path.unlink()
 
 
 if __name__ == "__main__":

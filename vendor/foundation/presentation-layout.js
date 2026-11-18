@@ -14,3 +14,18 @@ export function createFlatPresentationLayout(container, canvas, width = 1600, he
     layout();
     return { layout, destroy() { observer.disconnect(); view.removeEventListener('resize', layout); } };
 }
+/** Reserve the actual toolbar height when controls wrap or browser zoom changes. */
+export function createAdaptivePresentationToolbar(toolbar, options = {}) {
+    const doc = toolbar.ownerDocument, view = doc.defaultView, property = options.property ?? '--rf-presentation-toolbar-height', style = doc.documentElement.style, previous = style.getPropertyValue(property);
+    let height = -1;
+    function layout() { const next = Math.ceil(toolbar.getBoundingClientRect().height); if (next === height)
+        return; height = next; style.setProperty(property, `${height}px`); options.onResize?.(); }
+    const observer = new view.ResizeObserver(layout);
+    observer.observe(toolbar);
+    view.addEventListener('resize', layout);
+    layout();
+    return { layout, destroy() { observer.disconnect(); view.removeEventListener('resize', layout); if (previous)
+            style.setProperty(property, previous);
+        else
+            style.removeProperty(property); } };
+}

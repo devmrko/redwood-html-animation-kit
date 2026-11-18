@@ -1,3 +1,4 @@
+import {createAppAiConnection} from './ai-connection.js';
 import { presentationTheme, projectSections } from './template-theme.js';
 import { getAuthoredPages } from './authored-pages.js';
 import { createDocumentFromScenario, makeDocumentSlide, readPresentationPhotos, validatePresentationProject, validProjectId, firstContentSlide, assertPresentationContent, addPresentationDividers } from './vendor/foundation/presentation-document.js';
@@ -7,6 +8,7 @@ import {validatePageData,presentationPath,inspectPresentationCopy} from './vendo
 import {openPresentationSearch,createPresentationShortcuts} from './vendor/foundation/presentation-search.js';
 import {validateMedia,youtubeVideoId} from './vendor/foundation/presentation-media.js';
 const $=id=>document.getElementById(id),query=new URLSearchParams(location.search);
+const aiConnection=createAppAiConnection(()=>{$('llm-info').textContent=aiConnection.description();});$('ai-connection').append(aiConnection.root);aiConnection.ready.catch(()=>{});
 let project,assets=[],selected=0,store,timer,saveQueue=Promise.resolve(),busy=false,previewView;
 const message=text=>{$('status').textContent=text;};
 function findProject(){if(!project){message('내용 초안을 만든 뒤 장표를 찾을 수 있습니다.');return;}openPresentationSearch(document,project,id=>{selected=project.document.slides.findIndex(s=>s.id===id);renderEditor();show('edit');preview().catch(e=>message(e.message));});}
@@ -15,7 +17,7 @@ $('document-appearance').onchange=()=>{if(project){project.document.appearance=$
 const removeShortcuts=createPresentationShortcuts(document,{find:()=>{if(!busy)findProject();},save:()=>{if(!busy&&project)$('save-json').click();}});
 window.addEventListener('pagehide',removeShortcuts,{once:true});
 function download(value,name){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
-function setBusy(value){busy=value;document.querySelectorAll('.actions a').forEach(link=>link.setAttribute('aria-disabled',String(value)));document.body.setAttribute('aria-busy',String(value));document.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=value);if(!value){$('save-json').disabled=!project;$('find-project').disabled=!project;$('export-authoring').disabled=!project;$('edit-tab').disabled=!project;}}
+function setBusy(value){busy=value;aiConnection.setDisabled(value);document.querySelectorAll('.actions a').forEach(link=>link.setAttribute('aria-disabled',String(value)));document.body.setAttribute('aria-busy',String(value));document.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=value);if(!value){$('save-json').disabled=!project;$('find-project').disabled=!project;$('export-authoring').disabled=!project;$('edit-tab').disabled=!project;}}
 async function persist(){if(!project)return;const value=validatePresentationProject(project);saveQueue=saveQueue.catch(()=>{}).then(()=>store.save(value));await saveQueue;try{localStorage.setItem('presentation-last-project',value.document.id);}catch{} }
 async function preview(){
  await persist();if(!project)return;
@@ -78,7 +80,7 @@ async function generate(llm=false){
  try{
   const scenario=$('scenario').value,id=crypto.randomUUID(),options={id,title:$('title').value,presenter:$('presenter').value};
   let document=createDocumentFromScenario(scenario,assets,options);
-  if(llm){const response=await fetch('/api/presentation-draft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario,title:document.title,context:Object.fromEntries(['purpose','audience','decision'].map(k=>[k,$(k).value])),images:assets.map(a=>({id:a.id,name:a.name}))})});const data=await response.json();if(!response.ok)throw Error(data.error||'구성을 생성하지 못했습니다.');document={...document,slides:[document.slides[0],...data.slides.map((s,i)=>({...makeDocumentSlide(`scene-${i+1}`,s.title,s.layout),section:s.section,subtitle:s.subtitle,items:s.items,notes:s.notes,message:s.message,imageId:s.imageId,imageAlt:assets.find(a=>a.id===s.imageId)?.name||''})),document.slides.at(-1)]};}
+  if(llm){await aiConnection.ready;const response=await fetch('/api/presentation-draft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({connection:aiConnection.value(),scenario,title:document.title,context:Object.fromEntries(['purpose','audience','decision'].map(k=>[k,$(k).value])),images:assets.map(a=>({id:a.id,name:a.name}))})});const data=await response.json();if(!response.ok)throw Error(data.error||'구성을 생성하지 못했습니다.');document={...document,slides:[document.slides[0],...data.slides.map((s,i)=>({...makeDocumentSlide(`scene-${i+1}`,s.title,s.layout),section:s.section,subtitle:s.subtitle,items:s.items,notes:s.notes,message:s.message,imageId:s.imageId,imageAlt:assets.find(a=>a.id===s.imageId)?.name||''})),document.slides.at(-1)]};}
   document=addPresentationDividers({...document,appearance:$('document-appearance').value,brief:$('design-request').value,...Object.fromEntries(['purpose','audience','decision'].map(k=>[k,$(k).value]))});const replacement=validatePresentationProject({document,assets});assertPresentationContent(replacement.document);await store.save(replacement);project=replacement;selected=firstContentSlide(project.document);history.replaceState(null,'',`?project=${id}`);renderEditor();show('edit');await preview();message(`${document.slides.length}장 기본 초안을 저장했습니다. 내용·요청을 확인한 뒤 제작용 ZIP을 내보내세요.`);
  }catch(e){message(e.message);}finally{setBusy(false);if(project)renderEditor();}
 }
@@ -106,5 +108,5 @@ try{
  store=await openAppProjectStore();const id=query.get('project');
  if(id&&validProjectId(id))await loadProject(id);
  else {let last;try{last=localStorage.getItem('presentation-last-project');}catch{}if(last&&validProjectId(last)){$('resume-project').hidden=false;$('resume-project').onclick=()=>loadProject(last).catch(e=>message(e.message));}}
- const capabilities=await fetch('/api/export-capabilities').then(r=>r.json()).catch(()=>({}));$('llm-info').textContent=capabilities.llm?`${capabilities.model}`:'LLM 구성은 .env API 설정 후 사용';
+ await aiConnection.ready.catch(()=>{});$('llm-info').textContent=aiConnection.description();
 }catch(e){message(e.message);$('generate').disabled=true;$('generate-llm').disabled=true;}

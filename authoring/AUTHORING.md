@@ -50,3 +50,7 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 발표 화면의 **AI 편집**은 선택 장표의 내용과 HTML/SVG 본문·공통 등장 효과를 제안합니다. OpenAI 호환 API·OCI CLI·설치된 Codex/Claude 중 선택하고 변경 미리보기 후 적용합니다. 임의 JavaScript 변경은 기존 Codex·Claude 제작 흐름을 사용합니다. 공통 템플릿과 글꼴은 유지합니다.
 
 AI 적용·복원·브라우저 저장은 `.presentation-ai/<프로젝트 ID>/`의 로컬 Git 이력에 기록됩니다. 원본 JSON 파일에서 직접 수정한 내용도 다음 발표 조회 시 검증 후 새 버전으로 반영합니다. 같은 폴더의 `presentation-ai-pages.json`에는 AI 본문이 별도로 저장되며 실행본 ZIP에도 포함됩니다. 파일 전체를 외부에서 수정한 이력은 제작 폴더 Git으로 관리합니다. 버전 이력까지 이전하려면 숨김 폴더 `.presentation-ai`도 보관합니다.
+
+## AI 시작 파일과 공통 연결
+
+발표용 HTML은 서버 없이 열고, AI가 필요할 때 `AI/start-*.command`(Mac) 또는 `AI/start-*.cmd`(Windows)를 실행합니다. 시작 파일은 Python 3로 `start.py --ai --port 0`을 호출해 빈 포트의 보조 서버를 띄우고 AI 설정 창을 엽니다. 선택한 연결은 편집·목차·자막에 공통 적용합니다. `ai-session.js`는 실행 중인 주소만 담은 임시 파일이며 Git·배포본에 포함하지 않습니다. HTML의 연결 버튼은 이 파일로 실행 중인 보조 서버에 연결합니다. Python·CLI를 HTML에서 직접 실행하지 않습니다.

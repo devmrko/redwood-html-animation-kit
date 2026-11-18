@@ -1,4 +1,7 @@
 import copy
+import base64
+import struct
+import zlib
 import io
 import zipfile
 import json
@@ -15,6 +18,11 @@ from framework.python.presentation_ai_providers import PresentationAiProviders,p
 from framework.python.presentation_export import load_settings
 
 PAGE={'html':'<div class="item" style="display:flex;gap:30px;color:var(--rf-text)"><p>검토 후 보관</p><svg viewBox="0 0 200 100"><rect x="0" y="0" width="100" height="40" fill="var(--rf-accent)"/></svg></div>','duration':8,'effects':[{'selector':'.item','at':.5,'duration':.6,'type':'fade'}]}
+
+def png_fixture(color=(32,80,100)):
+ def chunk(kind,data):return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data)&0xffffffff)
+ data=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',1280,720,8,2,0,0,0))+chunk(b'IDAT',zlib.compress((b'\0'+bytes(color)*1280)*720))+chunk(b'IEND',b'')
+ return 'data:image/png;base64,'+base64.b64encode(data).decode()
 
 class AiWorkspaceTest(unittest.TestCase):
  def setUp(self):
@@ -49,10 +57,31 @@ class AiWorkspaceTest(unittest.TestCase):
   (self.root/'presentation-project.json').write_text(json.dumps(self.project));p=self.propose();self.ws.apply(self.id,{'token':p['token']})
   self.assertIn(self.slide,json.loads((self.root/'presentation-ai-pages.json').read_text())['pages'])
   self.assertEqual(json.loads((self.root/'presentation-project.json').read_text())['document']['slides'][2]['title'],'검토 후 자료를 보관합니다')
+ def test_imported_ai_pages_are_validated_and_saved_with_the_baseline(self):
+  project=copy.deepcopy(self.project);project['document']['id']='abcdef12-1234-4234-8234-123456789abc';project['document']['slides'][2]['authored']=True
+  self.ws.ensure(project,initial_pages={self.slide:PAGE});self.assertIn(self.slide,self.ws.read(project['document']['id'])['pages'])
+  invalid=copy.deepcopy(project);invalid['document']['id']='abcdef13-1234-4234-8234-123456789abc'
+  with self.assertRaises(ValueError):self.ws.ensure(invalid,initial_pages={self.slide:{**PAGE,'html':'<script>fetch("/.env")</script>'}})
+  self.assertEqual(self.ws.head(invalid['document']['id']),'')
  def test_external_json_edits_are_captured_on_reload(self):
   source=self.root/'presentation-project.json';source.write_text(json.dumps(self.project));self.ws.project_files(self.ws.read(self.id))
   edited=copy.deepcopy(self.project);edited['document']['slides'][2]['title']='파일에서 수정한 제목';source.write_text(json.dumps(edited))
   self.assertEqual(self.ws.current(self.id)['project'],edited);self.assertNotEqual(self.ws.head(self.id),self.base)
+ def test_captures_are_immutable_persist_after_restart_and_do_not_replace_restore_data(self):
+  image=png_fixture();other=png_fixture((200,200,200))
+  self.assertTrue(self.ws.save_thumbnail(self.id,self.base,self.slide,image)['saved'])
+  original=self.ws.thumbnail_path(self.id,self.base,self.slide).read_bytes()
+  self.assertFalse(self.ws.save_thumbnail(self.id,self.base,self.slide,other)['saved'])
+  self.assertEqual(self.ws.thumbnail_path(self.id,self.base,self.slide).read_bytes(),original)
+  self.ws.apply(self.id,{'token':self.propose()['token']});restarted=PresentationAiWorkspace(self.root)
+  self.assertEqual(restarted.thumbnail_path(self.id,self.base,self.slide).read_bytes(),original)
+  with self.assertRaises(RevisionConflict):self.ws.save_thumbnail(self.id,self.base,'cover',image)
+  self.ws.restore(self.id,{'base':self.ws.head(self.id),'revision':self.base})
+  self.assertEqual(self.ws.read(self.id)['project'],self.project)
+  for revision,slide,value in [(self.base,self.slide,'data:image/png;base64,AAAA'),(self.base,'../escape',image),('f'*40,self.slide,image),(self.base,'missing',image)]:
+   with self.assertRaises(ValueError):self.ws.save_thumbnail(self.id,revision,slide,value)
+  bad=bytearray(base64.b64decode(image[22:]));bad[20]^=1
+  with self.assertRaises(ValueError):self.ws.save_thumbnail(self.id,self.ws.head(self.id),self.slide,'data:image/png;base64,'+base64.b64encode(bad).decode())
  def test_archive_contains_portable_pages_and_omits_history_and_keys(self):
   (self.root/'authoring/page-template.js').write_text((ROOT/'authoring/page-template.js').read_text())
   p=self.propose();self.ws.apply(self.id,{'token':p['token']});(self.root/'.env').write_text('OPENAI_API_KEY=SECRET')
@@ -72,6 +101,12 @@ class AiWorkspaceTest(unittest.TestCase):
    c=http.client.HTTPConnection('127.0.0.1',server.server_port);c.request(method,path,json.dumps(body) if body else None,headers or {});r=c.getresponse();data=r.read();result=(r.status,data,dict(r.getheaders()));c.close();return result
   try:
    path='/api/ai/projects/'+self.id+'/propose';self.assertEqual(request('POST',path,{'request':'x'},{'Origin':'https://other.example'})[0],403)
+   capture='/api/ai/projects/'+self.id+'/thumbnail/'+self.base+'/'+self.slide
+   self.assertEqual(request('GET',capture)[0],404)
+   self.assertEqual(request('POST',capture,{'image':png_fixture()},{'Origin':'https://other.example'})[0],403)
+   self.assertEqual(request('POST',capture,{'image':'broken'},{'Origin':origin})[0],400)
+   self.assertEqual(request('POST',capture,{'image':png_fixture()},{'Origin':origin})[0],200)
+   status,image,headers=request('GET',capture);self.assertEqual(status,200);self.assertEqual(headers['Content-Type'],'image/png');self.assertEqual(image,base64.b64decode(png_fixture()[22:]));self.assertIn('immutable',headers['Cache-Control'])
    status,body,headers=request('GET','/api/projects/'+self.id);self.assertEqual(status,200);self.assertEqual(headers['ETag'],self.base)
    changed=copy.deepcopy(self.project);changed['document']['title']='브라우저에서 변경'
    self.assertEqual(request('POST','/api/projects/'+self.id,changed,{'Origin':origin,'Content-Type':'application/json'})[0],409)

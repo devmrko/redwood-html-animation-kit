@@ -1,5 +1,6 @@
 """Slide edit proposals and project-scoped Git snapshots. No generated code is executed."""
 import copy
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -9,6 +10,8 @@ import subprocess
 import threading
 import time
 import uuid
+import struct
+import zlib
 from .presentation_authoring import validate_authoring_project
 from .presentation_ai_providers import PresentationAiProviders
 
@@ -76,7 +79,7 @@ class PresentationAiWorkspace:
                     if path.is_symlink():raise ValueError('프로젝트 파일에 심볼릭 링크를 사용할 수 없습니다.')
                     pending=path.with_suffix('.pending');pending.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n');pending.replace(path)
 
-    def ensure(self,project):
+    def ensure(self,project,*,initial_pages=None):
         project=validate_authoring_project(copy.deepcopy(project));project_id=project['document']['id']
         with self.lock:
             previous=self.read(project_id)
@@ -87,6 +90,11 @@ class PresentationAiWorkspace:
             if portable.is_file() and not portable.is_symlink():
                 value=json.loads(portable.read_text())
                 if value.get('projectId')==project_id:pages=value.get('pages',{})
+            if initial_pages is not None:
+                from .presentation_ai_markup import validate_page
+                ids={s['id'] for s in project['document']['slides']};assets={a['id'] for a in project['assets']}
+                if not isinstance(initial_pages,dict) or set(initial_pages)-ids:raise ValueError('AI 본문 장표 참조를 확인해 주세요.')
+                pages={key:validate_page(page,assets) for key,page in initial_pages.items()}
             sources={}
             source_project=self.root/'presentation-project.json'
             matching_source=source_project.is_file() and not source_project.is_symlink() and json.loads(source_project.read_text()).get('document',{}).get('id')==project_id
@@ -124,6 +132,38 @@ class PresentationAiWorkspace:
             for line in self.git(project_id,'log','-100','--format=%H%x09%ct%x09%s').splitlines():
                 rev,stamp,message=line.split('\t',2);meta=json.loads(message);versions.append({'revision':rev,'time':int(stamp),**meta})
             return {'head':head,'versions':versions}
+
+    def thumbnail_path(self,project_id,revision,slide_id):
+        if not isinstance(slide_id,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,100}',slide_id):raise ValueError('장표 ID를 확인해 주세요.')
+        snapshot=self.read(project_id,revision)
+        if not snapshot or not any(s['id']==slide_id for s in snapshot['project']['document']['slides']):raise ValueError('장표 버전을 찾을 수 없습니다.')
+        path=self.repo(project_id)/'thumbnails'/revision/(slide_id+'.png')
+        if any(p.is_symlink() for p in (path,path.parent,path.parent.parent)):raise ValueError('썸네일 저장 경로를 확인해 주세요.')
+        return path
+
+    def save_thumbnail(self,project_id,revision,slide_id,data):
+        # Immutable captures are separate from the canonical restoration snapshot.
+        if not isinstance(data,str) or not data.startswith('data:image/png;base64,') or len(data)>2800000:raise ValueError('썸네일 PNG 용량을 확인해 주세요.')
+        try:
+            png=base64.b64decode(data[22:],validate=True)
+            if png[:8]!=b'\x89PNG\r\n\x1a\n':raise ValueError()
+            offset=8;chunks=[]
+            while offset<len(png):
+                size=struct.unpack('>I',png[offset:offset+4])[0];kind=png[offset+4:offset+8];end=offset+12+size
+                if end>len(png) or zlib.crc32(png[offset+4:end-4])&0xffffffff!=struct.unpack('>I',png[end-4:end])[0]:raise ValueError()
+                chunks.append(kind)
+                if len(chunks)==1 and (kind!=b'IHDR' or size!=13 or struct.unpack('>II',png[offset+8:offset+16])!=(1280,720)):raise ValueError()
+                offset=end
+            if chunks[-1]!=b'IEND' or b'IDAT' not in chunks:raise ValueError()
+        except (ValueError,IndexError,struct.error):raise ValueError('1280×720 PNG 썸네일을 확인해 주세요.') from None
+        with self.lock:
+            path=self.thumbnail_path(project_id,revision,slide_id)
+            if path.exists():return {'saved':False}
+            # Older revisions must keep their original capture, never a later rerender.
+            if revision!=self.head(project_id):raise RevisionConflict('현재 버전만 새로 캡처할 수 있습니다.')
+            path.parent.mkdir(parents=True,exist_ok=True)
+            with path.open('xb') as output:output.write(png)
+            return {'saved':True}
 
     def propose(self,project_id,payload):
         request=payload.get('request');slide_id=payload.get('slideId');base=payload.get('base')

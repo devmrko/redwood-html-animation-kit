@@ -101,8 +101,8 @@ def request_presentation_json(settings, system, content, max_tokens=1200):
         raise RuntimeError("LLM 응답 형식이 올바르지 않습니다. 다시 요청해 주세요.") from None
 
 
-def generate_subtitles(settings, slide):
-    if not settings["key"]:
+def generate_subtitles(settings, slide, *, request_json=None):
+    if request_json is None and not settings["key"]:
         raise RuntimeError(".env에 OPENAI_API_KEY 또는 OPENROUTER_API를 설정해 주세요.")
     duration = valid_duration(slide.get("duration"))
     title, notes = slide.get("title", ""), slide.get("notes", "")
@@ -127,7 +127,7 @@ def generate_subtitles(settings, slide):
               "시각은 장표 시작을 0초로 한 상대 시각이며, start>=0, end<=duration, start<end이고 서로 겹치지 않아야 한다. "
               'JSON만 출력한다: {"captions":[{"start":0,"end":3,"text":"자막"}]}')
     try:
-        data = request_presentation_json(settings, system, {"title": title, "content": content, "notes": notes, "events": checked_events, "duration": duration})
+        data = (request_json or request_presentation_json)(settings, system, {"title": title, "content": content, "notes": notes, "events": checked_events, "duration": duration})
         raw_captions = data["captions"]
         if not isinstance(raw_captions, list) or not 0 < len(raw_captions) <= 500:
             raise ValueError("Invalid draft")

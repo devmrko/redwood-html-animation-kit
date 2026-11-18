@@ -30,3 +30,6 @@ __pycache__/
 # Local presentation versions and portable AI page content
 .presentation-ai/
 presentation-ai-pages.json
+
+# Ephemeral address of a locally launched AI helper
+ai-session.js

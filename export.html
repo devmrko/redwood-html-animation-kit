@@ -9,7 +9,7 @@
 <section class="details"><header><h2 id="slide-title">장표 불러오는 중…</h2><label><input type="checkbox" id="included">영상에 포함</label><label>기본 시간(초) <input id="duration" type="number" min="0.5" max="600" step="0.5"></label></header>
 <label><input type="checkbox" id="auto-reading" checked>화면·자막 최소 시간 자동 확보</label><p id="timing-info" class="field-help" aria-live="polite"></p>
 <label class="notes-label">발표 노트<textarea id="notes" rows="3"></textarea></label>
-<div class="caption-actions"><button id="draft">노트로 자막 초안</button><button id="llm">LLM으로 자막 초안</button><button id="add-cue">자막 추가</button><span id="llm-info"></span></div>
+<div id="ai-connection"></div><div class="caption-actions"><button id="draft">노트로 자막 초안</button><button id="llm">LLM으로 자막 초안</button><button id="add-cue">자막 추가</button><span id="llm-info"></span></div>
 <p class="field-help">자막 시간은 장표의 기본 시각입니다. 자동 모드는 본문 분량·구성요소 수·마지막 등장 후 확인 시간을 확보합니다. 자막은 공백 제외 초당 6자와 0.6초 여유, 최소 2초를 확보하며 자막과 애니메이션을 같은 비율로 늘립니다. 적용 시간은 영상과 SRT에 함께 반영됩니다. 초안을 다시 만들면 현재 장표의 자막이 바뀝니다.</p>
 <div id="cue-list" aria-label="자막 편집"></div>
 </section></section>

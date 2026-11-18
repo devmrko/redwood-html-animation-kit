@@ -82,3 +82,12 @@
 [data-template="oracle-corporate"].agenda-slide li.is-current{color:var(--rf-accent)}
 
 [data-template="oracle-corporate"] .rf-document-badge::after{display:none}
+
+/* Override the legacy Redwood agenda selectors at the same shell specificity. */
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide{background:var(--rf-divider-art) center/cover no-repeat var(--rf-bg);color:var(--rf-text)}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide h1{color:var(--rf-text);font-size:66.667px;width:1200px}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide .agenda-topics li{color:var(--rf-muted)}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide .agenda-topics li.is-current{color:var(--rf-text);font-weight:700}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide .agenda-number{color:var(--rf-muted)}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide .is-current .agenda-number{color:var(--rf-accent)}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"].agenda-slide .agenda-topics::before{background:#c74634}

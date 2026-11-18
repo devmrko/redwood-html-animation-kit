@@ -12,7 +12,7 @@
     "ui-components.js": "7fd7967774ded18265c2f1e93b91028712d6580f7279e562c03641564ce9d9d5",
     "presentation-chart.js": "9fc0a38e9c55bf35bbc1ad7aee5cfefcdd0532d47f0d27c54f8f1a836cbc52e8",
     "presentation-fullscreen.js": "73c0d5369c444a77c54ded436c5a42e0e6e169082481e59b35468a136289f85c",
-    "index.js": "14c0cdc8dd02a9c36f86d80b63e87f9043c8d5a3b5d03d9cb4f1867867fb627c",
+    "index.js": "62c0d1860e15069799d84ab5e7e3916fbc0f2a6fd5ed2c14c52c320509fbcc5a",
     "presentation-subtitles.js": "dcfdb30a427530ffcaaaf4c6e220216e1518bbf1216ec2e7223d1b4b66819c89",
     "presentation-video.js": "6d02c09da4a244289bde26f6e57886b8d8c7c9f0ae6077f8f8fc9e80b317d4cf",
     "presentation-window.js": "0d73b721fc88a6337bc379a50c6f3b4a4b31ef20b233aabb4635dd9e0783a097",
@@ -21,7 +21,7 @@
     "presentation-document.js": "e28ed87ee341d4663fc4c03d201673292b943266cd3401409ec4f2c2b003171c",
     "presentation-project-store.js": "25ac4de1921cf7873ea100fcc750ca33ce3b7546c3048fbc0899d929885a3927",
     "presentation-evidence.js": "34352a70eddb562a27a2ebd250f5f90cb4076cdcc03336821c06854b558f675f",
-    "presentation-layout.js": "84c1fb5dd0f0d9e831acf4b9b816fcc52c9f583d50fed5ad9476816762b87d18",
+    "presentation-layout.js": "7b6a83b7f5b141c84b3325ae1399f727b8d9cad40aebf7c6ac8e06737313fad9",
     "presentation-structure.js": "21852c155a79947d8798eb9db7e4171bfbadadd1bb8f2c6fc0a2b400b56f9c3c",
     "presentation-tables.js": "52b05475c58accbfac54622a04ff9e57dd9a111430aa23a218f305ccd9e77312",
     "presentation-search.js": "f417e8d424f9326babaf9c41f42c8c294d70e982d4afbee437afc8bdded6bc19",
@@ -29,12 +29,13 @@
     "presentation-powerpoint.js": "ef58583e35e55c9f16d9247b62a6f92d70cea3a28abb053de48e6e069432657e",
     "presentation-powerpoint-editable.js": "ca1c5980bb7038d4def58d9f0ad62d0381b225cb359b752fa4f1f686b37443de",
     "presentation-typography.js": "433d8c59509d8914d3a706d56cef34edba219aab3cd5777f533d11dce55a55ba",
-    "presentation-ai-page.js": "e4155b619f2fcae41a84ad63809e58a889d0323f29b70a4a7346a2d3876bd5c0"
+    "presentation-ai-page.js": "e4155b619f2fcae41a84ad63809e58a889d0323f29b70a4a7346a2d3876bd5c0",
+    "presentation-ai-connection.js": "543fa5e5df2413c5a8fd009c359d2446caba22f708eacea039abebcb1cdefc17"
   },
   "styles": {
     "ui/tokens.css": "96b14e8643a2540ea0f041538b1a7e7a20a7068adcd027906b52cc4117f45a9c",
     "ui/ui.css": "41894b2e63b5759c802646075b8c161ac793b96f3555a0d5600ca853628ece5a",
-    "ui/components.css": "9cbf9a015473318059576d84d7dc8940563f0d2aea69eb88fd71ec9630bda0c3",
+    "ui/components.css": "8b98a756df26ab3b59c54f9706ac326d38ca48d94251d6984a38e54920424c04",
     "ui/presentation.css": "44305cf740cea2bac988c4fa65974856849c86d8d8a1b0c051189a46328373e3"
   },
   "package_sha256": "2b2f4719c93597f73925b4dfb69e1e3a897454a6e49385d6698d11f227240ce3",

@@ -49,7 +49,8 @@ class PresentationAiProviders:
                        'model':values.get('OCI_AI_MODEL',''),'compartment':values.get('OCI_AI_COMPARTMENT_ID','')},
                 'cli':{'available':bool(shutil.which('codex') or shutil.which('claude')),'tools':[n for n in ('codex','claude') if shutil.which(n)]}}
 
-    def generate(self,options,system,content):
+    def generate(self,options,system,content,*,max_tokens=8000):
+        if type(max_tokens) is not int or not 1<=max_tokens<=8000:raise ValueError('AI 응답 길이를 확인해 주세요.')
         if not isinstance(options,dict):raise ValueError('AI 연결 방식을 선택해 주세요.')
         provider=options.get('provider');model=options.get('model','')
         if not isinstance(model,str) or len(model)>200 or model.startswith('-'):raise ValueError('모델 이름을 확인해 주세요.')
@@ -57,10 +58,10 @@ class PresentationAiProviders:
         if provider=='openai':
             settings=load_settings(self.root/'.env')
             if model:settings['model']=model
-            return request_presentation_json(settings,system,content,max_tokens=8000)
+            return request_presentation_json(settings,system,content,max_tokens=max_tokens)
         prompt=system+'\n\n'+json.dumps(content,ensure_ascii=False)
         with tempfile.TemporaryDirectory(prefix='presentation-ai-call-') as work:
-            if provider=='oci':return self.oci(options,model,system,content,work)
+            if provider=='oci':return self.oci(options,model,system,content,work,max_tokens=max_tokens)
             if provider!='cli' or options.get('tool') not in ('codex','claude'):raise ValueError('지원하지 않는 AI 연결입니다.')
             tool=options['tool'];exe=shutil.which(tool)
             if not exe:raise ValueError('선택한 CLI가 설치돼 있지 않습니다.')
@@ -77,7 +78,7 @@ class PresentationAiProviders:
             if result.get('is_error'):raise RuntimeError('Claude 요청이 실패했습니다. 로그인·모델 설정을 확인해 주세요.')
             return result.get('structured_output') or parse_json(result.get('result',''))
 
-    def oci(self,options,model,system,content,work):
+    def oci(self,options,model,system,content,work,*,max_tokens=8000):
         values=load_env_values(self.root/'.env');exe=shutil.which('oci')
         if not exe:raise ValueError('OCI CLI가 설치돼 있지 않습니다.')
         region=options.get('region') or values.get('OCI_AI_REGION','');profile=options.get('profile') or values.get('OCI_CLI_PROFILE','DEFAULT')
@@ -85,8 +86,8 @@ class PresentationAiProviders:
         if not re.fullmatch(r'[a-z]{2}-[a-z0-9-]+-\d+',region) or not model or not re.fullmatch(r'ocid1\.(?:compartment|tenancy)\.[A-Za-z0-9_.-]+',compartment):raise ValueError('OCI region·model·compartment OCID를 지정해 주세요.')
         if not isinstance(profile,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}',profile) or profile.startswith('-'):raise ValueError('OCI 프로파일을 확인해 주세요.')
         api=options.get('apiFormat','GENERIC');text=json.dumps(content,ensure_ascii=False)
-        if api=='GENERIC':request={'apiFormat':'GENERIC','maxTokens':8000,'isStream':False,'messages':[{'role':'SYSTEM','content':[{'type':'TEXT','text':system}]},{'role':'USER','content':[{'type':'TEXT','text':text}]}]}
-        elif api=='COHERE':request={'apiFormat':'COHERE','maxTokens':8000,'isStream':False,'preambleOverride':system,'message':text}
+        if api=='GENERIC':request={'apiFormat':'GENERIC','maxTokens':max_tokens,'isStream':False,'messages':[{'role':'SYSTEM','content':[{'type':'TEXT','text':system}]},{'role':'USER','content':[{'type':'TEXT','text':text}]}]}
+        elif api=='COHERE':request={'apiFormat':'COHERE','maxTokens':max_tokens,'isStream':False,'preambleOverride':system,'message':text}
         else:raise ValueError('OCI API 형식을 확인해 주세요.')
         payload=Path(work)/'request.json';payload.write_text(json.dumps({'compartmentId':compartment,'servingMode':{'servingType':'ON_DEMAND','modelId':model},'chatRequest':request}))
         config=str(Path(values.get('OCI_CLI_CONFIG_FILE','~/.oci/config')).expanduser())

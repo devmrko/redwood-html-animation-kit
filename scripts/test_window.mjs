@@ -47,3 +47,10 @@ test('file popup readiness uses an opaque-origin target while HTTP keeps its ori
   const sent=[];notifyPresentationReady({location:{href,origin},opener:{postMessage:(...args)=>sent.push(args)}});assert.equal(sent[0][1],target);assert.equal(sent[0][0].token,'token');
  }
 });
+
+test('toolbar reserves its measured height after wrapping and restores layout on cleanup',async()=>{
+ const {createAdaptivePresentationToolbar}=await import('../vendor/foundation/presentation-layout.js');const properties=new Map();let resize,height=64,updates=0,disconnected=false;
+ const view={ResizeObserver:class{constructor(callback){resize=callback;}observe(){}disconnect(){disconnected=true;}},addEventListener(){},removeEventListener(){}};
+ const toolbar={ownerDocument:{defaultView:view,documentElement:{style:{getPropertyValue:k=>properties.get(k)||'',setProperty:(k,v)=>properties.set(k,v),removeProperty:k=>properties.delete(k)}}},getBoundingClientRect:()=>({height})};
+ const controller=createAdaptivePresentationToolbar(toolbar,{onResize:()=>updates++});assert.equal(properties.get('--rf-presentation-toolbar-height'),'64px');height=104;resize();assert.equal(properties.get('--rf-presentation-toolbar-height'),'104px');resize();assert.equal(updates,2);controller.destroy();assert.equal(disconnected,true);assert.equal(properties.size,0);
+});

@@ -2,7 +2,7 @@
 from .presentation_export import request_presentation_json
 
 
-def generate_document_plan(settings, payload, *, principles=''):
+def generate_document_plan(settings, payload, *, principles='', request_json=None):
     scenario, title, images = payload.get('scenario'), payload.get('title', ''), payload.get('images', [])
     if not isinstance(scenario, str) or not scenario.strip() or len(scenario) > 30000 or not isinstance(title, str) or len(title) > 100:
         raise ValueError('시나리오는 1~30000자, 제목은 100자 이내로 입력해 주세요.')
@@ -24,7 +24,7 @@ def generate_document_plan(settings, payload, *, principles=''):
               'JSON만 반환한다: {"slides":[{"layout":"content","section":"섹션","title":"제목","message":"핵심 판단","subtitle":"","items":["내용"],"notes":"대본","imageId":null}]}')
     if principles:
         system += '\n\n다음 발표 장표 작성 원칙을 구성·제목·본문·스크립트 작성부터 적용하고 반환 전에 장표 통과 기준으로 검수한다. 출력 JSON 형식은 유지한다.\n' + principles
-    data = request_presentation_json(settings, system, {'scenario': scenario, 'title': title, 'context':context, 'images': safe_images}, max_tokens=6000)
+    data = (request_json or request_presentation_json)(settings, system, {'scenario': scenario, 'title': title, 'context':context, 'images': safe_images}, max_tokens=6000)
     try:
         slides = data['slides']
         if not isinstance(slides, list) or not 0 < len(slides) <= 20:

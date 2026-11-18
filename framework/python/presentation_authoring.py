@@ -12,7 +12,7 @@ from .presentation_structure import validate_structure,verify_evidence_files
 from .presentation_media import validate_media,verify_media_files
 
 ROOT_FILES = ('start.py','builder.html','builder.css','builder.js','deck.html','deck.css','deck.js',
-              'export.html','export.css','export.js','ai-editor.js','ai-editor.css','offline.js','offline.css','main.js','style.css','components.html','components.css','components.js','samples.html','design-components.html','project-store.js','template-theme.js','presentation-launch.js','.env.example','.gitignore','package.json','package-lock.json')
+              'export.html','export.css','export.js','ai-editor.js','ai-editor.css','ai-connection.js','ai-start.html','ai-start.js','offline-ai.js','AI/start.command','AI/start.cmd','AI/start-openai.command','AI/start-openai.cmd','AI/start-oci.command','AI/start-oci.cmd','AI/start-codex.command','AI/start-codex.cmd','AI/start-claude.command','AI/start-claude.cmd','offline.js','offline.css','main.js','style.css','components.html','components.css','components.js','samples.html','design-components.html','project-store.js','template-theme.js','presentation-launch.js','.env.example','.gitignore','package.json','package-lock.json')
 RUNTIME_DIRS = ('vendor','framework','templates','authoring','scripts','examples','slides')
 ASSETS = ('oracle-wordmark.svg','oracle-o.svg','redwood-cover.jpeg','redwood-closing.jpg',
           'redwood-agenda-art.png','redwood-template-pattern.jpg','REDWOOD-SOURCE.txt')

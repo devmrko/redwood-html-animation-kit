@@ -1,3 +1,4 @@
+import {createAdaptivePresentationToolbar} from './vendor/foundation/presentation-layout.js';
 import {applySampleAppearance} from './template-theme.js';
 import {launchPresentation,reportPresentationReady} from './presentation-launch.js';
 import { createPresentationWindowControl } from './vendor/foundation/presentation-window.js';
@@ -10,6 +11,10 @@ import { createCatalogSlide } from './slides/catalog.js';
 import { createBookendSlide } from './slides/bookend.js';
 import { createChartsSlide } from './slides/charts.js';
 
+const toolbar=document.querySelector('.toolbar'),moreActions=document.querySelector('.toolbar-more');
+const toolbarObserver=createAdaptivePresentationToolbar(toolbar,{property:'--kit-toolbar-height',onResize:()=>{if(Reveal.isReady())Reveal.layout();}});
+document.addEventListener('click',event=>{if(moreActions.open&&!moreActions.contains(event.target))moreActions.open=false;});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&moreActions.open){moreActions.open=false;event.preventDefault();event.stopPropagation();}},true);
 const query = new URLSearchParams(location.search);
 let sampleAppearance='light';try{sampleAppearance=localStorage.getItem('corporate-sample-appearance')||'light';}catch{}
 applySampleAppearance(document,sampleAppearance);const appearanceSelect=document.getElementById('sample-appearance');appearanceSelect.value=sampleAppearance;appearanceSelect.onchange=()=>{applySampleAppearance(document,appearanceSelect.value);try{localStorage.setItem('corporate-sample-appearance',appearanceSelect.value);}catch{}};
@@ -98,9 +103,9 @@ window.presentationDeck = {
   },
   pause:()=>getSlide(current).player.pause(),
 };
-window.addEventListener('pagehide',event=>{if(!event.persisted){slides.forEach(slide=>slide?.destroy());presentationWindow.destroy();}});
+window.addEventListener('pagehide',event=>{if(!event.persisted){slides.forEach(slide=>slide?.destroy());presentationWindow.destroy();toolbarObserver.destroy();}});
 navigation();if(speakerPreview || exportPreview)getSlide(current).player.finish();else getSlide(current).player.play();
 
 reportPresentationReady();
 
-if(document.body.dataset.offlineSamples&&location.protocol==='file:')for(const link of document.querySelectorAll('a[href="./builder.html"],a[href="./export.html"]'))link.addEventListener('click',event=>{event.preventDefault();stateLabel.textContent='편집·내보내기는 python3 start.py로 서버를 실행한 뒤 사용하세요.';});
+if(document.body.dataset.offlineSamples&&location.protocol==='file:')for(const link of document.querySelectorAll('a[href="./builder.html"],a[href="./export.html"]'))link.addEventListener('click',event=>{event.preventDefault();stateLabel.textContent='편집·내보내기는 AI 폴더의 start.command(Mac) 또는 start.cmd(Windows)를 열어 사용하세요.';});
