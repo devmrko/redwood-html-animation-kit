@@ -31,7 +31,7 @@ export function openBrowserPresentation(view, url, request, timeout = 12000) {
 export function notifyPresentationReady(view, error) {
     const token = new URL(view.location.href).searchParams.get('presentationLaunch');
     if (token && view.opener)
-        view.opener.postMessage({ type: 'presentation-ready', token, error }, view.location.origin);
+        view.opener.postMessage({ type: 'presentation-ready', token, error }, new URL(view.location.href).protocol === 'file:' ? '*' : view.location.origin);
 }
 /** A notes preview forwards commands to its audience, and mirrors that clock. */
 export function createPresentationMirror(options) {

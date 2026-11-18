@@ -72,3 +72,9 @@ python3 scripts/export_presentation.py --root . --output /tmp/presentation-relea
 ## PPTX 저장
 
 [PPT 저장 방식과 글꼴 조건](../README.md#powerpoint로-저장)을 따릅니다. 공통 `presentation-powerpoint` 모듈은 순서·노트·이미지·기본 PowerPoint 요소를 묶으며, `presentation-powerpoint-editable`은 현재 DOM에서 텍스트·표·기본 SVG 도형을 추출합니다. `presentation-typography`는 영문·한글 글꼴을 나눠 HTML과 같은 기준을 적용합니다. 복잡한 요소를 그림으로 유지하려면 페이지 코드에 `data-ppt-raster`를 지정합니다. 브라우저에서 처리하며 외부 모델이나 변환 서비스로 전송하지 않습니다.
+
+## 더블클릭 발표 배포본
+
+실행본 ZIP의 기본 진입점은 `index.html`입니다. 프로젝트 데이터·공통 스타일·발표 모듈·등록된 페이지 모듈은 HTML에 포함합니다. 사진 데이터는 프로젝트에 포함하고, 증거·로컬 영상은 등록된 상대 경로로 함께 묶습니다. 목차·상세 이동·효과·검색·증거 확대·영상·발표자 창은 발표용 런타임을 사용합니다.
+
+편집·AI·이력·영상 변환은 `python3 start.py --no-browser`로 실행하고 `deck.html`을 사용합니다. 발표용 HTML은 정적 배포본이라 수정 후 다시 내보내야 합니다. 원격 import·순환 import·변수로 구성한 동적 import와 페이지의 `fetch` 데이터 읽기는 더블클릭 배포에서 거절합니다. 자료는 JSON이나 명시적인 로컬 모듈로 포함하세요. 작성한 페이지가 별도 CSS·자산 파일에 의존하면 배포 manifest에도 등록합니다.

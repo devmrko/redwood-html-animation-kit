@@ -1,3 +1,4 @@
+import {loadPresentationAiPages,openPresentationAiEditor} from './ai-editor.js';
 import {presentationTheme,projectSections} from './template-theme.js';
 import {getAuthoredPages} from './authored-pages.js';
 import {renderPresentationDocument} from './vendor/foundation/presentation-document-view.js';
@@ -21,7 +22,9 @@ try{
  $('edit').href=`./builder.html?project=${id}`;$('export').href=`./export.html?project=${id}`;
  let current=0,mirror;
  function navigate(slideId){const index=project.document.slides.findIndex(s=>s.id===slideId);if(index>=0)Reveal.slide(index);}
- const rendered=renderPresentationDocument(project,$('document-slides'),presentationTheme,{pages:getAuthoredPages(id),sections:projectSections(project.document),textMotion:!flat,navigate}),slides=rendered.slides;
+ const authoredPages=new Map([...getAuthoredPages(id),...await loadPresentationAiPages(project)]);
+ $('ai-edit').onclick=()=>{slides[current]?.player.pause();openPresentationAiEditor({project,slideId:project.document.slides[current].id,pages:authoredPages,onApplied:()=>location.reload()});};
+ const rendered=renderPresentationDocument(project,$('document-slides'),presentationTheme,{pages:authoredPages,sections:projectSections(project.document),textMotion:!flat,navigate}),slides=rendered.slides;
  slides.forEach(slide=>slide.player.finish());
  await Reveal.initialize({plugins:[RevealNotes],width:1600,height:900,margin:0,center:false,hash:true,controls:false,progress:false,transition:'none',disableLayout:flat,keyboardCondition:()=>!document.querySelector('dialog[open]')});
  const fit=flat?createFlatPresentationLayout(document.querySelector('.reveal'),$('document-slides')):null;

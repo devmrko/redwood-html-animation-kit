@@ -1,3 +1,4 @@
+import {execFileSync} from 'node:child_process';
 import { cp, readFile, writeFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 await cp(new URL('../framework/ui/', import.meta.url), new URL('../vendor/foundation/ui/', import.meta.url), { recursive: true });
@@ -10,3 +11,5 @@ for (const name of ['ui.css','tokens.css','components.css','presentation.css']) 
 manifest.status = 'rebuilt from the bundled presentation source; upstream tarball is retained as provenance';
 manifest.browser_source = 'framework/src';
 await writeFile(new URL('manifest.json',base), JSON.stringify(manifest,null,2)+'\n');
+
+execFileSync('python3',[new URL('./build_samples.py',import.meta.url).pathname],{stdio:'inherit'});

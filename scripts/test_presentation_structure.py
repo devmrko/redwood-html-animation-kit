@@ -1,4 +1,5 @@
 import copy
+import re
 import hashlib
 import io
 import json
@@ -42,6 +43,8 @@ class StructureAndReleaseTest(unittest.TestCase):
             output=create_release_bundle(root,root/'release.zip')
             with zipfile.ZipFile(output) as archive:
                 self.assertEqual(archive.read('pages/process.js').decode(),code)
+                self.assertIn('samples.html',archive.namelist());sample_markup=re.sub(r'<script\b[^>]*>[\s\S]*?</script\s*>','',archive.read('samples.html').decode(),flags=re.I);self.assertEqual(sample_markup.count('data-effect-play='),30);self.assertEqual(sample_markup.count('data-chart-play='),3)
+                self.assertIn('offline-modules',archive.read('index.html').decode());self.assertIn('./samples.html',archive.read('index.html').decode())
                 self.assertNotIn('.env',archive.namelist());self.assertEqual(sum(n.startswith('evidence/') for n in archive.namelist()),31)
                 self.assertEqual(json.loads(archive.read('presentation-project.json'))['evidence'],project['evidence'])
                 provenance=json.loads(archive.read('release-provenance.json'));self.assertEqual(provenance['files']['pages/process.js'],hashlib.sha256(code.encode()).hexdigest())

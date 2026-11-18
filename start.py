@@ -19,6 +19,7 @@ from framework.python.presentation_authoring import create_authoring_bundle, val
 from framework.python.presentation_projects import TemporaryPresentationProjects, PROJECT_ID, MAX_PROJECT_BYTES
 from framework.python.presentation_structure import verify_evidence_files,validate_structure
 from framework.python.presentation_media import validate_media,verify_media_files
+from framework.python.presentation_ai import PresentationAiWorkspace,RevisionConflict
 
 
 def browser_executable(preference='auto'):
@@ -141,6 +142,10 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
                 with file.open('rb') as data:shutil.copyfileobj(data,self.wfile)
         except (ValueError,OSError):self.send_error(404,'Evidence file unavailable or hash mismatch')
 
+    def ai_workspace(self):
+        if not hasattr(self.server,'ai_workspace'):self.server.ai_workspace=PresentationAiWorkspace(self.directory)
+        return self.server.ai_workspace
+
     def do_HEAD(self):
         path=urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)
         if path.startswith('/evidence/'):self.serve_evidence(path,True);return
@@ -169,15 +174,35 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             except (OSError, ValueError):
                 self.json_response({"error": ".env 설정 형식을 확인해 주세요."}, 503)
             return
+        if path=='/api/ai/capabilities':
+            try:self.json_response(self.ai_workspace().providers.capabilities())
+            except (ValueError,OSError):self.json_response({'error':'AI 설정 파일을 확인해 주세요.'},503)
+            return
+        archive=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/archive',path)
+        if archive:
+            try:
+                data=self.ai_workspace().archive(archive[1]);self.send_response(200);self.send_header('Content-Type','application/zip');self.send_header('Content-Disposition','attachment; filename="presentation-ai-workspace.zip"');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+            except (ValueError,RuntimeError,OSError) as error:self.json_response({'error':str(error)},400)
+            return
+        ai=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/(state|history|version/([a-f0-9]{40}))',path)
+        if ai:
+            try:
+                workspace=self.ai_workspace()
+                if ai[2]=='history':result=workspace.history(ai[1])
+                else:result={'head':workspace.head(ai[1]),'snapshot':workspace.read(ai[1],ai[3])}
+                self.json_response(result)
+            except (ValueError,RuntimeError,OSError):self.json_response({'error':'편집 이력을 불러오지 못했습니다.'},400)
+            return
         project = re.fullmatch(r'/api/projects/(' + PROJECT_ID + r')', path)
         if project:
             try:
-                source=self.source_project()
+                snapshot=self.ai_workspace().current(project[1]);source=snapshot['project'] if snapshot else self.source_project()
                 if source and source['document']['id']==project[1]:
                     self.register_evidence(source);encoded=json.dumps(source,ensure_ascii=False).encode()
                 else:encoded = self.server.projects.get(project[1])
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('ETag',self.ai_workspace().head(project[1]))
                 self.send_header('Content-Length', str(len(encoded)))
                 self.send_header('Cache-Control', 'no-store')
                 self.end_headers()
@@ -213,6 +238,18 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
+            ai=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/(init|propose|apply|restore)',self.path)
+            if ai:
+                if not 0<length<=MAX_PROJECT_BYTES:raise ValueError('AI 편집 요청 용량을 확인해 주세요.')
+                payload=json.loads(self.rfile.read(length))
+                if not isinstance(payload,dict):raise ValueError('AI 요청 형식을 확인해 주세요.')
+                workspace=self.ai_workspace();project_id,action=ai[1],ai[2]
+                if action=='init':
+                    project=payload.get('project');validate_authoring_project(project)
+                    if project['document']['id']!=project_id:raise ValueError('프로젝트 ID가 다릅니다.')
+                    workspace.ensure(project);result={'head':workspace.head(project_id),'snapshot':workspace.read(project_id)}
+                else:result=getattr(workspace,action)(project_id,payload)
+                self.json_response(result);return
             if self.path=='/api/presentation-window/ready':
                 if not 0<length<=2000:raise ValueError('발표 준비 메시지 크기를 확인해 주세요.')
                 payload=json.loads(self.rfile.read(length));token=payload.get('launchToken') if isinstance(payload,dict) else None
@@ -244,15 +281,16 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
                 data = self.rfile.read(length)
                 if len(data) != length:
                     raise ValueError('프로젝트 업로드가 중단됐습니다.')
+                value=json.loads(data);tracked=self.ai_workspace().update_project(value,self.headers.get('If-Match'))
                 self.server.projects.put(project[1], data)
-                value=json.loads(data);self.register_evidence(value)
+                self.register_evidence(value)
                 source=self.source_project()
-                if source and source['document']['id']==project[1]:
+                if source and source['document']['id']==project[1] and not tracked:
                     validate_authoring_project(value)
                     with tempfile.NamedTemporaryFile(dir=self.directory,prefix='.presentation-',suffix='.pending',delete=False) as staging:
                         staging.write(data);staging_path=pathlib.Path(staging.name)
                     staging_path.replace(pathlib.Path(self.directory)/'presentation-project.json')
-                self.json_response({'saved': True})
+                self.json_response({'saved': True,'revision':self.ai_workspace().head(project[1])})
                 return
             upload = re.fullmatch(r"/api/video-exports/([a-f0-9]{32})/recording", self.path)
             if upload:
@@ -286,6 +324,8 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             if token:self.launch_states()[token]={'created':time.monotonic(),'ready':False}
             subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             response, status = {"launched": True, "opened": False}, 200
+        except RevisionConflict as error:
+            response,status={'error':str(error)},409
         except (ValueError, TypeError) as error:
             response, status = {"error": str(error)}, 400
         except (OSError, RuntimeError) as error:

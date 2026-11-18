@@ -41,4 +41,12 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 5. PPT를 화면 유지형·편집형으로 각각 저장합니다. PowerPoint에서 제목·표·도형·발표 노트, 글꼴·줄바꿈·잘림을 확인합니다. 편집형의 복잡한 그래픽·캔버스는 그림으로 남으며, `data-ppt-raster`로 지정한 요소도 그림으로 유지합니다.
 6. 수정한 파일과 실제 확인한 범위, 확인하지 못한 항목을 보고합니다. 페이지 스크린샷을 함께 제공합니다. Git 커밋·푸시는 사용자의 요청에 따릅니다.
 
+기본 배포본은 ZIP을 풀고 `index.html`을 더블클릭해서 여는 발표용 HTML입니다. 내용·스타일·실행 스크립트는 HTML에 포함하고 영상·스크린샷은 옆의 폴더에 둡니다. API·파일 fetch에 의존하는 본문은 `slide.data`나 명시적인 로컬 모듈로 바꿉니다. 파일로 열었을 때 본문·드릴다운·영상·발표자 창을 검수하고, 브라우저별로 확인하지 못한 항목은 전달 시 표시합니다.
+
 완성본은 이 폴더 전체를 보관하거나, 검수 후 `presentation-release.json`을 `ready`로 바꾸고 `python3 scripts/export_presentation.py --root . --output /tmp/presentation-release.zip`으로 코드·증거·영상이 포함된 실행본을 만드세요. JSON 저장은 내용과 사진을 옮기며, 페이지 JS 코드까지 포함하지는 않습니다. 자막 LLM 기능은 선택 사항이며 사용할 때만 `.env.example`을 보고 키를 설정합니다.
+
+## 발표 화면에서 AI로 수정
+
+발표 화면의 **AI 편집**은 선택 장표의 내용과 HTML/SVG 본문·공통 등장 효과를 제안합니다. OpenAI 호환 API·OCI CLI·설치된 Codex/Claude 중 선택하고 변경 미리보기 후 적용합니다. 임의 JavaScript 변경은 기존 Codex·Claude 제작 흐름을 사용합니다. 공통 템플릿과 글꼴은 유지합니다.
+
+AI 적용·복원·브라우저 저장은 `.presentation-ai/<프로젝트 ID>/`의 로컬 Git 이력에 기록됩니다. 원본 JSON 파일에서 직접 수정한 내용도 다음 발표 조회 시 검증 후 새 버전으로 반영합니다. 같은 폴더의 `presentation-ai-pages.json`에는 AI 본문이 별도로 저장되며 실행본 ZIP에도 포함됩니다. 파일 전체를 외부에서 수정한 이력은 제작 폴더 Git으로 관리합니다. 버전 이력까지 이전하려면 숨김 폴더 `.presentation-ai`도 보관합니다.

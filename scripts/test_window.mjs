@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {openBrowserPresentation} from '../vendor/foundation/presentation-window.js';
+import {openBrowserPresentation,notifyPresentationReady} from '../vendor/foundation/presentation-window.js';
 import {createPresentationShortcuts,searchPresentation} from '../vendor/foundation/presentation-search.js';
 import {guardPresentationDialog} from '../vendor/foundation/presentation-evidence.js';
 const request={slide:'scene',width:1600,height:900,left:0,top:0};
@@ -40,4 +40,10 @@ test('modal Escape closes only the dialog before global deck keyboard handling',
  const dialog={ownerDocument:doc,open:true,close:()=>{closed++;closeListener();},addEventListener:(name,fn)=>{if(name==='close')closeListener=fn;}};
  guardPresentationDialog(dialog);capture({key:'Escape',preventDefault:()=>prevented=true,stopImmediatePropagation:()=>stopped=true});
  assert.equal(closed,1);assert.ok(prevented&&stopped);
+});
+
+test('file popup readiness uses an opaque-origin target while HTTP keeps its origin',()=>{
+ for(const [href,origin,target] of [['file:///tmp/deck/index.html?presentationLaunch=token','null','*'],['http://127.0.0.1:4173/deck.html?presentationLaunch=token','http://127.0.0.1:4173','http://127.0.0.1:4173']]){
+  const sent=[];notifyPresentationReady({location:{href,origin},opener:{postMessage:(...args)=>sent.push(args)}});assert.equal(sent[0][1],target);assert.equal(sent[0][0].token,'token');
+ }
 });

@@ -102,3 +102,5 @@ window.addEventListener('pagehide',event=>{if(!event.persisted){slides.forEach(s
 navigation();if(speakerPreview || exportPreview)getSlide(current).player.finish();else getSlide(current).player.play();
 
 reportPresentationReady();
+
+if(document.body.dataset.offlineSamples&&location.protocol==='file:')for(const link of document.querySelectorAll('a[href="./builder.html"],a[href="./export.html"]'))link.addEventListener('click',event=>{event.preventDefault();stateLabel.textContent='편집·내보내기는 python3 start.py로 서버를 실행한 뒤 사용하세요.';});

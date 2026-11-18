@@ -17,7 +17,7 @@ export function openBrowserPresentation(view:Window,url:string,request:Presentat
 }
 export function notifyPresentationReady(view:Window,error?:string):void{
  const token=new URL(view.location.href).searchParams.get('presentationLaunch');
- if(token&&view.opener)view.opener.postMessage({type:'presentation-ready',token,error},view.location.origin);
+ if(token&&view.opener)view.opener.postMessage({type:'presentation-ready',token,error},new URL(view.location.href).protocol==='file:'?'*':view.location.origin);
 }
 
 /** A notes preview forwards commands to its audience, and mirrors that clock. */

@@ -22,11 +22,16 @@ const visited=new Set();
 async function inspect(path){
  path=resolve(path);if(visited.has(path))return;visited.add(path);
  const source=await readFile(path,'utf8');
+ const markup=extname(path)==='.html'?source.replace(/(<script\b[^>]*>)[\s\S]*?<\/script\s*>/gi,'$1</script>'):source;
  if(extname(path)==='.js')execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
  if(/vendor\/(?:html-to-image|pptxgenjs)\//.test(path))return;
- const refs=extname(path)==='.html'?[...source.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1]):extname(path)==='.css'?[...source.matchAll(/(?:url\(\s*|@import\s+)["']?([^"'\s)]+)["']?\)?/g)].map(m=>m[1]):[...source.matchAll(/(?:from\s*|import\s*)["'](\.[^"']+)["']/g)].map(m=>m[1]);
+ const refs=extname(path)==='.html'?[...markup.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1]):extname(path)==='.css'?[...source.matchAll(/(?:url\(\s*|@import\s+)["']?([^"'\s)]+)["']?\)?/g)].map(m=>m[1]):[...source.matchAll(/(?:from\s*|import\s*)["'](\.[^"']+)["']/g)].map(m=>m[1]);
  for(const ref of refs){if(!ref||/^(?:https?:|data:|about:|#)/.test(ref))continue;const next=resolve(dirname(path),ref.split(/[?#]/)[0]);await stat(next);if(['.js','.css','.html'].includes(extname(next)))await inspect(next);}
 }
 await inspect(resolve(root,'index.html'));await inspect(resolve(root,'components.html'));
 await inspect(resolve(root,'deck.html'));
+await inspect(resolve(root,'samples.html'));
+await inspect(resolve(root,'design-components.html'));
+execFileSync('python3',['scripts/build_samples.py','--check'],{cwd:root,stdio:'pipe'});
+const samples=(await read('samples.html')).replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi,'');if((samples.match(/<section /g)||[]).length!==13||(samples.match(/data-effect-play=/g)||[]).length!==30||(samples.match(/data-chart-play=/g)||[]).length!==3)throw Error('Animation sample catalog is incomplete');
 console.log(`Passed: 13 pages, 33 samples, branding cleanup, module/CSS hashes and ${visited.size} linked files.`);

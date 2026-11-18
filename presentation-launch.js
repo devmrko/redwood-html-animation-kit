@@ -1,7 +1,7 @@
 import {openBrowserPresentation,notifyPresentationReady} from './vendor/foundation/presentation-window.js';
 /** Host adapter: browser popup is the default; native app launch is explicit. */
 export function launchPresentation(request,mode='browser'){
- const url=new URL(request.project?'./deck.html':'./index.html',location.href);
+ const url=new URL(request.project?'./deck.html':document.body.dataset.offlineSamples?'./samples.html':'./index.html',location.href);
  if(request.project)url.searchParams.set('project',request.project);
  url.searchParams.set('audience','');url.searchParams.set('layout',new URLSearchParams(location.search).get('layout')||'flat');url.hash=`/${request.slide}`;
  if(mode==='browser')return openBrowserPresentation(window,url.href,request);

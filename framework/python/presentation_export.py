@@ -16,7 +16,7 @@ import urllib.request
 import uuid
 
 
-def load_settings(env_file):
+def load_env_values(env_file):
     values = {}
     path = Path(env_file)
     if path.is_file():
@@ -29,6 +29,11 @@ def load_settings(env_file):
                 tokens = shlex.split(value, comments=True)
                 values[name.strip()] = " ".join(tokens)
     values.update(os.environ)
+    return values
+
+
+def load_settings(env_file):
+    values=load_env_values(env_file)
     router = values.get("OPENROUTER_API") or values.get("OPENROUTER_API_KEY")
     return {
         "key": values.get("OPENAI_API_KEY") or router or "",

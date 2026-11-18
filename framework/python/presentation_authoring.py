@@ -12,8 +12,8 @@ from .presentation_structure import validate_structure,verify_evidence_files
 from .presentation_media import validate_media,verify_media_files
 
 ROOT_FILES = ('start.py','builder.html','builder.css','builder.js','deck.html','deck.css','deck.js',
-              'export.html','export.css','export.js','project-store.js','template-theme.js','presentation-launch.js','.env.example','.gitignore','package.json','package-lock.json')
-RUNTIME_DIRS = ('vendor','framework','templates','authoring','scripts','examples')
+              'export.html','export.css','export.js','ai-editor.js','ai-editor.css','offline.js','offline.css','main.js','style.css','components.html','components.css','components.js','samples.html','design-components.html','project-store.js','template-theme.js','presentation-launch.js','.env.example','.gitignore','package.json','package-lock.json')
+RUNTIME_DIRS = ('vendor','framework','templates','authoring','scripts','examples','slides')
 ASSETS = ('oracle-wordmark.svg','oracle-o.svg','redwood-cover.jpeg','redwood-closing.jpg',
           'redwood-agenda-art.png','redwood-template-pattern.jpg','REDWOOD-SOURCE.txt')
 ALLOWED_SUFFIXES = {'.js','.mjs','.css','.ts','.py','.json','.md','.txt'}
@@ -122,6 +122,15 @@ def create_authoring_bundle(root, input_project):
             if path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(root):
                 archive.write(path,name or path.relative_to(root).as_posix())
         for name in ROOT_FILES:add(root/name)
+        portable=root/'presentation-ai-pages.json'
+        if portable.is_file() and not portable.is_symlink() and portable.stat().st_size<4000000:
+            value=json.loads(portable.read_text())
+            if value.get('projectId')==doc['id']:
+                from .presentation_ai_markup import validate_page
+                allowed={s['id'] for s in slides}
+                if not isinstance(value.get('pages'),dict) or set(value['pages'])-allowed:raise ValueError('AI 페이지 장표 참조를 확인해 주세요.')
+                clean={key:validate_page(page,{a['id'] for a in project['assets']}) for key,page in value['pages'].items()}
+                archive.writestr('presentation-ai-pages.json',json.dumps({'projectId':doc['id'],'pages':clean},ensure_ascii=False))
         for directory in RUNTIME_DIRS:
             for path in sorted((root/directory).rglob('*')):
                 if '__pycache__' not in path.parts and (path.suffix in ALLOWED_SUFFIXES or path.name=='LICENSE'):add(path)

@@ -10,6 +10,7 @@ import hashlib
 from .presentation_authoring import validate_authoring_project,create_authoring_bundle
 from .presentation_structure import verify_evidence_files
 from .presentation_media import verify_media_files
+from .presentation_offline import create_offline_html
 
 
 def release_file(root,name):
@@ -60,8 +61,12 @@ def create_release_bundle(root,output,manifest_name='presentation-release.json')
             for name,path in files.items():result.write(path,name)
             result.writestr('presentation-project.json',json.dumps(project,ensure_ascii=False,indent=2)+'\n')
             result.writestr('presentation-release.json',json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
-            result.writestr('README.md','# 발표 실행본\n\n`python3 start.py --no-browser`로 실행하고 표시된 발표 주소를 엽니다. 발표·증거·페이지 코드는 이 폴더 전체로 전달합니다. API 키는 포함하지 않았습니다.\n')
-            result.writestr('index.html',archive.read('index.html').decode().replace('제작용 프로젝트입니다. REQUEST.md를 확인하세요.','발표 실행본입니다.'))
+            result.writestr('README.md','# 발표 실행본\n\nZIP을 풀고 index.html을 더블클릭하면 발표를 엽니다. 영상·스크린샷 파일은 옆 폴더와 함께 보관합니다. AI 편집·영상 변환은 python3 start.py --no-browser로 실행합니다. 이 폴더 전체로 전달하세요. API 키는 포함하지 않았습니다.\n')
+            portable=root/'presentation-ai-pages.json';pages={}
+            if portable.is_file() and not portable.is_symlink():
+                value=json.loads(portable.read_text())
+                if value.get('projectId')==project['document']['id']:pages=value.get('pages',{})
+            result.writestr('index.html',create_offline_html(root,project,pages))
             provenance={'version':1,'source':manifest.get('source',{}),'files':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()},'projectSha256':hashlib.sha256(json.dumps(project,ensure_ascii=False,sort_keys=True).encode()).hexdigest()}
             result.writestr('release-provenance.json',json.dumps(provenance,ensure_ascii=False,indent=2)+'\n')
     return output

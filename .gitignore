@@ -26,3 +26,7 @@ __pycache__/
 !/assets/oracle-o.svg
 
 !/assets/oracle-corporate/
+
+# Local presentation versions and portable AI page content
+.presentation-ai/
+presentation-ai-pages.json
