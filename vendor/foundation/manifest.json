@@ -4,7 +4,7 @@
   "source": "react-foundation/packages/core/src",
   "modules": {
     "depth.js": "f62695a16d39bb08a388a4d67e451593b3a9c7e304a7eb57339156e1514daf26",
-    "presentation-timeline.js": "1e6522671589ee72a8ebfb19a76e29db1db052a88554fd5b8de27d520428f582",
+    "presentation-timeline.js": "b262de4b21f74fedca8044b84e32a3843b057d54f63e9722d81bb7b7a976647f",
     "presentation-flow.js": "5a9114a474c46a0b878dd7d07654432ef250b46027a9df7236c855e3f3ba3008",
     "presentation-effects.js": "cf8da2b500ee1db269a9a82cced54d80d41a80451898b5fd6d3bd3dd58815839",
     "presentation-gallery.js": "6be9616ae9a57e463e638345b8b0de154841a6c0d517eaef7b1d4ae6d7428cd5",
@@ -12,20 +12,26 @@
     "ui-components.js": "7fd7967774ded18265c2f1e93b91028712d6580f7279e562c03641564ce9d9d5",
     "presentation-chart.js": "9fc0a38e9c55bf35bbc1ad7aee5cfefcdd0532d47f0d27c54f8f1a836cbc52e8",
     "presentation-fullscreen.js": "73c0d5369c444a77c54ded436c5a42e0e6e169082481e59b35468a136289f85c",
-    "index.js": "3d6b5e6c9b49b828fe811a50953bc56cf0a6c9b9fad1022a9182c698b00b3761",
+    "index.js": "922036116b76f113e78a02c3bc4091d17ef1b30529666abfed3d9f351edc0901",
     "presentation-subtitles.js": "dcfdb30a427530ffcaaaf4c6e220216e1518bbf1216ec2e7223d1b4b66819c89",
     "presentation-video.js": "6d02c09da4a244289bde26f6e57886b8d8c7c9f0ae6077f8f8fc9e80b317d4cf",
-    "presentation-window.js": "b43a95c211d7be3646225c9dac7cc8480b229fb0e405755f58561d91fc7f7907",
+    "presentation-window.js": "7c16cff71a6d624a1ca2d2bd075aff888c72999542648a2c3bada08361b8f3e7",
     "presentation-context.js": "09d37b3e6a4b19c7d7d5fddd32deb4fe65d5175afe8f7b6a1ef1d07a13a4a869",
-    "presentation-document-view.js": "7dd3ae074d7983d92b2f4e9ec3797be9146971b93c54488ba0b6583911a04054",
-    "presentation-document.js": "c42118339ef00d8fd608702a7a55ee7e0b98517ecd991d1ad917c6a9ad26ecac",
-    "presentation-project-store.js": "25ac4de1921cf7873ea100fcc750ca33ce3b7546c3048fbc0899d929885a3927"
+    "presentation-document-view.js": "fb69911d768ec16714226a1accde45147c162fdefa3dbce4268d5783ac4b660e",
+    "presentation-document.js": "0eef7d52bd0ada8bda4fc0a62b10ab6368759d8d89aa4b05ef2ee13e5fabe669",
+    "presentation-project-store.js": "25ac4de1921cf7873ea100fcc750ca33ce3b7546c3048fbc0899d929885a3927",
+    "presentation-evidence.js": "34352a70eddb562a27a2ebd250f5f90cb4076cdcc03336821c06854b558f675f",
+    "presentation-layout.js": "84c1fb5dd0f0d9e831acf4b9b816fcc52c9f583d50fed5ad9476816762b87d18",
+    "presentation-structure.js": "21852c155a79947d8798eb9db7e4171bfbadadd1bb8f2c6fc0a2b400b56f9c3c",
+    "presentation-tables.js": "52b05475c58accbfac54622a04ff9e57dd9a111430aa23a218f305ccd9e77312",
+    "presentation-search.js": "f417e8d424f9326babaf9c41f42c8c294d70e982d4afbee437afc8bdded6bc19",
+    "presentation-media.js": "4a3b0e876e3e4bdaad951bacfedfb1237be4fc3bb1d87f9166867347351be81b"
   },
   "styles": {
     "ui/tokens.css": "96b14e8643a2540ea0f041538b1a7e7a20a7068adcd027906b52cc4117f45a9c",
     "ui/ui.css": "41894b2e63b5759c802646075b8c161ac793b96f3555a0d5600ca853628ece5a",
     "ui/components.css": "9cbf9a015473318059576d84d7dc8940563f0d2aea69eb88fd71ec9630bda0c3",
-    "ui/presentation.css": "570d33875759ac19c168c97b619f5a57839e017ad17e7e9ac2569144e1152910"
+    "ui/presentation.css": "44305cf740cea2bac988c4fa65974856849c86d8d8a1b0c051189a46328373e3"
   },
   "package_sha256": "2b2f4719c93597f73925b4dfb69e1e3a897454a6e49385d6698d11f227240ce3",
   "status": "rebuilt from the bundled presentation source; upstream tarball is retained as provenance",

@@ -1,17 +1,22 @@
 import { validatePresentationProject, type PresentationProject, type DocumentSlide, type PresentationAsset } from './presentation-document.js';
-import { createPresentationTimeline, type PresentationTimeline, type PresentationTrack } from './presentation-timeline.js';
+import { createPresentationTimeline,extendPresentationTimeline, type PresentationTimeline, type PresentationTrack } from './presentation-timeline.js';
 import { extractPresentationContent, estimatePresentationMinimum, describePresentationStructure, type PresentationEvent } from './presentation-context.js';
+import {createEvidenceFigure} from './presentation-evidence.js';
+import type {EvidenceAsset,PageData} from './presentation-structure.js';
+import {createPresentationMedia,presentationMediaViews,layoutPresentationMedia,type PresentationMedia} from './presentation-media.js';
 
 export interface TemplateTextBox { width: number; height: number; fontSize: number; lineHeight: number; minFontSize: number }
 export interface DocumentTheme { id?: string; logo?: string; logoAlt?: string; coverArt?: string; closingArt?: string; agendaArt?: string; bodyArt?: string; badge?: string; agendaTitle?: string; coverTitleBox?: TemplateTextBox; coverSubtitleBox?: TemplateTextBox }
-export interface DocumentPageContext { root: HTMLElement; body: HTMLElement; slide: DocumentSlide; assets: ReadonlyMap<string,PresentationAsset>; document: Document }
+export interface DocumentPageContext { root: HTMLElement; body: HTMLElement; slide: DocumentSlide; data:PageData; assets: ReadonlyMap<string,PresentationAsset>; evidence:ReadonlyMap<string,EvidenceAsset>; media:ReadonlyMap<string,PresentationMedia>; document: Document }
 export interface DocumentPage { player: PresentationTimeline; stepTimes?: readonly number[] }
 export type DocumentPageFactory = (context: DocumentPageContext) => DocumentPage;
-export interface DocumentRenderOptions { pageOffset?: number; totalSlides?: number; sections?: readonly string[]; pages?: ReadonlyMap<string,DocumentPageFactory> }
+export interface DocumentRenderOptions { pageOffset?: number; totalSlides?: number; sections?: readonly string[]; pages?: ReadonlyMap<string,DocumentPageFactory>; textMotion?:boolean; navigate?:(id:string)=>void; slideId?:string }
 export interface DocumentSlideView { root: HTMLElement; player: PresentationTimeline; stepCount: number; step: number; goToStep(step: number): void; metadata(): object; destroy(): void }
 export function renderPresentationDocument(input: PresentationProject, mount: HTMLElement, theme: DocumentTheme = {}, options: DocumentRenderOptions = {}): { slides: DocumentSlideView[]; destroy(): void } {
   const project = validatePresentationProject(input), doc = mount.ownerDocument, view = doc.defaultView!;
   const assets = new Map(project.assets.map(asset => [asset.id,asset]));
+  const evidence=new Map(project.evidence?.map(e=>[e.id,e]));
+  const media=new Map(project.media?.map(m=>[m.id,m]));
   const measuring=doc.createElement('canvas').getContext('2d');
   function fitTemplateText(element: HTMLElement | null, box?: TemplateTextBox): void {
     if(!element || !box || !measuring)return;
@@ -33,10 +38,13 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
   }
   const result: DocumentSlideView[]=[];
   mount.replaceChildren();
-  project.document.slides.forEach((slide,index) => {
+  const visible=options.slideId?project.document.slides.filter(s=>s.id===options.slideId):project.document.slides;
+  if(!visible.length)throw Error('미리 볼 장표를 찾을 수 없습니다.');
+  visible.forEach((slide,index) => {
     const factory=slide.authored ? options.pages?.get(slide.id) : undefined;
     if(slide.authored && !factory)throw Error(`‘${slide.title}’ 페이지 코드가 없습니다. 제작용 프로젝트 폴더에서 실행해 주세요. JSON만으로 페이지 코드를 전달할 수는 없습니다.`);
     const root=el('section',`slide rf-document-slide rf-document-slide--${slide.layout}`);
+    if(options.textMotion===false)root.dataset.textMotion='off';
     if(theme.id)root.dataset.template=theme.id;
     if(theme.bodyArt)root.style.setProperty('--rf-document-template-band',`url("${new URL(theme.bodyArt,doc.baseURI).href}")`);
     if(theme.badge){const badge=el('span','rf-document-badge');badge.setAttribute('aria-hidden','true');badge.style.setProperty('--rf-document-template-badge',`url("${new URL(theme.badge,doc.baseURI).href}")`);root.append(badge);}
@@ -46,7 +54,7 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
     if (theme.logo) { const logo=el('img','rf-document-logo'); logo.src=theme.logo; logo.alt=theme.logoAlt ?? ''; root.append(logo); }
     const section=el('p','rf-document-eyebrow',slide.section && slide.section!==slide.title ? slide.section : project.document.title); root.append(section);
     const head=el('header','rf-document-heading'); head.append(el('h1','',slide.layout==='section'&&theme.agendaTitle?theme.agendaTitle:slide.title));
-    if (slide.subtitle) head.append(el('p','rf-document-subtitle',slide.subtitle));
+    if (slide.message||slide.subtitle) head.append(el('p','rf-document-subtitle',slide.message||slide.subtitle));
     root.append(head);
     const body=el('div','rf-document-body'), copy=el('div','rf-document-copy');
     const image=!factory && slide.imageId ? assets.get(slide.imageId) : undefined;
@@ -73,11 +81,12 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
       root.classList.add('rf-document-slide--agenda');
       if(theme.agendaArt){const art=el('img','rf-document-agenda-art');art.src=theme.agendaArt;art.alt='';root.append(art);}
       const agenda=el('ol','rf-document-agenda');
-      const topics=sections.length?sections:[slide.title];
-      topics.forEach((topic,i)=>{const row=el('li','',topic);row.prepend(el('span','rf-document-agenda-number',String(i+1)));if(topic===slide.title){row.classList.add('is-current');row.setAttribute('aria-current','step');}agenda.append(row);});
+      if(slide.agendaMode==='navigation')root.classList.add('rf-document-slide--navigation');
+      const topics=slide.agendaMode==='navigation'?project.document.slides.filter(s=>s.role!=='detail'&&s.role!=='appendix'&&s.id!==slide.id&&!['cover','closing'].includes(s.layout)).map(s=>s.title):sections.length?sections:[slide.title];
+      topics.forEach((topic,i)=>{const row=el('li','',slide.agendaMode==='navigation'?'':topic);if(slide.agendaMode==='navigation'){const button=el('button','',topic),target=project.document.slides.find(s=>s.title===topic&&s.id!==slide.id);button.type='button';button.onclick=()=>target&&options.navigate?.(target.id);row.append(button);}row.prepend(el('span','rf-document-agenda-number',String(i+1)));if(topic===slide.title){row.classList.add('is-current');row.setAttribute('aria-current','step');}agenda.append(row);});
       body.append(agenda);
     }
-    if(!factory && !['cover','closing','section'].includes(slide.layout) && !slide.items.length && !image){
+    if(!factory && !slide.mediaIds?.length && !['cover','closing','section'].includes(slide.layout) && !slide.items.length && !image){
       const empty=el('p','rf-document-empty','이 장표에 본문이 없습니다. 장표 편집에서 내용을 입력해 주세요.');
       body.append(empty);root.classList.add('rf-document-slide--empty');
     }
@@ -107,8 +116,17 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
     const progress=el('span','rf-document-step-state');footer.append(progress,el('span','',`${index+1+(options.pageOffset ?? 0)} / ${options.totalSlides ?? project.document.slides.length}`));root.append(footer);mount.append(root);
     if(slide.layout==='cover'){fitTemplateText(head.querySelector('h1'),theme.coverTitleBox);fitTemplateText(head.querySelector('.rf-document-subtitle'),theme.coverSubtitleBox);}
     if(factory){root.classList.add('rf-document-slide--authored');body.replaceChildren();}
-    const custom=factory?.({root,body,slide,assets,document:doc}),timing=custom?.player.describe();
-    const nativeDuration=timing?.duration ?? (stepCount ? 2+stepCount*3.5 : Math.max(1.5,1+itemElements.length*.45));
+    const custom=factory?.({root,body,slide,data:slide.data??{},assets,evidence,media,document:doc}),timing=custom?.player.describe();
+    if(!factory&&!slide.items.length&&!image&&slide.mediaIds?.length)body.replaceChildren();
+    const autoMedia:HTMLElement[]=[];
+    for(const id of slide.mediaIds??[]){if(!root.querySelector(`[data-media-id="${id}"]`)){const entry=media.get(id);if(entry){const figure=createPresentationMedia(doc,entry).root;body.append(figure);autoMedia.push(figure);}}}
+    layoutPresentationMedia(body,autoMedia,slide.mediaLayout);if(autoMedia.length)root.classList.add('rf-document-slide--media');
+    const mediaViews=presentationMediaViews(root);let playbackRate=1;
+    if(slide.evidenceIds?.length&&!root.querySelector('[data-evidence-id]')){
+      const strip=el('div','rf-document-evidence-strip');root.classList.add('rf-document-slide--with-evidence');
+      for(const id of slide.evidenceIds.slice(0,2)){const entry=evidence.get(id);if(entry)strip.append(createEvidenceFigure(doc,entry));}root.append(strip);
+    }
+    const nativeDuration=Math.max(timing?.duration??(stepCount ? 2+stepCount*3.5 : Math.max(1.5,1+itemElements.length*.45)),...mediaViews.map(m=>m.entry.at+m.entry.end-m.entry.start));
     const pageSteps=custom?.stepTimes??[],displaySteps=custom?pageSteps.length:stepCount;
     if(pageSteps.length>80 || pageSteps.some((at,i)=>!Number.isFinite(at)||at<0||at>nativeDuration||(i>0&&at<=pageSteps[i-1]!)))throw Error('페이지의 단계 시간을 확인해 주세요.');
     if(displaySteps)root.dataset.steps=String(displaySteps);
@@ -132,20 +150,22 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
       diagramItems.forEach((element,i)=>element.classList.toggle('is-current',i===step-1));
       progress.textContent=displaySteps ? `단계 ${step} / ${displaySteps}` : '';
       if(step!==previousStep)root.dispatchEvent(new view.CustomEvent('presentationstepchange',{bubbles:true}));
+      mediaViews.forEach(m=>m.sync(time,player.state==='running',playbackRate));
     }
     function tick(): void { updateStep(player.currentTime); if(player.state==='running') frame=view.requestAnimationFrame(tick); }
-    const player=custom?.player ?? createPresentationTimeline({duration,tracks,onStateChange:state=>{
+    const clock=doc.createElement('span');clock.setAttribute('aria-hidden','true');clock.style.cssText='position:absolute;width:0;height:0;pointer-events:none';if(custom)root.append(clock);
+    const player=custom?extendPresentationTimeline(custom.player,clock,nativeDuration):createPresentationTimeline({duration,tracks,onStateChange:state=>{
       view.cancelAnimationFrame(frame);
       if(state==='running')frame=view.requestAnimationFrame(tick);
       else updateStep(state==='finished'?duration:player.currentTime);
     }});
     function followCustom(){view.cancelAnimationFrame(frame);updateStep(player.currentTime);if(player.state==='running')frame=view.requestAnimationFrame(followCustom);}
-    const port: PresentationTimeline={get state(){return player.state;},get currentTime(){return player.currentTime;},describe:()=>({duration:nativeDuration,events}),setPlaybackRate:rate=>player.setPlaybackRate(rate),seek:time=>{player.seek(time);updateStep(player.currentTime);},play:()=>{player.play();if(custom)followCustom();},pause:()=>{player.pause();updateStep(player.currentTime);},restart:()=>{player.restart();if(custom)followCustom();},finish:()=>{player.finish();updateStep(player.currentTime);},destroy:()=>player.destroy()};
+    const port: PresentationTimeline={get state(){return player.state;},get currentTime(){return player.currentTime;},describe:()=>({duration:nativeDuration,events}),setPlaybackRate:rate=>{playbackRate=rate;player.setPlaybackRate(rate);},seek:time=>{player.seek(time);updateStep(player.currentTime);},play:()=>{player.play();if(custom)followCustom();},pause:()=>{player.pause();mediaViews.forEach(m=>m.pause());updateStep(player.currentTime);},restart:()=>{player.restart();if(custom)followCustom();},finish:()=>{player.finish();updateStep(player.currentTime);mediaViews.forEach(m=>{m.pause();m.sync(0,false,playbackRate);});},destroy:()=>player.destroy()};
     updateStep(0);
     const slideView: DocumentSlideView={root,player:port,stepCount:displaySteps,get step(){return step;},
       goToStep(value){player.pause();const position=Math.max(0,Math.min(displaySteps-1,value-1));player.seek((custom?pageSteps[position]??0:1.45+position*3.5)*1000);updateStep(player.currentTime);},
-      metadata(){const content=extractPresentationContent(root),minimumDuration=estimatePresentationMinimum({content,events,animationDuration:nativeDuration,...describePresentationStructure(root),stepCount:displaySteps});return {id:slide.id,title:slide.title,notes:slide.notes,content,events,animationDuration:nativeDuration,minimumDuration,duration:Math.max(slide.duration ?? 0,minimumDuration)};},
-      destroy(){view.cancelAnimationFrame(frame);player.destroy();root.remove();},
+      metadata(){const content=extractPresentationContent(root),minimumDuration=estimatePresentationMinimum({content,events,animationDuration:nativeDuration,...describePresentationStructure(root),stepCount:displaySteps});return {id:slide.id,title:slide.title,notes:slide.notes,content,events,animationDuration:nativeDuration,minimumDuration,duration:Math.max(slide.duration ?? 0,minimumDuration),remoteMedia:mediaViews.some(m=>m.entry.kind==='youtube')};},
+      destroy(){view.cancelAnimationFrame(frame);mediaViews.forEach(m=>m.destroy());player.destroy();root.remove();},
     };
     result.push(slideView);
   });

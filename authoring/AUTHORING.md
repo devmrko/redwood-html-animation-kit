@@ -6,7 +6,7 @@
 
 ## 첫 실행
 
-Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시된 발표 주소를 엽니다. 포트가 사용 중이면 `--port 4176`처럼 다른 포트를 지정합니다. 편집 화면에서 바꾼 내용은 JSON 저장 후 `presentation-project.json`을 교체해 파일에도 반영합니다. JSON을 편집한 뒤에는 서버를 재시작하고 브라우저를 새로고침합니다. JS 수정도 브라우저를 새로고침해 반영합니다.
+Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시된 발표 주소를 엽니다. 포트가 사용 중이면 `--port 4176`처럼 다른 포트를 지정합니다. 추출한 제작 폴더에서 편집한 내용은 같은 프로젝트 ID의 `presentation-project.json`에도 자동 반영합니다. JSON을 직접 편집한 뒤에는 브라우저를 새로고침합니다. 서버 코드 변경 때는 서버도 재시작합니다. JS 수정도 브라우저를 새로고침해 반영합니다.
 
 ## 내용과 화면
 
@@ -18,9 +18,11 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 
 한글은 모든 페이지에서 같은 글꼴 집합을 사용합니다. 본문 24px 이상, 도식 라벨 22px 이상을 우선하고 복잡한 내용은 문구·배치를 정리하거나 장표를 나눕니다. 로고를 글자로 흉내 내지 말고 제공된 공식 SVG를 사용하세요. 사진은 `assets` 맵의 ID로 참조합니다. HTML 전체를 이미지로 굽지 말고 텍스트·표·도식은 DOM·SVG로 만들어 확대 시 선명하게 유지하세요.
 
+표·숫자·페이지별 내용은 `slide.data`(인수 `data`)에서 읽고 JS에 중복 하드코딩하지 않습니다. 구조·상위 장표·증거·동영상·완성본 ZIP은 [작업별 제작 계약](../docs/presentation-workspace.md)을 읽고 적용합니다. 사용자 요청에 맞는 자유 본문을 제작하며 공통 표·증거·영상 부품은 필요한 경우 사용합니다.
+
 ## 페이지 인터페이스
 
-`renderPage({root, body, slide, assets, document})`가 `{player, stepTimes?}`를 반환합니다. `body` 안에 화면을 만들고 머리말·로고·바닥글은 공통 템플릿에 맡깁니다. `assets.get(slide.imageId)`는 사진의 `dataUrl`·이름을 제공합니다.
+`renderPage({root, body, slide, data, assets, evidence, media, document})`가 `{player, stepTimes?}`를 반환합니다. `body` 안에 화면을 만들고 머리말·로고·바닥글은 공통 템플릿에 맡깁니다. `assets.get(slide.imageId)`는 사진의 `dataUrl`·이름을 제공합니다.
 
 `player`는 공통 `createPresentationTimeline` 또는 같은 인터페이스를 구현한 재생기입니다. `play/pause/restart/finish/seek/setPlaybackRate/destroy`, `state/currentTime`, `describe()`를 제공해야 합니다. `describe()`는 초 단위의 `{duration, events:[{at,text}]}`를 반환합니다. 효과 등장 시점과 실제 내용을 연결해야 자막과 영상 재생시간에 반영됩니다. SVG도 같은 시계로 움직이세요. 독립적인 CSS 무한 애니메이션이나 별도 타이머는 사용하지 않습니다.
 
@@ -36,4 +38,4 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 4. 영상·SRT 화면에서 본문 추출·노트·등장 시점·최소 시간을 확인하고 SRT를 내려받습니다. FFmpeg와 브라우저 녹화가 가능하면 짧은 MP4를 실제 생성해 프레임도 확인합니다.
 5. 수정한 파일과 실제 확인한 범위, 확인하지 못한 항목을 보고합니다. 페이지 스크린샷을 함께 제공합니다. Git 커밋·푸시는 사용자의 요청에 따릅니다.
 
-완성본은 이 폴더 전체를 보관하세요. JSON 저장은 내용과 사진을 옮기며, 페이지 JS 코드까지 포함하지는 않습니다. 자막 LLM 기능은 선택 사항이며 사용할 때만 `.env.example`을 보고 키를 설정합니다.
+완성본은 이 폴더 전체를 보관하거나, 검수 후 `presentation-release.json`을 `ready`로 바꾸고 `python3 scripts/export_presentation.py --root . --output /tmp/presentation-release.zip`으로 코드·증거·영상이 포함된 실행본을 만드세요. JSON 저장은 내용과 사진을 옮기며, 페이지 JS 코드까지 포함하지는 않습니다. 자막 LLM 기능은 선택 사항이며 사용할 때만 `.env.example`을 보고 키를 설정합니다.

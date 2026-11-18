@@ -2,52 +2,387 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Presentation project v1",
   "type": "object",
-  "required": ["document", "assets"],
+  "required": [
+    "document",
+    "assets"
+  ],
   "properties": {
     "document": {
       "type": "object",
-      "required": ["version", "id", "title", "slides"],
+      "required": [
+        "version",
+        "id",
+        "title",
+        "slides"
+      ],
       "properties": {
-        "version": {"const": 1},
-        "id": {"type": "string", "format": "uuid"},
-        "title": {"type": "string", "minLength": 1, "maxLength": 100},
-        "presenter": {"type": "string", "maxLength": 200},
-        "scenario": {"type": "string", "maxLength": 30000},
-        "brief": {"type": "string", "maxLength": 4000},
+        "version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "presenter": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "scenario": {
+          "type": "string",
+          "maxLength": 30000
+        },
+        "brief": {
+          "type": "string",
+          "maxLength": 4000
+        },
         "slides": {
-          "type": "array", "minItems": 1, "maxItems": 60,
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
           "items": {
-            "type": "object", "required": ["id", "layout", "title", "items"],
+            "type": "object",
+            "required": [
+              "id",
+              "layout",
+              "title",
+              "items"
+            ],
             "properties": {
-              "id": {"type": "string", "pattern": "^[a-z0-9-]{1,80}$"},
-              "layout": {"enum": ["cover", "section", "content", "photo", "steps", "comparison", "closing"]},
-              "section": {"type": "string", "maxLength": 120},
-              "title": {"type": "string", "minLength": 1, "maxLength": 100},
-              "subtitle": {"type": "string", "maxLength": 220},
-              "items": {"type": "array", "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 240}},
-              "notes": {"type": "string", "maxLength": 6000},
-              "imageId": {"type": ["string", "null"], "pattern": "^[a-z0-9-]{1,80}$"},
-              "imageAlt": {"type": "string", "maxLength": 240},
-              "duration": {"type": "number", "minimum": 1, "maximum": 600},
-              "design": {"type": "string", "maxLength": 4000},
-              "authored": {"type": "boolean"}
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]{1,80}$"
+              },
+              "layout": {
+                "enum": [
+                  "cover",
+                  "section",
+                  "content",
+                  "photo",
+                  "steps",
+                  "comparison",
+                  "closing"
+                ]
+              },
+              "section": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "subtitle": {
+                "type": "string",
+                "maxLength": 220
+              },
+              "items": {
+                "type": "array",
+                "maxItems": 6,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 240
+                }
+              },
+              "notes": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "imageId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[a-z0-9-]{1,80}$"
+              },
+              "imageAlt": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "duration": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "design": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "authored": {
+                "type": "boolean"
+              },
+              "role": {
+                "enum": [
+                  "main",
+                  "detail",
+                  "appendix"
+                ]
+              },
+              "parentId": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]{1,80}$"
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "data": {
+                "type": "object"
+              },
+              "evidenceIds": {
+                "type": "array",
+                "maxItems": 500,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{1,80}$"
+                }
+              },
+              "agendaMode": {
+                "enum": [
+                  "divider",
+                  "navigation"
+                ]
+              },
+              "mediaIds": {
+                "type": "array",
+                "maxItems": 4,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{1,80}$"
+                }
+              },
+              "mediaLayout": {
+                "enum": [
+                  "auto",
+                  "focus",
+                  "balanced"
+                ]
+              }
             }
           }
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "audience": {
+          "type": "string",
+          "maxLength": 600
+        },
+        "decision": {
+          "type": "string",
+          "maxLength": 1000
         }
       }
     },
     "assets": {
-      "type": "array", "maxItems": 20,
+      "type": "array",
+      "maxItems": 20,
       "items": {
-        "type": "object", "required": ["id", "name", "type", "dataUrl"],
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "dataUrl"
+        ],
         "properties": {
-          "id": {"type": "string", "pattern": "^[a-z0-9-]{1,80}$"},
-          "name": {"type": "string", "minLength": 1, "maxLength": 200},
-          "type": {"enum": ["image/png", "image/jpeg", "image/webp"]},
-          "dataUrl": {"type": "string", "maxLength": 7000000, "pattern": "^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"}
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,80}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "type": {
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "dataUrl": {
+            "type": "string",
+            "maxLength": 7000000,
+            "pattern": "^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+          }
         }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "path",
+          "type",
+          "bytes",
+          "sha256",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,80}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 240,
+            "pattern": "^evidence/[A-Za-z0-9_./-]+\\.(png|jpg|jpeg|webp)$"
+          },
+          "type": {
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20971520
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "kind": {
+            "enum": [
+              "capture",
+              "revisit",
+              "log",
+              "mock"
+            ]
+          },
+          "claim": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "capturedAt": {
+            "type": "string",
+            "maxLength": 40,
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "media": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "end"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,80}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "enum": [
+              "file",
+              "youtube"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^media/[A-Za-z0-9_./-]+\\.(mp4|webm)$"
+          },
+          "type": {
+            "enum": [
+              "video/mp4",
+              "video/webm"
+            ]
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 104857600
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "videoId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{11}$"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 86400
+          },
+          "end": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 86400
+          },
+          "at": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 600
+          },
+          "muted": {
+            "type": "boolean"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "file"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "path",
+                "type",
+                "bytes",
+                "sha256"
+              ]
+            },
+            "else": {
+              "required": [
+                "videoId"
+              ]
+            }
+          }
+        ]
       }
     }
   },
-  "$comment": "The runtime also checks unique IDs, image references, MIME signatures and decoded image sizes."
+  "$comment": "Runtime also checks parent cycles, evidence/image references, JSON depth/size, safe evidence paths, aggregate size, MIME signatures and evidence file SHA-256. Media references, clip intervals (maximum 600s per slide), aggregate size, MIME and hashes are also checked at runtime."
 }

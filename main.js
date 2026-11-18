@@ -1,3 +1,4 @@
+import {launchPresentation,reportPresentationReady} from './presentation-launch.js';
 import { createPresentationWindowControl } from './vendor/foundation/presentation-window.js';
 import { extractPresentationContent, estimatePresentationMinimum, describePresentationStructure } from './vendor/foundation/presentation-context.js';
 import { createUiButton } from './vendor/foundation/ui-components.js';
@@ -71,10 +72,7 @@ tocButton.addEventListener('click',()=>{
 const presentationWindow = createPresentationWindowControl({
   button:document.querySelector('#present'),
   request:()=>({slide:pages[current].id,width:Math.round(screen.availWidth),height:Math.round(screen.availHeight),left:Math.round(screen.availLeft || 0),top:Math.round(screen.availTop || 0)}),
-  launch:async request=>{
-    const response=await fetch('/api/presentation-window',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});
-    if(!response.ok) throw new Error(response.status===404 || response.status===501 ? 'start.py 서버를 다시 실행해 주세요.' : 'Edge 또는 Chrome으로 발표 창을 열지 못했습니다.');
-  },
+  launch:request=>launchPresentation(request),
   onState:(state,error)=>{stateLabel.textContent=state==='opening' ? '발표 창 여는 중…' : state==='opened' ? '별도 발표 창에서 S 키로 발표자 보기를 여세요.' : `발표 창 열기 실패: ${error instanceof Error ? error.message : String(error)}`;},
 });
 async function openPresentationWindow(){await presentationWindow.open();}
@@ -98,3 +96,5 @@ window.presentationDeck = {
 };
 window.addEventListener('pagehide',event=>{if(!event.persisted){slides.forEach(slide=>slide?.destroy());presentationWindow.destroy();}});
 navigation();if(speakerPreview || exportPreview)getSlide(current).player.finish();else getSlide(current).player.play();
+
+reportPresentationReady();

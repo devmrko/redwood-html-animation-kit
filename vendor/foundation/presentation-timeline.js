@@ -1,4 +1,13 @@
 import { describePresentationTracks } from './presentation-context.js';
+/** Keep a completed page animation visible while a longer media clip plays. */
+export function extendPresentationTimeline(source, anchor, seconds) {
+    const original = source.describe().duration;
+    if (seconds <= original)
+        return source;
+    const clock = createPresentationTimeline({ duration: seconds * 1000, tracks: [{ element: anchor, keyframes: [{ opacity: 1 }, { opacity: 1 }] }] });
+    return { get state() { return clock.state; }, get currentTime() { return clock.currentTime; }, describe: () => ({ duration: seconds, events: source.describe().events }), setPlaybackRate(rate) { source.setPlaybackRate(rate); clock.setPlaybackRate(rate); }, seek(time) { source.seek(Math.min(time, original * 1000)); clock.seek(time); }, play() { if (source.currentTime < original * 1000)
+            source.play(); clock.play(); }, pause() { source.pause(); clock.pause(); }, restart() { source.restart(); clock.restart(); }, finish() { source.finish(); clock.finish(); }, destroy() { source.destroy(); clock.destroy(); anchor.remove(); } };
+}
 export function createPresentationTimeline(options) {
     const { duration, tracks, onStateChange } = options;
     if (!Number.isFinite(duration) || duration <= 0 || tracks.length === 0) {

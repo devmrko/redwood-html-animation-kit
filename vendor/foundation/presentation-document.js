@@ -1,3 +1,5 @@
+import { validatePageData, validateEvidence, presentationPath } from './presentation-structure.js';
+import { validateMedia } from './presentation-media.js';
 export const documentLayouts = ['cover', 'section', 'content', 'photo', 'steps', 'comparison', 'closing'];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function validProjectId(value) { return uuid.test(value); }
@@ -31,11 +33,26 @@ export function validatePresentationDocument(input) {
             throw Error('장표 시간은 1~600초로 입력해 주세요.');
         if (s.authored !== undefined && typeof s.authored !== 'boolean')
             throw Error('페이지 제작 상태를 확인해 주세요.');
+        if (s.role !== undefined && !['main', 'detail', 'appendix'].includes(String(s.role)))
+            throw Error('장표 역할을 확인해 주세요.');
+        if (s.agendaMode !== undefined && !['divider', 'navigation'].includes(String(s.agendaMode)))
+            throw Error('목차 종류를 확인해 주세요.');
+        const parentId = s.parentId == null || s.parentId === '' ? undefined : text(s.parentId, 80, true);
+        const evidenceIds = s.evidenceIds === undefined ? undefined : s.evidenceIds;
+        if (evidenceIds !== undefined && (!Array.isArray(evidenceIds) || evidenceIds.length > 500 || new Set(evidenceIds).size !== evidenceIds.length || evidenceIds.some(v => typeof v !== 'string' || !/^[a-z0-9-]{1,80}$/.test(v))))
+            throw Error('장표 증거 참조를 확인해 주세요.');
+        if (s.mediaLayout !== undefined && !['auto', 'focus', 'balanced'].includes(String(s.mediaLayout)))
+            throw Error('동영상 배치를 확인해 주세요.');
+        const mediaIds = s.mediaIds === undefined ? undefined : s.mediaIds;
+        if (mediaIds !== undefined && (!Array.isArray(mediaIds) || mediaIds.length > 4 || new Set(mediaIds).size !== mediaIds.length || mediaIds.some(v => typeof v !== 'string' || !/^[a-z0-9-]{1,80}$/.test(v))))
+            throw Error('장표 동영상 참조를 확인해 주세요 (최대 4개).');
         return { id, layout: s.layout, section: text(s.section ?? '', 120), title: text(s.title, 100, true), subtitle: text(s.subtitle ?? '', 220),
             items: s.items.map(item => text(item, 240, true)), notes: text(s.notes ?? '', 6000), imageId, imageAlt: text(s.imageAlt ?? '', 240), duration,
-            design: s.design === undefined ? undefined : text(s.design, 4000), authored: s.authored };
+            design: s.design === undefined ? undefined : text(s.design, 4000), authored: s.authored,
+            role: s.role, parentId, message: s.message === undefined ? undefined : text(s.message, 600), data: s.data === undefined ? undefined : validatePageData(s.data), evidenceIds: evidenceIds, mediaIds: mediaIds, mediaLayout: s.mediaLayout, agendaMode: s.agendaMode };
     });
-    return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), brief: doc.brief === undefined ? undefined : text(doc.brief, 4000), slides };
+    slides.forEach(s => presentationPath(slides, s.id));
+    return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), brief: doc.brief === undefined ? undefined : text(doc.brief, 4000), purpose: doc.purpose === undefined ? undefined : text(doc.purpose, 1000), audience: doc.audience === undefined ? undefined : text(doc.audience, 600), decision: doc.decision === undefined ? undefined : text(doc.decision, 1000), slides };
 }
 function sniff(bytes) {
     if ([137, 80, 78, 71, 13, 10, 26, 10].every((n, i) => bytes[i] === n))
@@ -77,7 +94,13 @@ export function validatePresentationProject(input) {
     });
     if (document.slides.some(slide => slide.imageId && !ids.has(slide.imageId)))
         throw Error('장표가 참조한 사진을 찾을 수 없습니다.');
-    return { document, assets };
+    const evidence = project.evidence === undefined ? undefined : validateEvidence(project.evidence), evidenceIds = new Set(evidence?.map(e => e.id));
+    if (document.slides.some(s => s.evidenceIds?.some(id => !evidenceIds.has(id))))
+        throw Error('장표가 참조한 증거를 찾을 수 없습니다.');
+    const media = project.media === undefined ? undefined : validateMedia(project.media), mediaIds = new Set(media?.map(m => m.id));
+    if (document.slides.some(s => s.mediaIds?.some(id => !mediaIds.has(id))))
+        throw Error('장표가 참조한 동영상을 찾을 수 없습니다.');
+    return { document, assets, evidence, media };
 }
 export async function readPresentationPhotos(files) {
     if (files.length > 20 || files.reduce((sum, file) => sum + file.size, 0) > 25 * 1024 * 1024)
@@ -106,7 +129,7 @@ export function firstContentSlide(document) {
 }
 /** Drafts may be edited with empty fields, but cannot be presented as complete pages. */
 export function assertPresentationContent(document) {
-    const empty = document.slides.find(slide => !['cover', 'section', 'closing'].includes(slide.layout) && !slide.items.length && !slide.imageId && !slide.authored);
+    const empty = document.slides.find(slide => !['cover', 'section', 'closing'].includes(slide.layout) && !slide.items.length && !slide.imageId && !slide.authored && !slide.mediaIds?.length);
     if (empty)
         throw Error(`‘${empty.title}’ 장표의 본문이 없습니다. 본문 항목이나 사진을 넣어 주세요.`);
 }

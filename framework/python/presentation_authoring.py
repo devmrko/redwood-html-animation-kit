@@ -8,9 +8,11 @@ import math
 from pathlib import Path
 import re
 import zipfile
+from .presentation_structure import validate_structure,verify_evidence_files
+from .presentation_media import validate_media,verify_media_files
 
 ROOT_FILES = ('start.py','builder.html','builder.css','builder.js','deck.html','deck.css','deck.js',
-              'export.html','export.css','export.js','project-store.js','template-theme.js','.env.example','.gitignore','package.json','package-lock.json')
+              'export.html','export.css','export.js','project-store.js','template-theme.js','presentation-launch.js','.env.example','.gitignore','package.json','package-lock.json')
 RUNTIME_DIRS = ('vendor','framework','templates','authoring','scripts','examples')
 ASSETS = ('oracle-wordmark.svg','oracle-o.svg','redwood-cover.jpeg','redwood-closing.jpg',
           'redwood-agenda-art.png','redwood-template-pattern.jpg','REDWOOD-SOURCE.txt')
@@ -75,6 +77,13 @@ def validate_authoring_project(project):
             raise ValueError('사진 형식·용량을 확인해 주세요.')
     if any(s.get('imageId') and s['imageId'] not in asset_ids for s in slides):
         raise ValueError('장표 사진 참조를 확인해 주세요.')
+    validate_structure(project)
+    validate_media(project.get('media',[]))
+    media_ids={m['id'] for m in project.get('media',[])}
+    for s in slides:
+        if s.get('mediaLayout','auto') not in ('auto','focus','balanced'):raise ValueError('동영상 배치를 확인해 주세요.')
+        refs=s.get('mediaIds',[])
+        if not isinstance(refs,list) or len(refs)>4 or any(not isinstance(v,str) or v not in media_ids for v in refs) or len(set(refs))!=len(refs):raise ValueError('장표 동영상 참조를 확인해 주세요 (최대 4개).')
     return project
 
 
@@ -83,12 +92,16 @@ def create_authoring_bundle(root, input_project):
     project=copy.deepcopy(validate_authoring_project(input_project))
     # Unknown metadata must not become executable paths or silently enter a bundle.
     doc=project['document']
-    project['document']={k:doc[k] for k in ('version','id','title','presenter','scenario','brief','slides') if k in doc}
+    project['document']={k:doc[k] for k in ('version','id','title','presenter','scenario','brief','purpose','audience','decision','slides') if k in doc}
     slides=[]
     for slide in doc['slides']:
-        slides.append({k:slide[k] for k in ('id','layout','section','title','subtitle','items','notes','imageId','imageAlt','duration','design','authored') if k in slide})
+        slides.append({k:slide[k] for k in ('id','layout','section','title','subtitle','items','notes','imageId','imageAlt','duration','design','authored','role','parentId','message','data','evidenceIds','agendaMode','mediaIds','mediaLayout') if k in slide})
     project['document']['slides']=slides
     project['assets']=[{k:a[k] for k in ('id','name','type','dataUrl') if k in a} for a in project['assets']]
+    if 'evidence' in project:project['evidence']=[{k:e[k] for k in ('id','title','path','type','bytes','sha256','kind','claim','source','capturedAt') if k in e} for e in project['evidence']]
+    evidence_paths=verify_evidence_files(root,project.get('evidence',[]))
+    if 'media' in project:project['media']=[{k:m[k] for k in ('id','title','kind','path','type','bytes','sha256','videoId','start','end','at','muted') if k in m} for m in project['media']]
+    media_paths=verify_media_files(root,project.get('media',[]))
     imports=[];entries=[];page_sources={}
     for index,slide in enumerate(slides):
         if slide['layout'] in ('cover','section','closing'):continue
@@ -111,9 +124,17 @@ def create_authoring_bundle(root, input_project):
             for path in sorted((root/directory).rglob('*')):
                 if '__pycache__' not in path.parts and (path.suffix in ALLOWED_SUFFIXES or path.name=='LICENSE'):add(path)
         for name in ASSETS:add(root/'assets'/name)
-        for name in ('AGENTS.md','CLAUDE.md','AUTHORING.md','SLIDE_PRINCIPLES.md'):add(root/'authoring'/name,name)
+        for path in evidence_paths:add(path)
+        for path in media_paths:add(path)
+        add(root/'docs/presentation-workspace.md')
+        for name in ('AGENTS.md','CLAUDE.md','AUTHORING.md','SLIDE_PRINCIPLES.md'):
+            source=root/'authoring'/name
+            if name=='AUTHORING.md':
+                if source.is_file() and not source.is_symlink() and source.resolve().is_relative_to(root):archive.writestr(name,source.read_text().replace('../docs/','docs/'))
+            else:add(source,name)
         archive.writestr('presentation-project.json',json.dumps(project,ensure_ascii=False,indent=2)+'\n')
         archive.writestr('authored-pages.js',registry)
+        archive.writestr('presentation-release.json',json.dumps({'version':1,'status':'draft','files':['authored-pages.js',*page_sources],'source':{'template':'redwood-2019','kitVersion':'0.1.0'}},ensure_ascii=False,indent=2)+'\n')
         for name,source in page_sources.items():archive.writestr(name,source)
         requests='\n\n'.join(f'### {i+1}. {s["title"]}\n{s.get("design","")}' for i,s in enumerate(slides) if s['layout'] not in ('cover','section','closing'))
         archive.writestr('REQUEST.md',f'# 제작 요청\n\n이 폴더의 AGENTS.md·AUTHORING.md·SLIDE_PRINCIPLES.md를 읽고 작성 원칙과 통과 기준에 따라 아래 발표를 제작해 주세요. 본문은 고정 레이아웃에 제한하지 말고 사용자 요청과 내용을 고려해 표·사진·SVG·효과로 구성하고 실제 브라우저에서 검수해 주세요.\n\n## 발표\n\n{doc["title"]}\n\n## 전체 화면 구성 요청\n\n{doc.get("brief","") or "내용에 맞게 구성해 주세요."}\n\n## 페이지별 요청\n\n{requests}\n\n## 원본 시나리오\n\n{doc.get("scenario","")}\n')

@@ -33,7 +33,7 @@ function wait(ms,signal){return new Promise((resolve,reject)=>{const abort=()=>{
 $('cancel').onclick=()=>aborter?.abort();
 $('record').onclick=async()=>{
  if(busy)return;
- let plan;try{plan=createPresentationExportPlan(slides);if(!capabilities.ffmpeg)throw Error('FFmpeg를 설치하고 start.py 서버를 다시 실행해 주세요.');}catch(e){message(e.message);return;}
+ let plan;try{if(slides.some(s=>s.included&&s.remoteMedia))throw Error('YouTube 영상이 있는 장표는 MP4로 내보낼 수 없습니다. 해당 장표를 제외하거나 로컬 MP4·WebM으로 바꿔 주세요. SRT는 저장할 수 있습니다.');plan=createPresentationExportPlan(slides);if(!capabilities.ffmpeg)throw Error('FFmpeg를 설치하고 start.py 서버를 다시 실행해 주세요.');}catch(e){message(e.message);return;}
  aborter=new AbortController();const signal=aborter.signal,mode=$('subtitle-mode').value;
  setBusy(true);$('cancel').disabled=false;document.body.classList.add('recording');$('downloads').replaceChildren();frame.contentWindow.presentationDeck.showSlide(plan.slides[0].id);$('capture-surface').scrollIntoView({block:'center'});
  try{

@@ -51,12 +51,27 @@ class PresentationWindowTest(unittest.TestCase):
     def test_window_launch_preserves_slide_and_uses_app_not_fullscreen(self, launch, browser):
         status, body = self.request(self.origin, {"slide": "knowledge-flow", "width": 2000, "height": 1100, "left": -2000})
         self.assertEqual(status, 200)
-        self.assertTrue(json.loads(body)["opened"])
+        self.assertTrue(json.loads(body)["launched"])
+        self.assertFalse(json.loads(body)["opened"])
         command = launch.call_args.args[0]
         self.assertIn(f"--app={self.origin}/?audience#/knowledge-flow", command)
         self.assertIn("--window-size=2000,1100", command)
         self.assertIn("--window-position=-2000,0", command)
         self.assertFalse(any("fullscreen" in arg or "kiosk" in arg for arg in command))
+
+    @patch('start.browser_executable',return_value='/browser')
+    @patch('start.subprocess.Popen')
+    def test_launch_is_not_ready_until_child_acknowledges(self,launch,browser):
+        token='a'*32
+        status,body=self.request(self.origin,{'slide':'cover','launchToken':token})
+        self.assertEqual(status,200);self.assertFalse(json.loads(body)['opened'])
+        def state():
+            connection=http.client.HTTPConnection('127.0.0.1',self.server.server_port);connection.request('GET','/api/presentation-window/status/'+token)
+            response=connection.getresponse();value=json.loads(response.read());connection.close();return value
+        self.assertFalse(state()['ready'])
+        self.assertEqual(self.request('https://example.test',{'launchToken':token},'/api/presentation-window/ready')[0],403)
+        self.assertEqual(self.request(self.origin,{'launchToken':token},'/api/presentation-window/ready')[0],200)
+        self.assertTrue(state()['ready'])
 
     @patch("start.subprocess.Popen")
     def test_other_origins_cannot_open_windows(self, launch):

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createDocumentFromScenario,validatePresentationDocument,validatePresentationProject,firstContentSlide,assertPresentationContent} from '../vendor/foundation/presentation-document.js';
 import {createPresentationExportPlan,createSubtitleDraft,serializeSrt} from '../vendor/foundation/presentation-subtitles.js';
+import {validatePageData,validateEvidence,presentationPath,inspectPresentationCopy} from '../vendor/foundation/presentation-structure.js';
 const id='11111111-1111-4111-8111-111111111111';
 const photo={id:'photo-1',name:'표지.jpeg',type:'image/jpeg',dataUrl:`data:image/jpeg;base64,${readFileSync(new URL('../assets/redwood-cover.jpeg',import.meta.url)).toString('base64')}`};
 const scenario='# 새 발표\n## 처리 순서\n1. 자료를 입력합니다.\n2. 검토합니다.\n3. 결과를 저장합니다.\n## 이전과 이후 비교\n- 이전 방식\n- 이후 방식';
@@ -78,4 +79,19 @@ test('agent-authored pages keep code separate while metadata survives JSON round
  const result=validatePresentationProject(JSON.parse(JSON.stringify({document,assets:[]})));
  assert.equal(result.document.brief,document.brief);assert.equal(result.document.slides.find(s=>s.id===slide.id).design,slide.design);assertPresentationContent(result.document);
  slide.authored='https://example.test/code.js';assert.throws(()=>validatePresentationDocument(document));
+});
+test('structured page data, audience brief and parent roles survive normalization',()=>{
+ const document=createDocumentFromScenario(scenario,[],{id});const bodies=document.slides.filter(s=>s.items.length);document.purpose='처리 순서 설명';document.audience='담당자';document.decision='공통 양식 사용';
+ bodies[1].parentId=bodies[0].id;bodies[1].role='detail';bodies[1].message='검토 후 보관';bodies[1].data={columns:['이전','이후'],rows:[['문서','양식']]};
+ const parsed=validatePresentationDocument(JSON.parse(JSON.stringify(document)));
+ assert.equal(parsed.decision,document.decision);assert.deepEqual(parsed.slides.find(s=>s.id===bodies[1].id).data,bodies[1].data);assert.equal(presentationPath(parsed.slides,bodies[1].id).length,2);
+ bodies[0].parentId=bodies[1].id;assert.throws(()=>validatePresentationDocument(document),/순환/);
+});
+test('unsafe or missing evidence references fail while 31 file assets are supported',()=>{
+ const entries=Array.from({length:31},(_,i)=>({id:`e-${i}`,title:`증거 ${i}`,path:`evidence/e-${i}.png`,type:'image/png',bytes:100,sha256:'a'.repeat(64),kind:'mock',claim:'합성 예제',source:'테스트'}));
+ assert.equal(validateEvidence(entries).length,31);
+ for(const path of ['../secret.png','evidence/../private.png','evidence/%2e%2e/private.png','https://example.test/x.png'])assert.throws(()=>validateEvidence([{...entries[0],path}]));
+ const document=createDocumentFromScenario(scenario,[],{id});document.slides[1].evidenceIds=['missing'];assert.throws(()=>validatePresentationProject({document,assets:[],evidence:entries}),/증거/);
+ assert.throws(()=>validatePageData(JSON.parse('{"__proto__":{}}')));assert.throws(()=>validatePageData({n:Infinity}));
+ assert.ok(inspectPresentationCopy([{id:'a',title:'설명',layout:'content',items:['카드를 선택하세요']}]).length>=2);
 });
