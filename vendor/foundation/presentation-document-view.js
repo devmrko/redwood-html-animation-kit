@@ -53,7 +53,10 @@ export function renderPresentationDocument(input, mount, theme = {}, options = {
     const visible = options.slideId ? project.document.slides.filter(s => s.id === options.slideId) : project.document.slides;
     if (!visible.length)
         throw Error('미리 볼 장표를 찾을 수 없습니다.');
+    const baseTheme = theme;
     visible.forEach((slide, index) => {
+        const appearance = slide.appearance ?? project.document.appearance ?? 'light';
+        const theme = { ...baseTheme, ...baseTheme.variants?.[appearance] };
         const factory = slide.authored ? options.pages?.get(slide.id) : undefined;
         if (slide.authored && !factory)
             throw Error(`‘${slide.title}’ 페이지 코드가 없습니다. 제작용 프로젝트 폴더에서 실행해 주세요. JSON만으로 페이지 코드를 전달할 수는 없습니다.`);
@@ -62,12 +65,20 @@ export function renderPresentationDocument(input, mount, theme = {}, options = {
             root.dataset.textMotion = 'off';
         if (theme.id)
             root.dataset.template = theme.id;
+        root.dataset.appearance = appearance;
+        if (theme.dividerArt)
+            root.style.setProperty('--rf-divider-art', `url("${new URL(theme.dividerArt, doc.baseURI).href}")`);
         if (theme.bodyArt)
             root.style.setProperty('--rf-document-template-band', `url("${new URL(theme.bodyArt, doc.baseURI).href}")`);
         if (theme.badge) {
             const badge = el('span', 'rf-document-badge');
             badge.setAttribute('aria-hidden', 'true');
             badge.style.setProperty('--rf-document-template-badge', `url("${new URL(theme.badge, doc.baseURI).href}")`);
+            const mark = el('img');
+            mark.src = theme.badge;
+            mark.alt = '';
+            mark.style.cssText = 'width:70%;height:70%;object-fit:contain';
+            badge.append(mark);
             root.append(badge);
         }
         if (slide.items.length > 4 || slide.items.join('').length > 260)
@@ -134,7 +145,7 @@ export function renderPresentationDocument(input, mount, theme = {}, options = {
         copy.append(list);
         body.append(copy);
         root.append(body);
-        if (slide.layout === 'section' && theme.agendaTitle) {
+        if (slide.layout === 'section' && (theme.agendaTitle || slide.agendaMode === 'navigation')) {
             root.classList.add('rf-document-slide--agenda');
             if (theme.agendaArt) {
                 const art = el('img', 'rf-document-agenda-art');

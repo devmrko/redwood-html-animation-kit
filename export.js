@@ -1,3 +1,5 @@
+import {captureEditablePresentationSlide} from './vendor/foundation/presentation-powerpoint-editable.js';
+import {createPresentationPowerPoint,capturePresentationPowerPointSlide} from './vendor/foundation/presentation-powerpoint.js';
 import { createSubtitleDraft, createPresentationExportPlan, serializeSrt, validateSubtitleCues, planSlideTiming } from './vendor/foundation/presentation-subtitles.js';
 import { validProjectId } from './vendor/foundation/presentation-document.js';
 import { recordPresentationVideo } from './vendor/foundation/presentation-video.js';
@@ -28,6 +30,18 @@ $('add-cue').onclick=()=>{const s=selectedSlide(),start=s.captions.at(-1)?.end||
 $('llm').onclick=async()=>{setBusy(true);message('선택한 장표의 본문·발표 노트·등장 시각으로 LLM 자막을 만들고 있습니다…');try{const s=selectedSlide(),r=await api('/api/subtitles/draft',{title:s.title,content:s.content,notes:s.notes,events:s.events.filter(e=>e.at<=s.duration),duration:s.duration});s.captions=validateSubtitleCues(r.captions,s.duration);renderCues();summary();save();message(`${r.model} 초안입니다. 문구와 시간을 확인하고 수정해 주세요.`);}catch(e){message(e.message);}finally{setBusy(false);}};
 $('save-plan').onclick=()=>{try{createPresentationExportPlan(slides);download(new Blob([JSON.stringify({version:1,slides},null,2)],{type:'application/json'}),'presentation-plan.json');}catch(e){message(e.message);}};
 $('load-plan').onchange=async()=>{try{const file=$('load-plan').files[0];if(!file)return;if(file.size>256000)throw Error('편집 설정은 256KB 이하여야 합니다.');const saved=JSON.parse(await file.text());if(saved.version!==1||!Array.isArray(saved.slides))throw Error('지원하지 않는 편집 설정입니다.');const map=new Map(saved.slides.map(s=>[s.id,s]));const replacement=slides.map(s=>{const v=map.get(s.id);if(!v)return s;if(typeof v.notes!=='string'||v.notes.length>6000||typeof v.included!=='boolean')throw Error('편집 설정 형식이 올바르지 않습니다.');return {...s,notes:v.notes,duration:v.duration,autoReading:v.autoReading!==false,captions:validateSubtitleCues(v.captions,v.duration),included:v.included};});createPresentationExportPlan(replacement);slides=replacement;render();save();message('편집 설정을 불러왔습니다.');}catch(e){message(e.message);}};
+$('save-pptx').onclick=async()=>{
+ if(busy)return;
+ const selectedSlides=slides.filter(s=>s.included),editable=$('pptx-mode').value==='editable';if(!selectedSlides.length)return message('PPT에 포함할 장표를 선택해 주세요.');
+ if(!window.PptxGenJS||!window.htmlToImage)return message('PPT 모듈을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');
+ aborter=new AbortController();const signal=aborter.signal;setBusy(true);$('cancel').disabled=false;$('capture-surface').scrollIntoView({block:'center'});message('PPT 장표를 만들고 있습니다…');
+ try{
+  const deck=frame.contentWindow.presentationDeck;
+  const blob=await createPresentationPowerPoint({slides:selectedSlides,signal,createWriter:()=>new window.PptxGenJS(),render:async id=>{deck.showSlide(id);deck.pause();const root=deck.getSlideElement(id);if(!root)throw Error('장표 화면을 찾을 수 없습니다.');return (editable?captureEditablePresentationSlide:capturePresentationPowerPointSlide)(root,frame.contentWindow.htmlToImage?.toPng||window.htmlToImage.toPng);},onProgress:(done,total)=>message(done===total?'PPT 파일로 묶고 있습니다…':`PPT 장표 생성 · ${done+1} / ${total}`)});
+  if(signal.aborted)throw new DOMException('취소했습니다.','AbortError');
+  download(blob,'presentation.pptx');message(`${selectedSlides.length}장 PPT를 저장했습니다. ${editable?'텍스트·표·기본 도형을 편집할 수 있습니다.':'화면은 정지 이미지입니다.'} 발표 노트가 포함됩니다.`);
+ }catch(e){message(e.name==='AbortError'?'PPT 저장을 취소했습니다.':e.message);}finally{frame.contentWindow.presentationDeck.showSlide(selectedSlide().id);setBusy(false);}
+};
 $('save-srt').onclick=()=>{try{const plan=createPresentationExportPlan(slides);if(!plan.captions.length)throw Error('선택한 장표에 자막이 없습니다. 먼저 자막을 작성해 주세요.');download(new Blob([serializeSrt(plan.captions)],{type:'application/x-subrip;charset=utf-8'}),'subtitles.srt');message(`${plan.slides.length}장 · ${plan.duration.toFixed(1)}초 영상 기준 SRT를 저장했습니다.`);}catch(e){message(e.message);}};
 function wait(ms,signal){return new Promise((resolve,reject)=>{const abort=()=>{clearTimeout(timer);reject(new DOMException('취소했습니다.','AbortError'));};const timer=setTimeout(()=>{signal.removeEventListener('abort',abort);resolve();},ms);signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();});}
 $('cancel').onclick=()=>aborter?.abort();

@@ -34,11 +34,13 @@ def validate_authoring_project(project):
     slides=doc.get('slides')
     if not isinstance(slides,list) or not 1<=len(slides)<=60:
         raise ValueError('장표는 1~60장까지 지원합니다.')
+    if doc.get('appearance','light') not in ('light','dark'):raise ValueError('발표 테마를 확인해 주세요.')
     used=set()
     for slide in slides:
         if not isinstance(slide,dict) or not isinstance(slide.get('id'),str) or not re.fullmatch(ID,slide['id']) or slide['id'] in used:
             raise ValueError('장표 ID를 확인해 주세요.')
         used.add(slide['id'])
+        if slide.get('appearance','light') not in ('light','dark'):raise ValueError('장표 테마를 확인해 주세요.')
         if slide.get('layout') not in ('cover','section','content','photo','steps','comparison','closing'):
             raise ValueError('장표 종류를 확인해 주세요.')
         for key,maximum in (('title',100),('section',120),('subtitle',220),('notes',6000),('design',4000),('imageAlt',240)):
@@ -92,10 +94,10 @@ def create_authoring_bundle(root, input_project):
     project=copy.deepcopy(validate_authoring_project(input_project))
     # Unknown metadata must not become executable paths or silently enter a bundle.
     doc=project['document']
-    project['document']={k:doc[k] for k in ('version','id','title','presenter','scenario','brief','purpose','audience','decision','slides') if k in doc}
+    project['document']={k:doc[k] for k in ('version','id','title','presenter','scenario','brief','purpose','audience','decision','slides','appearance') if k in doc}
     slides=[]
     for slide in doc['slides']:
-        slides.append({k:slide[k] for k in ('id','layout','section','title','subtitle','items','notes','imageId','imageAlt','duration','design','authored','role','parentId','message','data','evidenceIds','agendaMode','mediaIds','mediaLayout') if k in slide})
+        slides.append({k:slide[k] for k in ('id','layout','section','title','subtitle','items','notes','imageId','imageAlt','duration','design','authored','role','parentId','message','data','evidenceIds','agendaMode','mediaIds','mediaLayout','appearance') if k in slide})
     project['document']['slides']=slides
     project['assets']=[{k:a[k] for k in ('id','name','type','dataUrl') if k in a} for a in project['assets']]
     if 'evidence' in project:project['evidence']=[{k:e[k] for k in ('id','title','path','type','bytes','sha256','kind','claim','source','capturedAt') if k in e} for e in project['evidence']]
@@ -124,6 +126,7 @@ def create_authoring_bundle(root, input_project):
             for path in sorted((root/directory).rglob('*')):
                 if '__pycache__' not in path.parts and (path.suffix in ALLOWED_SUFFIXES or path.name=='LICENSE'):add(path)
         for name in ASSETS:add(root/'assets'/name)
+        for path in sorted((root/'assets/oracle-corporate').glob('*')):add(path)
         for path in evidence_paths:add(path)
         for path in media_paths:add(path)
         add(root/'docs/presentation-workspace.md')
@@ -134,7 +137,7 @@ def create_authoring_bundle(root, input_project):
             else:add(source,name)
         archive.writestr('presentation-project.json',json.dumps(project,ensure_ascii=False,indent=2)+'\n')
         archive.writestr('authored-pages.js',registry)
-        archive.writestr('presentation-release.json',json.dumps({'version':1,'status':'draft','files':['authored-pages.js',*page_sources],'source':{'template':'redwood-2019','kitVersion':'0.1.0'}},ensure_ascii=False,indent=2)+'\n')
+        archive.writestr('presentation-release.json',json.dumps({'version':1,'status':'draft','files':['authored-pages.js',*page_sources],'source':{'template':'oracle-corporate','kitVersion':'0.1.0'}},ensure_ascii=False,indent=2)+'\n')
         for name,source in page_sources.items():archive.writestr(name,source)
         requests='\n\n'.join(f'### {i+1}. {s["title"]}\n{s.get("design","")}' for i,s in enumerate(slides) if s['layout'] not in ('cover','section','closing'))
         archive.writestr('REQUEST.md',f'# 제작 요청\n\n이 폴더의 AGENTS.md·AUTHORING.md·SLIDE_PRINCIPLES.md를 읽고 작성 원칙과 통과 기준에 따라 아래 발표를 제작해 주세요. 본문은 고정 레이아웃에 제한하지 말고 사용자 요청과 내용을 고려해 표·사진·SVG·효과로 구성하고 실제 브라우저에서 검수해 주세요.\n\n## 발표\n\n{doc["title"]}\n\n## 전체 화면 구성 요청\n\n{doc.get("brief","") or "내용에 맞게 구성해 주세요."}\n\n## 페이지별 요청\n\n{requests}\n\n## 원본 시나리오\n\n{doc.get("scenario","")}\n')

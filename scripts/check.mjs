@@ -14,11 +14,16 @@ for(const [name,hash] of Object.entries({...manifest.modules,...manifest.styles}
  const bytes=await readFile(resolve(root,'vendor/foundation',name));
  if(createHash('sha256').update(bytes).digest('hex')!==hash)throw Error(`Vendor hash mismatch: ${name}`);
 }
+for(const directory of ['html-to-image','pptxgenjs']){
+ const source=JSON.parse(await read(`vendor/${directory}/source.json`));
+ for(const [name,hash] of Object.entries(source.sha256))if(createHash('sha256').update(await readFile(resolve(root,'vendor',directory,name))).digest('hex')!==hash)throw Error(`Vendor hash mismatch: ${directory}/${name}`);
+}
 const visited=new Set();
 async function inspect(path){
  path=resolve(path);if(visited.has(path))return;visited.add(path);
  const source=await readFile(path,'utf8');
  if(extname(path)==='.js')execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
+ if(/vendor\/(?:html-to-image|pptxgenjs)\//.test(path))return;
  const refs=extname(path)==='.html'?[...source.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1]):extname(path)==='.css'?[...source.matchAll(/(?:url\(\s*|@import\s+)["']?([^"'\s)]+)["']?\)?/g)].map(m=>m[1]):[...source.matchAll(/(?:from\s*|import\s*)["'](\.[^"']+)["']/g)].map(m=>m[1]);
  for(const ref of refs){if(!ref||/^(?:https?:|data:|about:|#)/.test(ref))continue;const next=resolve(dirname(path),ref.split(/[?#]/)[0]);await stat(next);if(['.js','.css','.html'].includes(extname(next)))await inspect(next);}
 }

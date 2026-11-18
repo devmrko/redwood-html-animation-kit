@@ -95,3 +95,10 @@ test('unsafe or missing evidence references fail while 31 file assets are suppor
  assert.throws(()=>validatePageData(JSON.parse('{"__proto__":{}}')));assert.throws(()=>validatePageData({n:Infinity}));
  assert.ok(inspectPresentationCopy([{id:'a',title:'설명',layout:'content',items:['카드를 선택하세요']}]).length>=2);
 });
+
+test('document appearance and per-slide overrides survive JSON and reject unknown themes',()=>{
+ const document=createDocumentFromScenario(scenario,[],{id});document.appearance='dark';document.slides[0].appearance='light';
+ const result=validatePresentationDocument(JSON.parse(JSON.stringify(document)));
+ assert.equal(result.appearance,'dark');assert.equal(result.slides[0].appearance,'light');assert.equal(result.slides[1].appearance,undefined);
+ document.appearance='sepia';assert.throws(()=>validatePresentationDocument(document));document.appearance='light';document.slides[1].appearance='sepia';assert.throws(()=>validatePresentationDocument(document));
+});

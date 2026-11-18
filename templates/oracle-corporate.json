@@ -1,0 +1,44 @@
+{
+  "id": "oracle-corporate",
+  "name": "Oracle Corporate PPT Template",
+  "slide": {
+    "width": 1600,
+    "height": 900
+  },
+  "body": {
+    "x": 101,
+    "y": 230,
+    "width": 1400,
+    "height": 560
+  },
+  "font": "Oracle Sans Tab, Apple SD Gothic Neo, Malgun Gothic, Noto Sans KR, sans-serif",
+  "appearances": [
+    "light",
+    "dark"
+  ],
+  "defaultAppearance": "light",
+  "sourceSlides": {
+    "cover": [
+      18,
+      19
+    ],
+    "section": [
+      51,
+      52
+    ],
+    "content": [
+      72,
+      87
+    ],
+    "closing": [
+      121,
+      122
+    ]
+  },
+  "rules": [
+    "원본 표지·간지·마지막 장과 공식 로고를 사용한다.",
+    "본문은 장식을 줄이고 내용 영역을 넓게 사용한다.",
+    "문서 기본 appearance와 장표별 appearance를 따른다.",
+    "한글을 포함해 같은 글꼴 집합을 사용하고 표·도식·수치는 편집 가능한 요소로 작성한다."
+  ]
+}

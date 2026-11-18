@@ -165,6 +165,12 @@
                   "focus",
                   "balanced"
                 ]
+              },
+              "appearance": {
+                "enum": [
+                  "light",
+                  "dark"
+                ]
               }
             }
           }
@@ -180,6 +186,12 @@
         "decision": {
           "type": "string",
           "maxLength": 1000
+        },
+        "appearance": {
+          "enum": [
+            "light",
+            "dark"
+          ]
         }
       }
     },

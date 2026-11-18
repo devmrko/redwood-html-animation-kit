@@ -7,7 +7,7 @@
   "scripts": {
     "start": "python3 start.py",
     "check": "node scripts/check.mjs",
-    "test": "node --test scripts/test_subtitles.mjs scripts/test_document.mjs scripts/test_window.mjs scripts/test_media.mjs && python3 -m unittest discover -s scripts -p 'test_*.py'",
+    "test": "node --test scripts/test_subtitles.mjs scripts/test_document.mjs scripts/test_window.mjs scripts/test_media.mjs scripts/test_powerpoint.mjs && python3 -m unittest discover -s scripts -p 'test_*.py'",
     "build:framework": "tsc -p framework/tsconfig.json && node scripts/sync-ui.mjs"
   },
   "devDependencies": {

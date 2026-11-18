@@ -6,7 +6,7 @@ import type {EvidenceAsset,PageData} from './presentation-structure.js';
 import {createPresentationMedia,presentationMediaViews,layoutPresentationMedia,type PresentationMedia} from './presentation-media.js';
 
 export interface TemplateTextBox { width: number; height: number; fontSize: number; lineHeight: number; minFontSize: number }
-export interface DocumentTheme { id?: string; logo?: string; logoAlt?: string; coverArt?: string; closingArt?: string; agendaArt?: string; bodyArt?: string; badge?: string; agendaTitle?: string; coverTitleBox?: TemplateTextBox; coverSubtitleBox?: TemplateTextBox }
+export interface DocumentTheme { variants?:Partial<Record<'light'|'dark',DocumentTheme>>;dividerArt?:string;id?: string; logo?: string; logoAlt?: string; coverArt?: string; closingArt?: string; agendaArt?: string; bodyArt?: string; badge?: string; agendaTitle?: string; coverTitleBox?: TemplateTextBox; coverSubtitleBox?: TemplateTextBox }
 export interface DocumentPageContext { root: HTMLElement; body: HTMLElement; slide: DocumentSlide; data:PageData; assets: ReadonlyMap<string,PresentationAsset>; evidence:ReadonlyMap<string,EvidenceAsset>; media:ReadonlyMap<string,PresentationMedia>; document: Document }
 export interface DocumentPage { player: PresentationTimeline; stepTimes?: readonly number[] }
 export type DocumentPageFactory = (context: DocumentPageContext) => DocumentPage;
@@ -40,14 +40,18 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
   mount.replaceChildren();
   const visible=options.slideId?project.document.slides.filter(s=>s.id===options.slideId):project.document.slides;
   if(!visible.length)throw Error('미리 볼 장표를 찾을 수 없습니다.');
+  const baseTheme=theme;
   visible.forEach((slide,index) => {
+    const appearance=slide.appearance??project.document.appearance??'light';
+    const theme={...baseTheme,...baseTheme.variants?.[appearance]};
     const factory=slide.authored ? options.pages?.get(slide.id) : undefined;
     if(slide.authored && !factory)throw Error(`‘${slide.title}’ 페이지 코드가 없습니다. 제작용 프로젝트 폴더에서 실행해 주세요. JSON만으로 페이지 코드를 전달할 수는 없습니다.`);
     const root=el('section',`slide rf-document-slide rf-document-slide--${slide.layout}`);
     if(options.textMotion===false)root.dataset.textMotion='off';
-    if(theme.id)root.dataset.template=theme.id;
+    if(theme.id)root.dataset.template=theme.id;root.dataset.appearance=appearance;
+    if(theme.dividerArt)root.style.setProperty('--rf-divider-art',`url("${new URL(theme.dividerArt,doc.baseURI).href}")`);
     if(theme.bodyArt)root.style.setProperty('--rf-document-template-band',`url("${new URL(theme.bodyArt,doc.baseURI).href}")`);
-    if(theme.badge){const badge=el('span','rf-document-badge');badge.setAttribute('aria-hidden','true');badge.style.setProperty('--rf-document-template-badge',`url("${new URL(theme.badge,doc.baseURI).href}")`);root.append(badge);}
+    if(theme.badge){const badge=el('span','rf-document-badge');badge.setAttribute('aria-hidden','true');badge.style.setProperty('--rf-document-template-badge',`url("${new URL(theme.badge,doc.baseURI).href}")`);const mark=el('img');mark.src=theme.badge;mark.alt='';mark.style.cssText='width:70%;height:70%;object-fit:contain';badge.append(mark);root.append(badge);}
     if(slide.items.length>4 || slide.items.join('').length>260)root.classList.add('rf-document-slide--dense');
     if(slide.title.length>50)root.classList.add('rf-document-slide--long-title');
     root.id=slide.id; root.dataset.notes=slide.notes; root.setAttribute('aria-label',slide.title);
@@ -77,7 +81,7 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
       list.append(item);return item;
     });
     copy.append(list);body.append(copy);root.append(body);
-    if(slide.layout==='section'&&theme.agendaTitle){
+    if(slide.layout==='section'&&(theme.agendaTitle||slide.agendaMode==='navigation')){
       root.classList.add('rf-document-slide--agenda');
       if(theme.agendaArt){const art=el('img','rf-document-agenda-art');art.src=theme.agendaArt;art.alt='';root.append(art);}
       const agenda=el('ol','rf-document-agenda');

@@ -17,6 +17,8 @@ export function validatePresentationDocument(input) {
     const doc = object(input);
     if (doc.version !== 1 || typeof doc.id !== 'string' || !validProjectId(doc.id) || !Array.isArray(doc.slides) || !doc.slides.length || doc.slides.length > 60)
         throw Error('지원하는 문서 버전·ID·장표 수(1~60장)를 확인해 주세요.');
+    if (doc.appearance !== undefined && !['light', 'dark'].includes(String(doc.appearance)))
+        throw Error('발표 테마를 확인해 주세요.');
     const ids = new Set();
     const slides = doc.slides.map(value => {
         const s = object(value), id = text(s.id, 80, true);
@@ -43,16 +45,18 @@ export function validatePresentationDocument(input) {
             throw Error('장표 증거 참조를 확인해 주세요.');
         if (s.mediaLayout !== undefined && !['auto', 'focus', 'balanced'].includes(String(s.mediaLayout)))
             throw Error('동영상 배치를 확인해 주세요.');
+        if (s.appearance !== undefined && !['light', 'dark'].includes(String(s.appearance)))
+            throw Error('장표 테마를 확인해 주세요.');
         const mediaIds = s.mediaIds === undefined ? undefined : s.mediaIds;
         if (mediaIds !== undefined && (!Array.isArray(mediaIds) || mediaIds.length > 4 || new Set(mediaIds).size !== mediaIds.length || mediaIds.some(v => typeof v !== 'string' || !/^[a-z0-9-]{1,80}$/.test(v))))
             throw Error('장표 동영상 참조를 확인해 주세요 (최대 4개).');
         return { id, layout: s.layout, section: text(s.section ?? '', 120), title: text(s.title, 100, true), subtitle: text(s.subtitle ?? '', 220),
             items: s.items.map(item => text(item, 240, true)), notes: text(s.notes ?? '', 6000), imageId, imageAlt: text(s.imageAlt ?? '', 240), duration,
             design: s.design === undefined ? undefined : text(s.design, 4000), authored: s.authored,
-            role: s.role, parentId, message: s.message === undefined ? undefined : text(s.message, 600), data: s.data === undefined ? undefined : validatePageData(s.data), evidenceIds: evidenceIds, mediaIds: mediaIds, mediaLayout: s.mediaLayout, agendaMode: s.agendaMode };
+            role: s.role, parentId, message: s.message === undefined ? undefined : text(s.message, 600), data: s.data === undefined ? undefined : validatePageData(s.data), evidenceIds: evidenceIds, mediaIds: mediaIds, mediaLayout: s.mediaLayout, appearance: s.appearance, agendaMode: s.agendaMode };
     });
     slides.forEach(s => presentationPath(slides, s.id));
-    return { version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), brief: doc.brief === undefined ? undefined : text(doc.brief, 4000), purpose: doc.purpose === undefined ? undefined : text(doc.purpose, 1000), audience: doc.audience === undefined ? undefined : text(doc.audience, 600), decision: doc.decision === undefined ? undefined : text(doc.decision, 1000), slides };
+    return { appearance: doc.appearance, version: 1, id: doc.id, title: text(doc.title, 100, true), presenter: text(doc.presenter ?? '', 200), scenario: text(doc.scenario ?? '', 30000), brief: doc.brief === undefined ? undefined : text(doc.brief, 4000), purpose: doc.purpose === undefined ? undefined : text(doc.purpose, 1000), audience: doc.audience === undefined ? undefined : text(doc.audience, 600), decision: doc.decision === undefined ? undefined : text(doc.decision, 1000), slides };
 }
 function sniff(bytes) {
     if ([137, 80, 78, 71, 13, 10, 26, 10].every((n, i) => bytes[i] === n))

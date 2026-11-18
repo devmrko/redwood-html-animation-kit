@@ -1,0 +1,84 @@
+/* Oracle Corporate PPT: source 18/19, 51/52, 72/87, 121/122. Canvas 1600x900. */
+[data-template="oracle-corporate"]{--rf-document-font:"Oracle Sans Tab","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;--rf-bg:#fbf9f8;--rf-text:#2a2f2f;--rf-muted:#514c47;--rf-accent:#04536f;--rf-surface:#fff;--rf-selected:#e5f0f1;--rf-border:#c4c7c5;--rf-status-success:#315f45;--rf-status-error:#9b3028;--rf-status-limited:#795518;color:var(--rf-text);background:var(--rf-bg);font-family:var(--rf-document-font)}
+[data-template="oracle-corporate"][data-appearance="dark"]{--rf-bg:#2a2f2f;--rf-text:#fbf9f8;--rf-muted:#d6d9d9;--rf-accent:#f0cc71;--rf-surface:#343c3d;--rf-selected:#435556;--rf-border:#6f8080;--rf-status-success:#86b596;--rf-status-error:#f2a296;--rf-status-limited:#f0cc71}
+[data-template="oracle-corporate"].rf-document-slide{display:block;position:relative;padding:0;background:var(--rf-bg);color:var(--rf-text)}
+.reveal .slides>[data-template="oracle-corporate"].present{display:block!important;padding:0}
+[data-template="oracle-corporate"] :is(h1,h2,h3,p,li,span,strong,td,th,text){font-family:var(--rf-document-font)!important}
+[data-template="oracle-corporate"] .rf-document-eyebrow,[data-template="oracle-corporate"] .rf-document-logo{display:none}
+[data-template="oracle-corporate"] .rf-document-heading{position:absolute;left:101px;top:78px;width:1400px;max-width:none;margin:0}
+[data-template="oracle-corporate"] h1{font-size:46.667px;line-height:1.15;font-weight:700;color:var(--rf-text);letter-spacing:normal;margin:0;text-wrap:balance}
+[data-template="oracle-corporate"] .rf-document-subtitle{font-size:33.333px;line-height:1.25;color:var(--rf-text);margin:14px 0 0}
+[data-template="oracle-corporate"] .rf-document-body{position:absolute;left:101px;top:230px;width:1400px;height:560px;max-height:none;gap:32px;color:var(--rf-text)}
+[data-template="oracle-corporate"] .rf-document-copy{align-self:start;min-width:0}
+[data-template="oracle-corporate"] .rf-document-items{margin:0;padding:0;gap:24px}
+[data-template="oracle-corporate"] .rf-document-item{border:0;border-radius:0;background:none;color:var(--rf-text);padding:0;font-size:30px;line-height:1.45;min-height:0;box-shadow:none}
+[data-template="oracle-corporate"] .rf-document-item-title{color:var(--rf-accent);font-size:30px}
+[data-template="oracle-corporate"] .rf-document-photo{border-radius:0;background:none}
+[data-template="oracle-corporate"] .rf-document-footer{position:absolute;left:100px;right:130px;bottom:28px;display:flex;color:var(--rf-muted);font-size:14px}
+[data-template="oracle-corporate"] .rf-document-badge{position:absolute;right:51px;bottom:0;width:52px;height:52px;background:#c74634;display:grid;place-items:center;z-index:3}
+[data-template="oracle-corporate"] .rf-document-badge::after{content:"";width:36px;height:36px;background:var(--rf-document-template-badge) center/contain no-repeat}
+[data-template="oracle-corporate"] :is(.rf-document-art,.rf-document-logo){filter:none}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-art{inset:0;width:100%;height:100%;opacity:1;z-index:-2;object-fit:cover}
+[data-template="oracle-corporate"].rf-document-slide--cover::before{display:none}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-logo{display:block;left:96px;top:148px;right:auto;width:200px;max-width:200px;max-height:none}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-heading{left:104px;top:282px;width:840px;max-width:840px;height:224px;margin:0}
+[data-template="oracle-corporate"].rf-document-slide--cover h1{font-size:66.667px;line-height:1;font-weight:700;min-height:168px;display:flex;align-items:end}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-subtitle{font-size:40px;line-height:1.1;margin:10px 0 0}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-body{left:104px;top:596px;width:668px;height:166px;max-height:none}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-body::before{content:"";position:absolute;left:0;top:-50px;width:48px;height:5px;background:#c74634}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-presenter{font-size:27px;line-height:1.5;color:var(--rf-text)}
+[data-template="oracle-corporate"].rf-document-slide--cover .rf-document-footer{display:none}
+[data-template="oracle-corporate"].rf-document-slide--section{background:var(--rf-divider-art) center/cover no-repeat var(--rf-bg)}
+[data-template="oracle-corporate"].rf-document-slide--section .rf-document-heading{left:101px;top:306px;width:840px;margin:0}
+[data-template="oracle-corporate"].rf-document-slide--section h1{font-size:66.667px;line-height:1.05}
+[data-template="oracle-corporate"].rf-document-slide--section .rf-document-subtitle{font-size:33px;margin-top:46px}
+[data-template="oracle-corporate"].rf-document-slide--section .rf-document-body{left:102px;top:610px;width:820px;height:170px}
+[data-template="oracle-corporate"].rf-document-slide--navigation .rf-document-heading{top:78px;width:1200px}
+[data-template="oracle-corporate"].rf-document-slide--navigation .rf-document-body{top:240px;width:1000px;height:550px}
+[data-template="oracle-corporate"] .rf-document-agenda{list-style:none;padding:0;margin:0;display:grid;gap:20px;font-size:32px;line-height:1.3}
+[data-template="oracle-corporate"] .rf-document-agenda-number{display:inline-block;min-width:60px;color:var(--rf-accent)}
+[data-template="oracle-corporate"].rf-document-slide--closing{background:var(--rf-bg);color:var(--rf-text)}
+[data-template="oracle-corporate"].rf-document-slide--closing .rf-document-art{left:580px;right:auto;top:0;width:1020px;height:680px;object-fit:contain;opacity:1;z-index:-1}
+[data-template="oracle-corporate"].rf-document-slide--closing .rf-document-heading{left:101px;top:457px;width:660px;max-width:none;margin:0}
+[data-template="oracle-corporate"].rf-document-slide--closing h1{font-size:66.667px;line-height:1.05}
+[data-template="oracle-corporate"].rf-document-slide--closing .rf-document-body{left:100px;top:626px;width:660px;height:125px;max-width:none}
+[data-template="oracle-corporate"].rf-document-slide--closing .rf-document-logo,[data-template="oracle-corporate"].rf-document-slide--closing .rf-document-footer{display:none}
+[data-template="oracle-corporate"] .rf-document-node rect{fill:var(--rf-surface);stroke:var(--rf-border)}
+[data-template="oracle-corporate"] .rf-document-node text{fill:var(--rf-text)}
+[data-template="oracle-corporate"] .rf-document-node.is-current rect{fill:var(--rf-selected);stroke:var(--rf-accent)}
+[data-template="oracle-corporate"] .rf-document-step-number{color:var(--rf-accent)}
+[data-template="oracle-corporate"] .rf-document-connector{stroke:var(--rf-border)}
+[data-template="oracle-corporate"] .rf-comparison-table thead{background:var(--rf-accent);color:var(--rf-bg)}
+[data-template="oracle-corporate"] .rf-comparison-table :is(th,td){border-color:var(--rf-border)}
+[data-template="oracle-corporate"] .rf-comparison-table [data-status=success]{color:var(--rf-status-success)}
+[data-template="oracle-corporate"] .rf-comparison-table [data-status=error]{color:var(--rf-status-error)}
+[data-template="oracle-corporate"] .rf-comparison-table [data-status=limited]{color:var(--rf-status-limited)}
+[data-template="oracle-corporate"].rf-document-slide--with-evidence .rf-document-body{height:350px!important}
+[data-template="oracle-corporate"] .rf-document-evidence-strip{left:101px;right:100px;bottom:110px;height:150px}
+[data-template="oracle-corporate"].rf-document-slide--media .rf-document-body{height:560px!important}
+[data-template="oracle-corporate"].rf-document-slide--media.rf-document-slide--with-evidence .rf-document-body{height:380px!important}
+[data-template="oracle-corporate"].rf-document-slide--media .rf-document-evidence-strip{height:110px}
+/* The fixed example pages use the same source assets and appearance tokens. */
+.reveal .slides>.rf-slide[data-template="oracle-corporate"]{background-color:var(--rf-bg);color:var(--rf-text);font-family:var(--rf-document-font)}
+.reveal .slides>.rf-slide[data-template="oracle-corporate"]::before{display:none}
+[data-template="oracle-corporate"] .slide-header h1,[data-template="oracle-corporate"] .subtitle{color:var(--rf-text)}
+[data-template="oracle-corporate"] .brands{display:none}
+[data-template="oracle-corporate"] :is(.rf-card,.card,.effect-stage,.flow-source,.flow-engine,.flow-answer,.knowledge-collector){background:var(--rf-surface);border-color:var(--rf-border);color:var(--rf-text)}
+[data-template="oracle-corporate"] :is(.card,.effect-demo,.chart-demo,.flow-source,.flow-engine,.flow-answer,.knowledge-collector) :is(h2,h3,p,li,dt,dd,span,strong){color:var(--rf-text)}
+[data-template="oracle-corporate"] .slide-footer{color:var(--rf-muted)}
+[data-template="oracle-corporate"].cover-slide .cover-panel{display:none}
+[data-template="oracle-corporate"].cover-slide .cover-logo{left:96px;top:148px;width:200px}
+.reveal .slides>[data-template="oracle-corporate"].cover-slide h1{left:104px;top:282px;width:840px;font:700 66.667px/1 var(--rf-document-font);color:var(--rf-text);min-height:168px;display:flex;align-items:end}
+[data-template="oracle-corporate"].cover-slide .cover-subtitle{left:104px;top:462px;width:840px;font-size:40px;color:var(--rf-text)}
+[data-template="oracle-corporate"].cover-slide .cover-presenter{left:104px;top:596px;font-size:27px;color:var(--rf-text)}
+.reveal .slides>[data-template="oracle-corporate"].closing-slide{background:var(--rf-bg);color:var(--rf-text)}
+[data-template="oracle-corporate"].closing-slide .closing-art{left:580px;right:auto;top:0;width:1020px;height:680px;object-fit:contain}
+.reveal .slides>[data-template="oracle-corporate"].closing-slide h1{left:101px;top:457px;font:700 66.667px/1.05 var(--rf-document-font);color:var(--rf-text)}
+[data-template="oracle-corporate"].closing-slide .closing-presenter{left:100px;top:626px;color:var(--rf-text)}
+[data-template="oracle-corporate"].closing-slide .closing-presenter::before{display:none}
+[data-template="oracle-corporate"].agenda-slide{background:var(--rf-divider-art) center/cover no-repeat var(--rf-bg)}
+[data-template="oracle-corporate"].agenda-slide .agenda-art{display:none}
+[data-template="oracle-corporate"].agenda-slide :is(h1,li){color:var(--rf-text)}
+[data-template="oracle-corporate"].agenda-slide li.is-current{color:var(--rf-accent)}
+
+[data-template="oracle-corporate"] .rf-document-badge::after{display:none}

@@ -1,3 +1,4 @@
+import {applySampleAppearance} from './template-theme.js';
 import {launchPresentation,reportPresentationReady} from './presentation-launch.js';
 import { createPresentationWindowControl } from './vendor/foundation/presentation-window.js';
 import { extractPresentationContent, estimatePresentationMinimum, describePresentationStructure } from './vendor/foundation/presentation-context.js';
@@ -10,6 +11,8 @@ import { createBookendSlide } from './slides/bookend.js';
 import { createChartsSlide } from './slides/charts.js';
 
 const query = new URLSearchParams(location.search);
+let sampleAppearance='light';try{sampleAppearance=localStorage.getItem('corporate-sample-appearance')||'light';}catch{}
+applySampleAppearance(document,sampleAppearance);const appearanceSelect=document.getElementById('sample-appearance');appearanceSelect.value=sampleAppearance;appearanceSelect.onchange=()=>{applySampleAppearance(document,appearanceSelect.value);try{localStorage.setItem('corporate-sample-appearance',appearanceSelect.value);}catch{}};
 const speakerPreview = query.has('receiver');
 const exportPreview = query.has('export-render');
 const audienceWindow = query.has('audience') && !speakerPreview;
@@ -78,6 +81,7 @@ const presentationWindow = createPresentationWindowControl({
 async function openPresentationWindow(){await presentationWindow.open();}
 // The export editor consumes this adapter; the reusable recorder knows no Reveal.js IDs.
 window.presentationDeck = {
+  getSlideElement:id=>pages.some(p=>p.id===id)?document.getElementById(id):null,
   getSlides:()=>pages.map((page,index)=>{
     const root=document.getElementById(page.id),timing=getSlide(index).player.describe();
     const content=extractPresentationContent(root),structure=describePresentationStructure(root);

@@ -1,0 +1,9 @@
+{
+  "package": "pptxgenjs",
+  "version": "4.0.1",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/pptxgenjs",
+  "sha256": {
+    "pptxgen.bundle.js": "4fb9eac5cfefb213e2d8743c2b7151025f31bfb3f834c73c12062916daa0f3f8"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "source": "Oracle Corporate PPT Template.pptx",
+  "sourceSha256": "274c2cbe67a6d1a0c00f79765b91b11dff52e080747059b657d79b65b9d2d5eb",
+  "slides": {
+    "cover": [
+      18,
+      19
+    ],
+    "divider": [
+      51,
+      52
+    ],
+    "agenda": [
+      66,
+      67
+    ],
+    "content": [
+      72,
+      87
+    ],
+    "closing": [
+      121,
+      122
+    ]
+  },
+  "files": {
+    "cover-dark.jpg": "image2.jpg",
+    "cover-light.jpg": "image4.jpg",
+    "divider-light.jpg": "image16.jpg",
+    "divider-dark.jpg": "image17.jpg",
+    "logo-dark.svg": "image3.svg",
+    "logo-light.svg": "image5.svg",
+    "closing-dark.svg": "image33.svg",
+    "closing-light.svg": "image34.svg",
+    "agenda.svg": "image30.svg"
+  },
+  "derived": {
+    "badge.svg": "Existing oracle-o.svg outline, white fill for red template badge"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "package": "html-to-image",
+  "version": "1.11.13",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/html-to-image",
+  "sha256": {
+    "html-to-image.js": "a90b42909d80964269ef6d5f3d1e4a5a7e2a4c263a5d2a76a9e7151901343262"
+  }
+}

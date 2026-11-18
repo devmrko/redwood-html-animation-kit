@@ -7,7 +7,7 @@ export function renderPage({body,slide,data,assets,document:doc}){
  const canvas=doc.createElement('div');
  canvas.style.cssText='width:100%;height:100%;display:flex;gap:36px;align-items:center';
  const copy=doc.createElement('div');copy.style.cssText='flex:1;min-width:0';
- const draft=doc.createElement('p');draft.textContent='제작 전 초안';draft.style.cssText='font-size:20px;margin:0 0 20px;color:#723e49';copy.append(draft);
+ const draft=doc.createElement('p');draft.textContent='제작 전 초안';draft.style.cssText='font-size:20px;margin:0 0 20px;color:var(--rf-accent)';copy.append(draft);
  const entries=Array.isArray(data.blocks)&&data.blocks.every(v=>typeof v==='string')?data.blocks:slide.items.length?slide.items:[slide.subtitle||slide.title];
  let elements;
  if(data.type==='comparison'||data.type==='cost'){

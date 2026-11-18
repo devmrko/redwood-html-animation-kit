@@ -20,3 +20,6 @@ export * from './presentation-evidence.js';
 export * from './presentation-tables.js';
 export * from './presentation-search.js';
 export * from './presentation-media.js';
+export * from './presentation-powerpoint.js';
+export * from './presentation-powerpoint-editable.js';
+export * from './presentation-typography.js';
