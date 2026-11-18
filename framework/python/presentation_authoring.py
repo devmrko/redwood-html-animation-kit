@@ -111,12 +111,12 @@ def create_authoring_bundle(root, input_project):
             for path in sorted((root/directory).rglob('*')):
                 if '__pycache__' not in path.parts and (path.suffix in ALLOWED_SUFFIXES or path.name=='LICENSE'):add(path)
         for name in ASSETS:add(root/'assets'/name)
-        for name in ('AGENTS.md','CLAUDE.md','AUTHORING.md'):add(root/'authoring'/name,name)
+        for name in ('AGENTS.md','CLAUDE.md','AUTHORING.md','SLIDE_PRINCIPLES.md'):add(root/'authoring'/name,name)
         archive.writestr('presentation-project.json',json.dumps(project,ensure_ascii=False,indent=2)+'\n')
         archive.writestr('authored-pages.js',registry)
         for name,source in page_sources.items():archive.writestr(name,source)
         requests='\n\n'.join(f'### {i+1}. {s["title"]}\n{s.get("design","")}' for i,s in enumerate(slides) if s['layout'] not in ('cover','section','closing'))
-        archive.writestr('REQUEST.md',f'# 제작 요청\n\n이 폴더의 AGENTS.md와 AUTHORING.md를 읽고 아래 발표를 제작해 주세요. 본문은 고정 레이아웃에 제한하지 말고 사용자 요청과 내용을 고려해 표·사진·SVG·효과로 구성하고 실제 브라우저에서 검수해 주세요.\n\n## 발표\n\n{doc["title"]}\n\n## 전체 화면 구성 요청\n\n{doc.get("brief","") or "내용에 맞게 구성해 주세요."}\n\n## 페이지별 요청\n\n{requests}\n\n## 원본 시나리오\n\n{doc.get("scenario","")}\n')
+        archive.writestr('REQUEST.md',f'# 제작 요청\n\n이 폴더의 AGENTS.md·AUTHORING.md·SLIDE_PRINCIPLES.md를 읽고 작성 원칙과 통과 기준에 따라 아래 발표를 제작해 주세요. 본문은 고정 레이아웃에 제한하지 말고 사용자 요청과 내용을 고려해 표·사진·SVG·효과로 구성하고 실제 브라우저에서 검수해 주세요.\n\n## 발표\n\n{doc["title"]}\n\n## 전체 화면 구성 요청\n\n{doc.get("brief","") or "내용에 맞게 구성해 주세요."}\n\n## 페이지별 요청\n\n{requests}\n\n## 원본 시나리오\n\n{doc.get("scenario","")}\n')
         archive.writestr('README.md',f'# {doc["title"]}\n\nCodex·Claude에서 이 폴더를 열고 REQUEST.md에 따라 페이지 제작을 요청하세요. 본문은 제작 전 초안입니다.\n\n실행: `python3 start.py --no-browser`\n\n자세한 제작·검수 방법은 [AUTHORING.md](AUTHORING.md)를 확인하세요. 실제 페이지 코드를 포함하는 이 폴더 전체를 보관하세요. API 키는 포함하지 않았습니다.\n')
         title=html.escape(doc['title']);project_id=doc['id']
         archive.writestr('index.html',f'<!doctype html><html lang="ko"><meta charset="utf-8"><title>{title}</title><h1>{title}</h1><p>제작용 프로젝트입니다. REQUEST.md를 확인하세요.</p><p><a href="./deck.html?project={project_id}">발표 화면</a> · <a href="./builder.html?project={project_id}">내용·스크립트 편집</a> · <a href="./export.html?project={project_id}">영상·SRT</a></p></html>')

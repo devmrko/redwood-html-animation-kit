@@ -22,7 +22,7 @@ class AuthoringBundleTest(unittest.TestCase):
     def test_workspace_has_instructions_metadata_template_and_registered_local_modules(self):
         project=self.project()
         with zipfile.ZipFile(io.BytesIO(create_authoring_bundle(ROOT,project))) as archive:
-            for name in ('AGENTS.md','CLAUDE.md','AUTHORING.md','REQUEST.md','presentation-project.json','start.py','deck.js','authored-pages.js','pages/process.js','pages/compare.js','assets/oracle-wordmark.svg','templates/redwood-2019.css','framework/src/presentation-document-view.ts'):
+            for name in ('AGENTS.md','CLAUDE.md','AUTHORING.md','SLIDE_PRINCIPLES.md','REQUEST.md','presentation-project.json','start.py','deck.js','authored-pages.js','pages/process.js','pages/compare.js','assets/oracle-wordmark.svg','templates/redwood-2019.css','framework/src/presentation-document-view.ts'):
                 self.assertIn(name,archive.namelist())
             exported=json.loads(archive.read('presentation-project.json'))
             self.assertEqual(exported['document']['brief'],project['document']['brief'])
@@ -31,6 +31,8 @@ class AuthoringBundleTest(unittest.TestCase):
             self.assertIn('등록·검토·보관을 가로로 연결',archive.read('REQUEST.md').decode())
             self.assertIn("'./pages/process.js'",archive.read('authored-pages.js').decode())
             self.assertIn('createPresentationTimeline',archive.read('pages/process.js').decode())
+            for guide in ('AGENTS.md','CLAUDE.md','AUTHORING.md','REQUEST.md'):
+                self.assertIn('SLIDE_PRINCIPLES.md',archive.read(guide).decode())
         self.assertNotIn('authored',project['document']['slides'][2])
 
     def test_private_runtime_files_env_and_other_projects_are_never_copied(self):

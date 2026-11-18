@@ -15,9 +15,10 @@ class DocumentPlanTest(unittest.TestCase):
         response = io.BytesIO(json.dumps({'choices':[{'message':{'content':json.dumps({'slides':[slide]})}}]}).encode())
         settings={'key':'test-key','model':'test-model','base_url':'https://example.test/v1'}
         with patch('urllib.request.urlopen', return_value=response) as call:
-            result=generate_document_plan(settings, {'scenario':'자료를 소개합니다.','images':[{'id':'photo-1','name':'자료.png','dataUrl':'NEVER-SEND'}]})
+            result=generate_document_plan(settings, {'scenario':'자료를 소개합니다.','images':[{'id':'photo-1','name':'자료.png','dataUrl':'NEVER-SEND'}]},principles='제목에 핵심 메시지를 쓰고 상세보기 없이 핵심 내용을 보여준다.')
         sent=json.loads(call.call_args.args[0].data)
         self.assertNotIn('NEVER-SEND',json.dumps(sent))
+        self.assertIn('제목에 핵심 메시지를 쓰고 상세보기 없이 핵심 내용을 보여준다.',sent['messages'][0]['content'])
         content=json.loads(sent['messages'][1]['content'])
         self.assertEqual(content['images'],[{'id':'photo-1','name':'자료.png'}])
         self.assertEqual(result['slides'],[slide])

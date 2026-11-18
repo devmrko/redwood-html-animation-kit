@@ -2,7 +2,7 @@
 from .presentation_export import request_presentation_json
 
 
-def generate_document_plan(settings, payload):
+def generate_document_plan(settings, payload, *, principles=''):
     scenario, title, images = payload.get('scenario'), payload.get('title', ''), payload.get('images', [])
     if not isinstance(scenario, str) or not scenario.strip() or len(scenario) > 30000 or not isinstance(title, str) or len(title) > 100:
         raise ValueError('시나리오는 1~30000자, 제목은 100자 이내로 입력해 주세요.')
@@ -19,6 +19,8 @@ def generate_document_plan(settings, payload):
               'section은 섹션·소주제이고 notes는 발표 대본이다. 길고 복잡한 내용은 장표를 나눈다. '
               '사진은 파일명만 보이므로 내용을 추정하지 말고 제공한 ID만 참조한다. 사진이 없으면 imageId는 null이다. '
               'JSON만 반환한다: {"slides":[{"layout":"content","section":"섹션","title":"제목","subtitle":"","items":["내용"],"notes":"대본","imageId":null}]}')
+    if principles:
+        system += '\n\n다음 발표 장표 작성 원칙을 구성·제목·본문·스크립트 작성부터 적용하고 반환 전에 장표 통과 기준으로 검수한다. 출력 JSON 형식은 유지한다.\n' + principles
     data = request_presentation_json(settings, system, {'scenario': scenario, 'title': title, 'images': safe_images}, max_tokens=6000)
     try:
         slides = data['slides']

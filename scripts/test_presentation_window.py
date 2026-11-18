@@ -99,6 +99,12 @@ class PresentationWindowTest(unittest.TestCase):
         with zipfile.ZipFile(io.BytesIO(data)) as archive:self.assertIn('AGENTS.md',archive.namelist())
         self.assertEqual(self.request(self.origin,{},'/api/authoring-bundle')[0],400)
 
+    @patch('start.generate_document_plan',return_value={'slides':[],'model':'test'})
+    def test_draft_route_supplies_current_authoring_principles(self, generate):
+        self.assertEqual(self.request(self.origin,{'scenario':'자료를 설명합니다.'},'/api/presentation-draft')[0],200)
+        expected=(Path(__file__).resolve().parents[1]/'authoring/SLIDE_PRINCIPLES.md').read_text()
+        self.assertEqual(generate.call_args.kwargs['principles'],expected)
+
     @patch('start.browser_executable', return_value='/browser')
     def test_generated_project_is_preserved_in_presentation_window(self, browser):
         project = '11111111-1111-4111-8111-111111111111'

@@ -163,7 +163,8 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
                 return
             if self.path == '/api/presentation-draft':
                 settings = load_settings(pathlib.Path(self.directory) / '.env')
-                self.json_response(generate_document_plan(settings, payload))
+                principles = (pathlib.Path(self.directory) / 'authoring/SLIDE_PRINCIPLES.md').read_text()
+                self.json_response(generate_document_plan(settings, payload, principles=principles))
                 return
             if self.path == "/api/video-exports":
                 job_id = self.export_jobs().create(payload)

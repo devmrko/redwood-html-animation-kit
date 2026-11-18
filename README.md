@@ -30,6 +30,8 @@ HTML 파일을 직접 더블 클릭하면 모듈 로딩이 제한될 수 있으�
 
 페이지 화면은 `pages/*.js`에서 작성하므로 고정 레이아웃 종류로 제한하지 않습니다. 제목·목차·핵심 내용·스크립트·사진은 `presentation-project.json`, 코드 연결은 `authored-pages.js`에서 관리합니다. JSON을 불러온다는 이유로 외부 코드를 실행하지 않습니다. 상세한 제작·검수 계약은 [Codex·Claude 제작 지침](authoring/AUTHORING.md)과 [모듈 설계](docs/agent-authoring-design.md)에 있습니다.
 
+모든 발표의 기획·작성·검수에는 [발표 장표 작성 원칙과 통과 기준](authoring/SLIDE_PRINCIPLES.md)을 적용합니다. 해당 원칙은 제작용 ZIP에도 포함됩니다.
+
 **JSON 저장**은 내용과 사진을 전달합니다. 완성한 페이지 코드를 포함하려면 제작용 프로젝트 폴더 전체를 보관해야 합니다. 편집 화면에서 바꾼 내용을 파일에도 유지하려면 JSON을 저장해 프로젝트의 `presentation-project.json`을 교체합니다. 파일의 JSON 변경 후에는 서버를 재시작하고 페이지를 새로고침합니다.
 
 LLM 내용 정리는 `.env`의 OpenAI 호환 설정으로 시나리오와 사진 파일명을 제공자에 전송합니다. 사진 내용 인식은 포함하지 않습니다. 이미지 입력은 PNG·JPEG·WebP, 최대 20개·각 5MB·전체 25MB이며 문서는 최대 60장입니다. ZIP 생성에는 외부 모델을 사용하지 않습니다.
