@@ -27,4 +27,4 @@ ffmpeg -v error -f lavfi -i testsrc2=size=640x360:rate=30 -t 3 -c:v libx264 -pix
 
 AI 검증 서버에는 **생성 후 응답 연결 끊김**, **저장 후 응답 연결 끊김**이 있습니다. 후자는 저장 자체가 성공한 뒤 응답만 끊습니다. 실패 안내 뒤 **최신 버전 불러오기**로 결과를 확인하고, 패널을 닫아 적용 요청 1회·버전 2개인지 확인합니다. 같은 적용 요청을 반복하는 검사가 아닙니다. `test_ai_disconnect.py`도 실제 HTTP 연결을 끊고 최신 조회·새 버전 복원을 검사하며 `npm test`에 포함됩니다.
 
-GitHub Actions의 **CI**는 push·pull request·수동 실행마다 Ubuntu 24.04, Node.js 22, Python 3.12에서 잠금 파일 기준 설치 → TypeScript/카탈로그 빌드 → 생성 파일 변경 여부 → Node/Python 테스트 → 링크·구문·해시 검사를 실행합니다. FFmpeg를 설치해 실제 변환 테스트도 실행하며, AI 키나 제공자 호출은 사용하지 않습니다. 생성 파일을 갱신하지 않은 변경은 실패합니다. 브라우저·PowerPoint 실화면 검사와 Windows 검증은 이 작업에 포함되지 않습니다.
+GitHub Actions의 **CI**는 push·pull request·수동 실행마다 Ubuntu 24.04, Node.js 22, Python 3.12에서 잠금 파일 기준 설치 → TypeScript/카탈로그 빌드 → 생성 파일 변경 여부 → Node/Python 테스트 → 링크·구문·해시 검사를 실행합니다. [setup-ffmpeg](https://github.com/federicocarboni/setup-ffmpeg)의 커밋을 고정해 FFmpeg·FFprobe 정적 도구를 설치하고 실제 변환 테스트도 실행하며, AI 키나 제공자 호출은 사용하지 않습니다. 생성 파일을 갱신하지 않은 변경은 실패합니다. 브라우저·PowerPoint 실화면 검사와 Windows 검증은 이 작업에 포함되지 않습니다.
