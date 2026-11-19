@@ -1,0 +1,164 @@
+{
+  "workflow": {
+    "html": "<div style=\"display:flex;gap:28px;height:560px;align-items:center\"><div class=\"reveal-first\" style=\"width:329px;padding:24px 0;border-top:4px solid var(--rf-accent)\"><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-muted)\">01</p><h2 style=\"font-size:48px;margin:26px 0\">입력</h2><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-text)\">시나리오 · 사진</p></div><div class=\"reveal-first\" style=\"width:329px;padding:24px 0;border-top:4px solid var(--rf-accent)\"><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-muted)\">02</p><h2 style=\"font-size:48px;margin:26px 0\">제작</h2><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-text)\">Codex · Claude</p></div><div class=\"reveal-second\" style=\"width:329px;padding:24px 0;border-top:4px solid var(--rf-accent)\"><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-muted)\">03</p><h2 style=\"font-size:48px;margin:26px 0\">발표</h2><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-text)\">청중 창 · 발표 노트</p></div><div class=\"reveal-second\" style=\"width:329px;padding:24px 0;border-top:4px solid var(--rf-accent)\"><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-muted)\">04</p><h2 style=\"font-size:48px;margin:26px 0\">저장</h2><p style=\"font-size:28px;line-height:1.5;margin:0;color:var(--rf-text)\">PPT · MP4 · SRT</p></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "input": {
+    "html": "<div style=\"display:flex;gap:40px;width:1400px;height:560px\"><div class=\"reveal-first\" style=\"width:940px;height:560px;display:flex;align-items:center\"><img data-asset-id=\"builder\" alt=\"키트의 실제 builder 화면\" style=\"width:940px;height:545px;object-fit:contain;border:1px solid var(--rf-border);border-radius:8px\"></div><div class=\"reveal-second\" style=\"width:420px;align-self:center\"><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">01</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">장표 만들기 열기</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">02</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">시나리오·사진 입력</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">03</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">내용·스크립트 초안 만들기</p></div></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "draft": {
+    "html": "<div style=\"display:flex;gap:40px;width:1400px;height:560px\"><div class=\"reveal-first\" style=\"width:940px;height:560px;display:flex;align-items:center\"><img data-asset-id=\"draft\" alt=\"키트의 실제 draft 화면\" style=\"width:940px;height:545px;object-fit:contain;border:1px solid var(--rf-border);border-radius:8px\"></div><div class=\"reveal-second\" style=\"width:420px;align-self:center\"><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">01</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">장표 선택</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">02</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">제목·본문·스크립트 확인</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">03</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">페이지 제작 요청 작성</p></div></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "author": {
+    "html": "<div style=\"display:flex;gap:56px;height:560px;align-items:center\"><div class=\"reveal-first\" style=\"width:570px\"><p style=\"font-size:36px;line-height:1.5;margin:0;color:var(--rf-text)\">Codex·Claude 제작용 ZIP</p><div style=\"height:22px\"></div><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-muted)\">압축 풀기 → 폴더 열기</p><div style=\"height:36px\"></div><p style=\"font-size:32px;line-height:1.5;margin:0;color:var(--rf-text)\">내용은 JSON<br>화면은 pages/*.js</p></div><div class=\"reveal-second\" style=\"width:774px;padding:38px;box-sizing:border-box;background:var(--rf-surface);border-left:5px solid var(--rf-accent)\"><p style=\"font-size:26px;line-height:1.5;margin:0;color:var(--rf-muted)\">그대로 요청해 보세요</p><div style=\"height:24px\"></div><p style=\"font-size:32px;line-height:1.5;margin:0;color:var(--rf-text)\">AGENTS.md와 REQUEST.md를 읽고<br>이 발표를 제작해 주세요.<br><br>템플릿을 유지하며 표·그림·효과를 만들고,<br>모든 페이지를 브라우저에서 검수해 주세요.</p></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "visuals": {
+    "html": "<div style=\"display:flex;gap:50px;height:560px;align-items:center\"><div class=\"reveal-first\" style=\"width:680px\"><table><thead><tr><th>표현할 내용</th><th>구성</th></tr></thead><tbody><tr><td>항목별 차이</td><td>표</td></tr><tr><td>처리 순서</td><td>SVG 흐름도</td></tr><tr><td>수치의 크기</td><td>차트</td></tr></tbody></table></div><svg class=\"reveal-second\" viewBox=\"0 0 670 560\" width=\"670\" height=\"560\" role=\"img\" aria-label=\"예시 값 A 30, B 50, C 20의 막대 차트\"><line x1=\"60\" y1=\"440\" x2=\"630\" y2=\"440\" stroke=\"var(--rf-border)\" stroke-width=\"2\"></line><rect x=\"100\" y=\"260\" width=\"100\" height=\"180\" fill=\"var(--rf-chart-1)\"></rect><text x=\"150\" y=\"240\" fill=\"var(--rf-text)\" text-anchor=\"middle\" font-size=\"32\">30</text><text x=\"150\" y=\"485\" fill=\"var(--rf-text)\" text-anchor=\"middle\" font-size=\"30\">A</text><rect x=\"285\" y=\"140\" width=\"100\" height=\"300\" fill=\"var(--rf-chart-2)\"></rect><text x=\"335\" y=\"120\" fill=\"var(--rf-text)\" text-anchor=\"middle\" font-size=\"32\">50</text><text x=\"335\" y=\"485\" fill=\"var(--rf-text)\" text-anchor=\"middle\" font-size=\"30\">B</text><rect x=\"470\" y=\"320\" width=\"100\" height=\"120\" fill=\"var(--rf-chart-3)\"></rect><text x=\"520\" y=\"300\" fill=\"var(--rf-text)\" text-anchor=\"middle\" font-size=\"32\">20</text><text x=\"520\" y=\"485\" fill=\"var(--rf-text)\" text-anchor=\"middle\" font-size=\"30\">C</text><text x=\"335\" y=\"540\" fill=\"var(--rf-muted)\" text-anchor=\"middle\" font-size=\"24\">예시 데이터 · 단위: 건</text></svg></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "ai": {
+    "html": "<div style=\"display:flex;gap:40px;width:1400px;height:560px\"><div class=\"reveal-first\" style=\"width:940px;height:560px;display:flex;align-items:center\"><img data-asset-id=\"ai-edit\" alt=\"키트의 실제 ai-edit 화면\" style=\"width:940px;height:545px;object-fit:contain;border:1px solid var(--rf-border);border-radius:8px\"></div><div class=\"reveal-second\" style=\"width:420px;align-self:center\"><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">01</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">AI 연결 선택</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">02</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">요청 → 편집안 → 미리보기</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">03</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">적용 · 변경 이력에서 복원</p></div></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "present": {
+    "html": "<div style=\"display:flex;gap:40px;width:1400px;height:560px\"><div class=\"reveal-first\" style=\"width:940px;height:560px;display:flex;align-items:center\"><img data-asset-id=\"presenter\" alt=\"키트의 실제 presenter 화면\" style=\"width:940px;height:545px;object-fit:contain;border:1px solid var(--rf-border);border-radius:8px\"></div><div class=\"reveal-second\" style=\"width:420px;align-self:center\"><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">01</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">발표 시작 → 청중 화면</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">02</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">청중 창에서 발표자 보기</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">03</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">노트 확인 · 방향키 이동</p></div></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "outputs": {
+    "html": "<div style=\"height:560px;display:flex;align-items:center;width:1400px\"><table class=\"reveal-first\"><thead><tr><th>저장할 결과</th><th>선택</th><th>남는 내용</th></tr></thead><tbody><tr><td>PPT · 화면 모양 유지</td><td>발표 모양 보존</td><td>장표 이미지 · 발표 노트</td></tr><tr><td>PPT · 편집 가능</td><td>글자·표·기본 도형 수정</td><td>복잡한 그래픽은 그림</td></tr><tr class=\"reveal-second\"><td>MP4 + SRT</td><td>영상 · 수정 가능한 자막</td><td>1920×1080 · 30fps · 무음</td></tr></tbody></table></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  },
+  "subtitles": {
+    "html": "<div style=\"display:flex;gap:40px;width:1400px;height:560px\"><div class=\"reveal-first\" style=\"width:940px;height:560px;display:flex;align-items:center\"><img data-asset-id=\"export\" alt=\"키트의 실제 export 화면\" style=\"width:940px;height:545px;object-fit:contain;border:1px solid var(--rf-border);border-radius:8px\"></div><div class=\"reveal-second\" style=\"width:420px;align-self:center\"><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">01</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">자막 문구·시간 수정</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">02</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">화면·자막 최소 시간 확보</p></div><div style=\"padding:18px 0;border-bottom:1px solid var(--rf-border)\"><p style=\"font-size:24px;line-height:1.5;margin:0;color:var(--rf-muted)\">03</p><p style=\"font-size:30px;line-height:1.5;margin:0;color:var(--rf-text)\">현재 탭 녹화 → MP4·SRT 저장</p></div></div></div>",
+    "duration": 8,
+    "effects": [
+      {
+        "selector": ".reveal-first",
+        "at": 0.3,
+        "duration": 0.6,
+        "type": "fade"
+      },
+      {
+        "selector": ".reveal-second",
+        "at": 2,
+        "duration": 0.7,
+        "type": "slide-up"
+      }
+    ]
+  }
+}

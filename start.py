@@ -70,6 +70,19 @@ def presentation_command(origin, payload):
 
 class PresentationHandler(http.server.SimpleHTTPRequestHandler):
     launch_lock=threading.Lock()
+    def send_head(self):
+        # Different extracted decks reuse the same loopback origin. Modification
+        # times are not content identities: an older module can replace a newer one.
+        for header in ('If-Modified-Since','If-None-Match'):
+            if header in self.headers:del self.headers[header]
+        self._static_no_store=True
+        try:return super().send_head()
+        finally:self._static_no_store=False
+
+    def end_headers(self):
+        if getattr(self,'_static_no_store',False):self.send_header('Cache-Control','no-store')
+        super().end_headers()
+
     def launch_states(self):
         with self.launch_lock:
             if not hasattr(self.server,'presentation_launches'):self.server.presentation_launches={}
@@ -367,6 +380,7 @@ def main():
     parser.add_argument("--provider",choices=("openai","oci","cli"))
     parser.add_argument("--tool",choices=("codex","claude"))
     args = parser.parse_args()
+    if args.port==4190:parser.error('4190 포트는 Safari에서 차단됩니다. --port 4176 또는 --port 0을 사용해 주세요.')
     root = pathlib.Path(__file__).resolve().parent
     handler = functools.partial(PresentationHandler, directory=str(root))
     try:
@@ -376,7 +390,7 @@ def main():
     with server:
         server.export_jobs = VideoExportJobs()
         server.projects = TemporaryPresentationProjects()
-        url = f"http://127.0.0.1:{args.port}/"
+        url = f"http://127.0.0.1:{server.server_port}/"
         source=root/'presentation-project.json'
         if source.is_file():
             if source.stat().st_size>MAX_PROJECT_BYTES:raise SystemExit('프로젝트 JSON은 36MB 이내여야 합니다.')

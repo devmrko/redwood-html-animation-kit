@@ -237,6 +237,9 @@ export function renderPresentationDocument(input, mount, theme = {}, options = {
             body.replaceChildren();
         }
         const custom = factory?.({ root, body, slide, data: slide.data ?? {}, assets, evidence, media, document: doc }), timing = custom?.player.describe();
+        // Authored and AI tables share the same presentation component and theme.
+        for (const table of body.querySelectorAll('table'))
+            table.classList.add('rf-comparison-table');
         if (!factory && !slide.items.length && !image && slide.mediaIds?.length)
             body.replaceChildren();
         const autoMedia = [];

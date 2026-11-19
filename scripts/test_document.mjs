@@ -102,3 +102,13 @@ test('document appearance and per-slide overrides survive JSON and reject unknow
  assert.equal(result.appearance,'dark');assert.equal(result.slides[0].appearance,'light');assert.equal(result.slides[1].appearance,undefined);
  document.appearance='sepia';assert.throws(()=>validatePresentationDocument(document));document.appearance='light';document.slides[1].appearance='sepia';assert.throws(()=>validatePresentationDocument(document));
 });
+
+
+test('an incomplete OCI profile does not hide a usable local CLI default',async()=>{
+ const {defaultPresentationAiProvider}=await import('../vendor/foundation/presentation-ai-connection.js');
+ const caps={openai:{available:false,model:''},oci:{available:true,profiles:['DEFAULT'],regions:{DEFAULT:'us-chicago-1'},profile:'DEFAULT',region:'',model:'',compartment:''},cli:{available:true,tools:['codex']}};
+ assert.equal(defaultPresentationAiProvider(caps),'cli');
+ caps.oci.model='configured';caps.oci.compartment='configured';assert.equal(defaultPresentationAiProvider(caps),'oci');
+ caps.openai.available=true;assert.equal(defaultPresentationAiProvider(caps),'openai');
+ caps.openai.available=false;caps.oci.available=false;caps.cli.available=false;assert.equal(defaultPresentationAiProvider(caps),'openai');
+});

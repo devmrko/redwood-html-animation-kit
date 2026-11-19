@@ -121,6 +121,8 @@ export function renderPresentationDocument(input: PresentationProject, mount: HT
     if(slide.layout==='cover'){fitTemplateText(head.querySelector('h1'),theme.coverTitleBox);fitTemplateText(head.querySelector('.rf-document-subtitle'),theme.coverSubtitleBox);}
     if(factory){root.classList.add('rf-document-slide--authored');body.replaceChildren();}
     const custom=factory?.({root,body,slide,data:slide.data??{},assets,evidence,media,document:doc}),timing=custom?.player.describe();
+    // Authored and AI tables share the same presentation component and theme.
+    for(const table of body.querySelectorAll('table'))table.classList.add('rf-comparison-table');
     if(!factory&&!slide.items.length&&!image&&slide.mediaIds?.length)body.replaceChildren();
     const autoMedia:HTMLElement[]=[];
     for(const id of slide.mediaIds??[]){if(!root.querySelector(`[data-media-id="${id}"]`)){const entry=media.get(id);if(entry){const figure=createPresentationMedia(doc,entry).root;body.append(figure);autoMedia.push(figure);}}}

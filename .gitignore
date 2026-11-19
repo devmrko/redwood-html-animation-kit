@@ -33,3 +33,6 @@ presentation-ai-pages.json
 
 # Ephemeral address of a locally launched AI helper
 ai-session.js
+
+# Generated usage demo packages and recorded media
+/demo-output/

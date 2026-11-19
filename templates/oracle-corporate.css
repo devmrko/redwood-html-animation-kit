@@ -53,6 +53,20 @@
 [data-template="oracle-corporate"] .rf-comparison-table [data-status=success]{color:var(--rf-status-success)}
 [data-template="oracle-corporate"] .rf-comparison-table [data-status=error]{color:var(--rf-status-error)}
 [data-template="oracle-corporate"] .rf-comparison-table [data-status=limited]{color:var(--rf-status-limited)}
+/* Keep authored/AI tables on the shared Redwood component, including PPT capture. */
+[data-template="oracle-corporate"]{--rf-chart-1:var(--rf-accent);--rf-chart-2:#b77937;--rf-chart-3:#6a9589;--rf-chart-4:#a85d56}
+[data-template="oracle-corporate"][data-appearance="dark"]{--rf-chart-2:#79b9c6;--rf-chart-3:#a7c99b;--rf-chart-4:#e39b87}
+[data-template="oracle-corporate"] :is(.rf-chart__label,.rf-chart__total){fill:var(--rf-text)}
+[data-template="oracle-corporate"] .rf-chart__grid{stroke:var(--rf-border)}
+[data-template="oracle-corporate"] .rf-comparison-table{width:100%!important;border:0!important;border-collapse:collapse!important;border-spacing:0!important;font-family:var(--rf-document-font)!important;font-size:28px!important;line-height:1.4!important;background:var(--rf-surface)!important;color:var(--rf-text)!important}
+[data-template="oracle-corporate"] .rf-comparison-table :is(th,td){padding:18px 22px!important;border:0!important;border-bottom:1px solid var(--rf-border)!important;text-align:left!important;vertical-align:top!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;color:var(--rf-text)!important;background:transparent!important}
+[data-template="oracle-corporate"] .rf-comparison-table :is(thead th,thead td){background:var(--rf-accent)!important;color:var(--rf-bg)!important;font-weight:700!important;border-bottom:3px solid var(--rf-accent)!important}
+[data-template="oracle-corporate"] .rf-comparison-table tbody tr{background:var(--rf-surface)!important}
+[data-template="oracle-corporate"] .rf-comparison-table tbody tr:nth-child(even){background:var(--rf-selected)!important}
+[data-template="oracle-corporate"] .rf-comparison-table tbody th{font-weight:650!important}
+[data-template="oracle-corporate"] .rf-comparison-table :is(th,td)[data-status=success]{color:var(--rf-status-success)!important}
+[data-template="oracle-corporate"] .rf-comparison-table :is(th,td)[data-status=error]{color:var(--rf-status-error)!important}
+[data-template="oracle-corporate"] .rf-comparison-table :is(th,td)[data-status=limited]{color:var(--rf-status-limited)!important}
 [data-template="oracle-corporate"].rf-document-slide--with-evidence .rf-document-body{height:350px!important}
 [data-template="oracle-corporate"] .rf-document-evidence-strip{left:101px;right:100px;bottom:110px;height:150px}
 [data-template="oracle-corporate"].rf-document-slide--media .rf-document-body{height:560px!important}

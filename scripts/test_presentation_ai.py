@@ -53,6 +53,24 @@ class AiWorkspaceTest(unittest.TestCase):
    with self.assertRaises(ValueError):self.propose(changes=changes)
   with self.assertRaises(ValueError):self.propose(page={**PAGE,'html':'<script>fetch("/.env")</script>'})
   self.assertEqual(self.ws.head(self.id),self.base)
+ def test_invalid_body_gets_one_repair_with_explicit_contract_before_any_save(self):
+  invalid={'summary':'표로 변경','changes':{},'page':{**PAGE,'html':'<style>p{color:red}</style><p>본문</p>'}}
+  repaired={**PAGE,'html':'<section><table><colgroup><col style="width:30%"><col style="width:70%"></colgroup><tbody><tr class="item"><td>검토</td><td>확인 후 저장</td></tr></tbody></table></section>'}
+  with patch.object(self.ws.providers,'generate',side_effect=[invalid,{'summary':'표로 변경','page':repaired,'changes':{}}]) as generate:
+   proposal=self.ws.propose(self.id,{'base':self.base,'slideId':self.slide,'request':'표로 변경','connection':{'provider':'openai'}})
+   self.assertEqual(generate.call_count,2);self.assertIn('markupContract',generate.call_args.args[2]);self.assertIn('style',generate.call_args.args[2]['validationError'])
+   example=generate.call_args.args[2]['outputExample'];validated=validate_page(example['page'],set());self.assertEqual(validated['effects'],example['page']['effects']);self.assertIn('<svg ',validated['html'])
+   self.assertEqual(proposal['snapshot']['project'],{**self.project,'document':{**self.project['document'],'slides':[{**s,**({'authored':True} if s['id']==self.slide else {})} for s in self.project['document']['slides']]}})
+   self.assertIn('<col ',proposal['snapshot']['pages'][self.slide]['html']);self.assertEqual(self.ws.head(self.id),self.base)
+ def test_table_request_cannot_pass_with_only_a_renamed_title(self):
+  misleading={'summary':'표로 변경','changes':{'title':'표로 바꿨다는 제목'},'page':None}
+  with patch.object(self.ws.providers,'generate',side_effect=[misleading,{**misleading,'page':PAGE}]) as generate:
+   proposal=self.ws.propose(self.id,{'base':self.base,'slideId':self.slide,'request':'제목과 노트는 유지하고 본문을 표로 바꿔 주세요.','connection':{'provider':'openai'}})
+   self.assertEqual(generate.call_count,2);self.assertTrue(generate.call_args.args[2]['pageRequired'])
+   self.assertEqual(proposal['snapshot']['project']['document']['slides'][2]['title'],self.project['document']['slides'][2]['title']);self.assertIn(self.slide,proposal['snapshot']['pages'])
+  with patch.object(self.ws.providers,'generate',return_value={'summary':'제목 변경','changes':{'title':'새 제목','notes':'바꾸면 안 되는 노트'},'page':None}):
+   proposal=self.ws.propose(self.id,{'base':self.base,'slideId':self.slide,'request':'제목을 바꾸고 발표 노트는 유지해 주세요.','connection':{'provider':'openai'}})
+   changed=proposal['snapshot']['project']['document']['slides'][2];self.assertEqual(changed['title'],'새 제목');self.assertEqual(changed['notes'],self.project['document']['slides'][2]['notes'])
  def test_projection_is_portable_for_source_workspace(self):
   (self.root/'presentation-project.json').write_text(json.dumps(self.project));p=self.propose();self.ws.apply(self.id,{'token':p['token']})
   self.assertIn(self.slide,json.loads((self.root/'presentation-ai-pages.json').read_text())['pages'])
@@ -100,6 +118,9 @@ class AiWorkspaceTest(unittest.TestCase):
   def request(method,path,body=None,headers=None):
    c=http.client.HTTPConnection('127.0.0.1',server.server_port);c.request(method,path,json.dumps(body) if body else None,headers or {});r=c.getresponse();data=r.read();result=(r.status,data,dict(r.getheaders()));c.close();return result
   try:
+   (self.root/'authored-pages.js').write_text('export const current = true;')
+   status,body,headers=request('GET','/authored-pages.js',headers={'If-Modified-Since':'Wed, 01 Jan 2098 00:00:00 GMT'})
+   self.assertEqual(status,200);self.assertIn(b'current = true',body);self.assertEqual(headers['Cache-Control'],'no-store')
    path='/api/ai/projects/'+self.id+'/propose';self.assertEqual(request('POST',path,{'request':'x'},{'Origin':'https://other.example'})[0],403)
    capture='/api/ai/projects/'+self.id+'/thumbnail/'+self.base+'/'+self.slide
    self.assertEqual(request('GET',capture)[0],404)
@@ -125,10 +146,25 @@ class AiWorkspaceTest(unittest.TestCase):
   self.assertEqual(self.ws.head(self.id),self.base);self.assertEqual(self.ws.read(self.id)['project'],self.project)
 
 class AiMarkupTest(unittest.TestCase):
+ def test_chart_arcs_and_local_arrow_markers_are_supported_without_external_refs(self):
+  html='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 560"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--rf-accent)"></path></marker></defs><circle class="item" cx="200" cy="200" r="90" pathLength="100" fill="none" stroke="var(--rf-accent)" stroke-width="30" stroke-dasharray="50 50" stroke-dashoffset="0"></circle><line x1="0" y1="0" x2="100" y2="0" marker-end="url(#arrow)"></line></svg>'
+  page=validate_page({**PAGE,'html':html},set());self.assertIn('stroke-dasharray="50 50"',page['html']);self.assertIn('marker-end="url(#arrow)"',page['html'])
+  for bad in [html.replace('http://www.w3.org/2000/svg','https://example.com'),html.replace('url(#arrow)','url(https://example.com/a.svg#arrow)')]:
+   with self.assertRaises(ValueError):validate_page({**PAGE,'html':bad},set())
+ def test_server_and_portable_renderer_preserve_the_same_tags(self):
+  import re
+  from framework.python.presentation_ai_markup import TAGS
+  source=(ROOT/'framework/src/presentation-ai-page.ts').read_text()
+  expression=re.search(r'if\(!/\^\(([^)]+)\)\$/',source).group(1)
+  self.assertEqual(set(expression.split('|')),TAGS)
+ def test_effects_must_reference_existing_elements(self):
+  with self.assertRaisesRegex(ValueError,'효과 대상이 없습니다'):
+   validate_page({**PAGE,'effects':[{'selector':'.missing','at':0,'duration':1,'type':'fade'}]},set())
+
  def test_tables_svg_photos_and_motion_are_validated(self):
   self.assertIn('<svg',validate_page(PAGE,set())['html'])
-  self.assertNotIn('font-family',validate_page({**PAGE,'html':'<p style="font-family:Arial;font-size:28px">본문</p>'},set())['html'])
-  value=validate_page({**PAGE,'html':'<table><tr><td>성공</td></tr></table><img data-asset-id="photo" alt="증거">'},{'photo'});self.assertIn('data-asset-id',value['html'])
+  self.assertNotIn('font-family',validate_page({**PAGE,'html':'<p class="item" style="font-family:Arial;font-size:28px">본문</p>'},set())['html'])
+  value=validate_page({**PAGE,'html':'<table class="item"><tr><td>성공</td></tr></table><img data-asset-id="photo" alt="증거">'},{'photo'});self.assertIn('data-asset-id',value['html'])
  def test_script_css_network_event_handlers_and_broken_timeline_rejected(self):
   for html in ['<img src="https://example.com/a.png">','<p onclick="alert(1)">x</p>','<iframe></iframe>','<p style="background:url(https://example.com)">x</p>','<p style="position:fixed">x</p>','<svg><foreignObject>x</foreignObject></svg>','<p><div>x</p></div>']:
    with self.subTest(html=html),self.assertRaises(ValueError):validate_page({**PAGE,'html':html},set())

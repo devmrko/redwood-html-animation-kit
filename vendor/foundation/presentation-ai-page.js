@@ -8,10 +8,20 @@ export function createAiPresentationPage(page) {
         const template = doc.createElement('template');
         template.innerHTML = page.html;
         // Defense for portable files edited outside the server. No scripts, event handlers or URL loads.
-        for (const node of [...template.content.querySelectorAll('*')]) {
-            if (!/^(DIV|P|SPAN|STRONG|EM|B|I|SMALL|H2|H3|H4|UL|OL|LI|TABLE|THEAD|TBODY|TFOOT|TR|TD|TH|CAPTION|FIGURE|FIGCAPTION|IMG|BR|svg|g|rect|circle|ellipse|line|path|polyline|polygon|text|tspan|defs|linearGradient|radialGradient|stop)$/.test(node.tagName)) {
+        for (let node of [...template.content.querySelectorAll('*')]) {
+            if (!/^(div|section|article|header|footer|p|span|strong|em|b|i|small|h2|h3|h4|ul|ol|li|dl|dt|dd|table|colgroup|col|thead|tbody|tfoot|tr|td|th|caption|figure|figcaption|img|br|svg|title|desc|g|rect|circle|ellipse|line|path|polyline|polygon|text|tspan|defs|marker|lineargradient|radialgradient|stop)$/.test(node.tagName.toLowerCase())) {
                 node.remove();
                 continue;
+            }
+            // Reveal treats any descendant section as a vertical slide. Preserve its
+            // content and styling without creating a second presentation page.
+            if (node.tagName === 'SECTION') {
+                const bodySection = doc.createElement('div');
+                for (const attribute of [...node.attributes])
+                    bodySection.setAttribute(attribute.name, attribute.value);
+                bodySection.append(...node.childNodes);
+                node.replaceWith(bodySection);
+                node = bodySection;
             }
             for (const attr of [...node.attributes])
                 if (/^on/i.test(attr.name) || ['src', 'href', 'xlink:href', 'srcdoc'].includes(attr.name) || attr.name === 'style' && /url\s*\(|expression|@|\\|font-family|position\s*:\s*(fixed|sticky)/i.test(attr.value))

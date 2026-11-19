@@ -1,6 +1,7 @@
 import {createAppAiConnection} from './ai-connection.js';
 import { presentationTheme, projectSections } from './template-theme.js';
 import { getAuthoredPages } from './authored-pages.js';
+import {loadPresentationAiPages} from './ai-editor.js';
 import { createDocumentFromScenario, makeDocumentSlide, readPresentationPhotos, validatePresentationProject, validProjectId, firstContentSlide, assertPresentationContent, addPresentationDividers } from './vendor/foundation/presentation-document.js';
 import { renderPresentationDocument } from './vendor/foundation/presentation-document-view.js';
 import { openAppProjectStore } from './project-store.js';
@@ -26,7 +27,8 @@ async function preview(){
  try{
   assertPresentationContent({...project.document,slides:[slide]});
   previewView?.destroy();
-  previewView=renderPresentationDocument(project,$('preview'),presentationTheme,{slideId:slide.id,pageOffset:selected,totalSlides:project.document.slides.length,sections:projectSections(project.document),pages:getAuthoredPages(id),textMotion:false});
+  const pages=new Map([...getAuthoredPages(id),...await loadPresentationAiPages(project)]);
+  previewView=renderPresentationDocument(project,$('preview'),presentationTheme,{slideId:slide.id,pageOffset:selected,totalSlides:project.document.slides.length,sections:projectSections(project.document),pages,textMotion:false});
   previewView.slides[0].player.finish();
   $('preview-message').hidden=true;$('preview-frame').hidden=false;
  }catch(e){$('preview-frame').hidden=true;$('preview-message').hidden=false;$('preview-message').textContent=e.message;throw e;}
@@ -103,7 +105,7 @@ $('export-authoring').onclick=async()=>{
 for(const id of ['view-deck','export-deck'])$(id).onclick=async event=>{event.preventDefault();if(busy)return;try{assertPresentationContent(project.document);await persist();if(id==='view-deck')window.open($('view-deck').href,'_blank');else location.href=$('export-deck').href;}catch(e){message(e.message);}};
 $('open-json').onclick=()=>$('project-file').click();$('project-file').onchange=async()=>{try{const file=$('project-file').files[0];if(!file)return;if(file.size>36*1024*1024)throw Error('프로젝트 JSON은 36MB 이내여야 합니다.');const replacement=validatePresentationProject(JSON.parse(await file.text()));assertPresentationContent(replacement.document);await store.save(replacement);project=replacement;assets=project.assets;selected=firstContentSlide(project.document);$('scenario').value=project.document.scenario;$('title').value=project.document.title;$('presenter').value=project.document.presenter;$('design-request').value=project.document.brief||'';renderPhotos();renderEditor();show('edit');history.replaceState(null,'',`?project=${project.document.id}`);await preview();message('프로젝트 JSON을 불러왔습니다.');}catch(e){message(e.message);}};
 async function loadProject(id){const saved=await store.load(id);if(!saved)throw Error('저장된 프로젝트를 찾을 수 없습니다. JSON을 불러와 주세요.');project=saved;assets=saved.assets;selected=firstContentSlide(saved.document);$('scenario').value=saved.document.scenario;$('title').value=saved.document.title;$('presenter').value=saved.document.presenter;$('design-request').value=saved.document.brief||'';renderPhotos();renderEditor();show('edit');await preview();message('저장된 프로젝트를 불러왔습니다.');}
-$('new-project').onclick=async()=>{try{await persist();clearTimeout(timer);project=undefined;assets=[];selected=0;$('scenario').value='';$('title').value='';$('presenter').value='';$('photos').value='';$('design-request').value='';for(const key of ['purpose','audience','decision'])$(key).value='';renderPhotos();$('save-json').disabled=true;$('find-project').disabled=true;$('export-authoring').disabled=true;$('edit-tab').disabled=true;show('input');history.replaceState(null,'',location.pathname);message('새 시나리오와 사진을 입력해 주세요.');}catch(e){message(e.message);}};
+$('new-project').onclick=async()=>{try{await persist();clearTimeout(timer);project=undefined;assets=[];selected=0;$('scenario').value='';$('title').value='';$('presenter').value='';$('photos').value='';$('design-request').value='';for(const key of ['purpose','audience','decision'])$(key).value='';renderPhotos();setBusy(false);$('save-json').disabled=true;$('find-project').disabled=true;$('export-authoring').disabled=true;$('edit-tab').disabled=true;show('input');history.replaceState(null,'',location.pathname);message('새 시나리오와 사진을 입력해 주세요.');}catch(e){message(e.message);}};
 try{
  store=await openAppProjectStore();const id=query.get('project');
  if(id&&validProjectId(id))await loadProject(id);

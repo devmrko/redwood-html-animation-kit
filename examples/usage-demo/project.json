@@ -1,0 +1,113 @@
+{
+  "document": {
+    "version": 1,
+    "id": "bed0de03-1119-4111-8111-111111111111",
+    "title": "HTML 발표자료 만들기 · 사용법 데모",
+    "presenter": "Redwood HTML Animation Kit",
+    "appearance": "light",
+    "scenario": "키트의 실제 사용 순서 안내. 입력·제작·AI 편집·발표·영상 저장.",
+    "slides": [
+      {
+        "id": "cover",
+        "title": "HTML 발표자료 만들기",
+        "layout": "cover",
+        "section": "사용법",
+        "items": [],
+        "notes": "시나리오와 사진을 넣어 발표자료를 만듭니다. 제작한 장표로 발표하고, PPT와 자막 영상을 저장하는 순서를 살펴보겠습니다.",
+        "subtitle": "시나리오 입력부터 자막 영상 저장까지"
+      },
+      {
+        "id": "workflow",
+        "title": "입력한 자료를 발표·PPT·영상으로 씁니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "먼저 시나리오와 사진으로 초안을 만듭니다. Codex나 Claude로 본문을 제작한 뒤 발표합니다. 같은 장표를 PPT와 MP4, SRT로 저장할 수 있습니다.",
+        "authored": true
+      },
+      {
+        "id": "input",
+        "title": "시나리오·사진으로 내용 초안을 만듭니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "키트 폴더에서 python3 start.py를 실행하고 장표 만들기를 엽니다. 제목과 목록으로 시나리오를 입력하고 필요한 사진을 선택합니다. 내용·스크립트 초안 만들기는 API 키 없이 사용할 수 있습니다.",
+        "authored": true
+      },
+      {
+        "id": "draft",
+        "title": "제목·목차·스크립트를 먼저 다듬습니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "목록에서 장표를 골라 제목과 핵심 내용, 발표 스크립트를 확인합니다. 표지와 간지는 템플릿을 사용합니다. 이 단계의 본문은 기본 초안이며, 실제 페이지는 다음 단계에서 제작합니다.",
+        "authored": true
+      },
+      {
+        "id": "author",
+        "title": "제작용 ZIP을 Codex·Claude로 완성합니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "Codex·Claude 제작용 ZIP을 저장하고 압축을 풉니다. 해당 폴더를 Codex나 Claude에서 열고 화면의 요청문으로 제작을 맡깁니다. JSON의 내용과 페이지 코드를 분리해 수정하며, 공통 템플릿과 재생 기능을 재사용합니다.",
+        "authored": true
+      },
+      {
+        "id": "visuals",
+        "title": "표·그림·차트도 같은 테마로 만듭니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "항목별 차이는 표, 처리 순서는 흐름도, 수치의 크기는 차트로 표현합니다. 텍스트와 도식은 벡터로 유지하고, 밝은 테마와 어두운 테마에서 같은 글꼴과 공통 색상을 사용합니다. 오른쪽 차트는 기능 설명용 예시 데이터입니다.",
+        "authored": true,
+        "appearance": "dark"
+      },
+      {
+        "id": "ai",
+        "title": "AI 편집은 미리보고 적용합니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "발표 화면의 AI 편집에서 연결 방식을 고릅니다. OpenAI 호환 API, OCI CLI, 설치된 Codex나 Claude를 사용할 수 있습니다. 변경 요청을 입력하고 편집안과 미리보기를 확인한 뒤 적용합니다. 변경 이력에서 이전 원본을 새 버전으로 복원할 수 있습니다.",
+        "authored": true
+      },
+      {
+        "id": "present",
+        "title": "청중 화면과 발표 노트를 나눕니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "모니터를 확장 모드로 연결합니다. 발표 시작으로 연 청중 창을 발표 화면에 옮깁니다. 그 청중 창에서 발표자 보기를 열어 노트북에 둡니다. 방향키로 장표와 단계, 발표 노트를 함께 이동합니다.",
+        "authored": true
+      },
+      {
+        "id": "outputs",
+        "title": "PPT와 영상은 목적에 맞게 저장합니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "PPT는 화면 모양 유지와 편집 가능 중에서 고릅니다. 편집형에서도 복잡한 그래픽은 그림으로 남습니다. 영상은 1080p, 초당 30프레임의 무음 MP4이며 SRT 자막을 별도로 저장할 수 있습니다.",
+        "authored": true
+      },
+      {
+        "id": "subtitles",
+        "title": "자막을 고치고 읽을 시간을 확보합니다",
+        "layout": "content",
+        "section": "사용법",
+        "items": [],
+        "notes": "PPT·영상·SRT에서 장표와 발표 노트로 자막 초안을 만듭니다. LLM 초안도 선택할 수 있고 문구와 시간을 직접 고칠 수 있습니다. 자동 읽기 시간을 켜면 본문 구성과 자막 길이에 맞춰 장표 시간을 늘립니다. 영상 만들기에서 현재 탭을 선택하고, 완료 후 MP4와 SRT를 저장합니다.",
+        "authored": true
+      },
+      {
+        "id": "closing",
+        "title": "시작하세요",
+        "layout": "closing",
+        "section": "사용법",
+        "items": [],
+        "notes": "장표 만들기에서 자신의 시나리오를 입력해 보세요. 제작용 ZIP과 함께 내용, 스크립트, 화면을 보관하면 다음 발표에서도 재사용할 수 있습니다.",
+        "subtitle": "장표 만들기 → 제작용 ZIP → 발표·내보내기"
+      }
+    ]
+  },
+  "assets": []
+}

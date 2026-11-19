@@ -19,7 +19,7 @@ export function createPresentationChart(options) {
     const svg = node('svg', { viewBox: '0 0 440 340', role: 'img', 'aria-label': `${title}: ${data.map(item => `${item.label} ${item.value}`).join(', ')}` });
     svg.append(node('title', {}, title));
     const marks = [];
-    const palette = ['#2C5967', '#E6AC58', '#94AFAF'];
+    const palette = ['var(--rf-chart-1, #2C5967)', 'var(--rf-chart-2, #E6AC58)', 'var(--rf-chart-3, #94AFAF)'];
     const max = Math.max(1, ...data.map(item => item.value));
     if (type === 'donut') {
         let offset = 0;

@@ -4,6 +4,14 @@
 
 [![정보 흐름 애니메이션 — DB·문서·API에서 시멘틱 컨텍스트와 답변으로 이어지는 과정](assets/preview-current.gif)](assets/preview-current.gif)
 
+## 사용법 데모
+
+이 키트로 만든 11장 안내 자료로 시나리오 입력 → Codex·Claude 본문 제작 → AI 수정 → 발표자 보기 → PPT·자막 영상 저장을 살펴볼 수 있습니다. 실제 화면과 공통 표·SVG 차트·등장 효과를 사용합니다.
+
+`python3 start.py`로 서버를 실행한 뒤 [`http://127.0.0.1:4173/examples/usage-demo/open.html`](http://127.0.0.1:4173/examples/usage-demo/open.html)을 엽니다. **데모 장표 열기**는 새 프로젝트 복사본을 만들며 AI 모델을 호출하지 않습니다. Python과 Git이 필요합니다. 포트를 바꿨다면 주소의 포트도 맞추세요.
+
+제목·스크립트와 본문 원본은 [사용법 데모 소스](examples/usage-demo/README.md)에서 수정할 수 있습니다. 이 데모도 장표의 **PPT·영상·SRT**에서 영상으로 저장합니다.
+
 ## 애니메이션 샘플
 
 기존 **13장·33종**은 첫 화면 `index.html`과 **애니메이션 샘플** 링크에서 엽니다. 더블클릭용 카탈로그는 `samples.html`, 디자인 부품은 `design-components.html`입니다. 제작용·발표용 ZIP에도 두 카탈로그를 포함합니다. 샘플의 **추가 기능** 메뉴에서 테마·마지막 장면·PPT/영상 내보내기·장표 만들기·디자인 부품을 엽니다.

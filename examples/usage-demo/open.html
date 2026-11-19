@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>사용법 데모 열기</title>
+<style>body{font:20px/1.6 system-ui,sans-serif;background:#fbf9f8;color:#2a2f2f;max-width:720px;margin:10vh auto;padding:24px}h1{font-size:32px}button{font:inherit;background:#2c5967;color:white;border:0;border-radius:4px;padding:14px 24px;cursor:pointer}button:disabled{opacity:.6}p{max-width:650px}a{color:#2c5967}</style></head>
+<body><h1>HTML 발표자료 만들기</h1><p>시나리오 입력·본문 제작·AI 편집·발표자 보기·자막 영상 저장을 안내하는 11장 데모입니다.</p><button id="open">데모 장표 열기</button><p id="status" role="status">Python 서버에서 여세요. Git이 필요하며 AI 모델은 호출하지 않습니다. 데모는 새 프로젝트로 복사됩니다.</p><p><a href="../../builder.html">장표 만들기</a></p>
+<script type="module">
+const button=document.querySelector('#open'),status=document.querySelector('#status');
+button.onclick=async()=>{button.disabled=true;status.textContent='데모를 준비하고 있습니다…';try{
+ if(!/^https?:$/.test(location.protocol))throw Error('키트 폴더에서 python3 start.py를 실행한 뒤 이 페이지를 여세요.');
+ const read=async path=>{const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw Error('데모 원본을 불러오지 못했습니다.');return response.json();};
+ const [project,pages]=await Promise.all([read('./project.json'),read('./pages.json')]);project.document.id=crypto.randomUUID();
+ project.assets=await Promise.all(['builder','draft','ai-edit','presenter','export'].map(async id=>{const response=await fetch(`./screens/${id}.jpg`);if(!response.ok)throw Error('데모 화면을 불러오지 못했습니다.');const blob=await response.blob(),dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});return {id,name:`실제 ${id} 화면`,type:'image/jpeg',dataUrl};}));
+ const response=await fetch(`/api/ai/projects/${project.document.id}/init`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project,pages})});
+ if(!response.ok){const error=await response.json();throw Error(error.error||'데모를 열지 못했습니다. start.py 서버와 Git 설치를 확인하세요.');}
+ location.href=`../../deck.html?project=${project.document.id}`;
+}catch(error){status.textContent=error.message;button.disabled=false;}};
+</script></body></html>

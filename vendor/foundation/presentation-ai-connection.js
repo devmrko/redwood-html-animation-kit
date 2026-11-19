@@ -1,3 +1,12 @@
+export function defaultPresentationAiProvider(caps) {
+    if (caps.openai.available)
+        return 'openai';
+    if (caps.oci.available && caps.oci.model && caps.oci.compartment && (caps.oci.region || caps.oci.regions[caps.oci.profile]))
+        return 'oci';
+    if (caps.cli.available)
+        return 'cli';
+    return caps.oci.available ? 'oci' : 'openai';
+}
 export function createPresentationAiConnection(doc, options) {
     const root = doc.createElement('details');
     root.className = 'rf-ai-connection';
@@ -49,7 +58,7 @@ export function createPresentationAiConnection(doc, options) {
                 control.input.append(option);
             }
         }
-        provider.input.value = caps.openai.available ? 'openai' : caps.oci.available ? 'oci' : 'cli';
+        provider.input.value = defaultPresentationAiProvider(caps);
         profile.input.value = caps.oci.profile;
         region.input.value = caps.oci.region || caps.oci.regions[profile.input.value] || '';
         compartment.input.value = caps.oci.compartment;
