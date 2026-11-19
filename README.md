@@ -2,7 +2,9 @@
 
 시나리오와 사진으로 HTML 장표를 만들고, 내용을 수정해 발표하거나 PPTX·MP4·SRT로 저장하는 도구입니다. 제목·목차·핵심 내용·스크립트는 JSON으로 관리하고, Codex·Claude가 템플릿과 공통 기능을 이용해 실제 페이지를 제작합니다. Oracle Corporate 템플릿의 밝은·어두운 테마를 선택할 수 있으며, 표지·간지·마지막 장을 포함한 예제 13장과 효과 33종을 제공합니다.
 
-[![정보 흐름 애니메이션 — DB·문서·API에서 시멘틱 컨텍스트와 답변으로 이어지는 과정](assets/preview-current.gif)](assets/preview-current.gif)
+[![사용법 영상 — 시나리오 입력부터 발표·PPT·자막 영상 저장까지](assets/usage-demo-poster.jpg)](assets/usage-demo.mp4)
+
+[사용법 영상 보기 · MP4 3.72MB](assets/usage-demo.mp4) · [SRT 자막](assets/usage-demo.srt) — 3분 15초 · 1080p · 30fps · 한글 자막 포함 · 무음
 
 ## 사용법 데모
 
@@ -49,6 +51,8 @@ HTML 파일을 직접 더블 클릭하면 모듈 로딩이 제한될 수 있으�
 발표 화면의 **AI 편집**에서 변경 요청을 입력하고 **편집안 만들기 → 변경 미리보기 → 적용**으로 수정합니다. 선택한 장표의 제목·본문·스크립트, 표·SVG 도식·사진 배치·등장 효과를 수정하며 공통 표지·간지·로고·글꼴은 유지합니다. 본문은 HTML/SVG와 공통 애니메이션으로 구성하며 AI가 반환한 JavaScript는 실행하지 않습니다.
 
 연결 방식은 세 가지입니다.
+
+저장한 연결 선택이 없으면 설치된 **Codex를 우선 선택**합니다. 이번 사진·그림·차트·효과 생성 시험에서는 Codex가 7/7 적용됐고, 작은 API 모델은 형식 오류가 많았습니다. 이는 해당 시험의 결과이며 모든 요청의 성공을 보장하지 않습니다. 기존 선택은 유지합니다. nano 등 기존 연결을 바꾸려면 **기본 연결로 변경**을 누르거나 연결 방식·모델을 직접 고르세요. CLI의 모델 칸을 비우면 해당 CLI의 기본 모델을 사용하며, `.env`의 API 모델을 자동으로 상향하지 않습니다.
 
 - **OpenAI 호환 API**: 서버의 `.env`에 있는 `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`을 사용합니다. 모델을 편집창에서 바꿀 수도 있습니다.
 - **OCI CLI**: 설치된 `oci`와 기존 설정을 사용합니다. 프로파일·리전·모델 ID·컴파트먼트 OCID를 입력하고 모델에 맞게 Generic 또는 Cohere 형식을 선택합니다. 기본값은 `.env.example`의 `OCI_AI_*` 항목으로 지정할 수 있습니다. [OCI chat 명령](https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/generative-ai-inference/chat-result/chat.html)의 온디맨드 모델을 사용합니다.

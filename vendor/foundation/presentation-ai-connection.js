@@ -1,4 +1,6 @@
 export function defaultPresentationAiProvider(caps) {
+    if (caps.cli.available && caps.cli.tools.includes('codex'))
+        return 'cli';
     if (caps.openai.available)
         return 'openai';
     if (caps.oci.available && caps.oci.model && caps.oci.compartment && (caps.oci.region || caps.oci.regions[caps.oci.profile]))
@@ -24,6 +26,12 @@ export function createPresentationAiConnection(doc, options) {
     oci.className = 'rf-ai-oci';
     oci.append(profile.field, region.field, compartment.field, format.field);
     root.append(provider.field, tool.field, oci, model.field);
+    const reset = doc.createElement('button');
+    reset.type = 'button';
+    reset.className = 'rf-button';
+    reset.textContent = '기본 연결로 변경';
+    reset.disabled = true;
+    root.append(reset);
     const status = doc.createElement('p');
     status.className = 'rf-ai-connection-status';
     root.append(status);
@@ -43,7 +51,9 @@ export function createPresentationAiConnection(doc, options) {
         provider.input.value = choice.provider; appearance(Boolean(switched && !Object.hasOwn(choice, 'model'))); for (const [key, field] of Object.entries({ model, tool, profile, region, compartment, apiFormat: format }))
         if (typeof choice[key] === 'string')
             field.input.value = choice[key]; changed(); }
-    function setDisabled(disabled) { busy = disabled; controls.forEach(c => c.input.disabled = disabled || !capabilities); }
+    function setDisabled(disabled) { busy = disabled; reset.disabled = disabled || !capabilities; controls.forEach(c => c.input.disabled = disabled || !capabilities); }
+    reset.onclick = () => { if (!capabilities || busy)
+        return; const selected = defaultPresentationAiProvider(capabilities); setValue({ provider: selected, tool: capabilities.cli.tools.includes('codex') ? 'codex' : capabilities.cli.tools[0] ?? '', model: selected === 'openai' ? capabilities.openai.model : selected === 'oci' ? capabilities.oci.model : '' }); };
     provider.input.addEventListener('change', () => { appearance(true); changed(); });
     profile.input.addEventListener('change', () => { region.input.value = capabilities?.oci.regions[profile.input.value] || capabilities?.oci.region || ''; changed(); });
     controls.filter(c => c !== provider && c !== profile).forEach(c => c.input.addEventListener('change', changed));
@@ -59,6 +69,8 @@ export function createPresentationAiConnection(doc, options) {
             }
         }
         provider.input.value = defaultPresentationAiProvider(caps);
+        if (caps.cli.tools.includes('codex'))
+            tool.input.value = 'codex';
         profile.input.value = caps.oci.profile;
         region.input.value = caps.oci.region || caps.oci.regions[profile.input.value] || '';
         compartment.input.value = caps.oci.compartment;

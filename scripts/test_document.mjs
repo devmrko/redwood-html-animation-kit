@@ -104,11 +104,29 @@ test('document appearance and per-slide overrides survive JSON and reject unknow
 });
 
 
-test('an incomplete OCI profile does not hide a usable local CLI default',async()=>{
+test('Codex is the first default and incomplete OCI does not hide usable providers',async()=>{
  const {defaultPresentationAiProvider}=await import('../vendor/foundation/presentation-ai-connection.js');
  const caps={openai:{available:false,model:''},oci:{available:true,profiles:['DEFAULT'],regions:{DEFAULT:'us-chicago-1'},profile:'DEFAULT',region:'',model:'',compartment:''},cli:{available:true,tools:['codex']}};
  assert.equal(defaultPresentationAiProvider(caps),'cli');
- caps.oci.model='configured';caps.oci.compartment='configured';assert.equal(defaultPresentationAiProvider(caps),'oci');
- caps.openai.available=true;assert.equal(defaultPresentationAiProvider(caps),'openai');
+ caps.oci.model='configured';caps.oci.compartment='configured';assert.equal(defaultPresentationAiProvider(caps),'cli');
+ caps.openai.available=true;assert.equal(defaultPresentationAiProvider(caps),'cli');
+ caps.cli.tools=['claude'];assert.equal(defaultPresentationAiProvider(caps),'openai');
+ caps.openai.available=false;assert.equal(defaultPresentationAiProvider(caps),'oci');
  caps.openai.available=false;caps.oci.available=false;caps.cli.available=false;assert.equal(defaultPresentationAiProvider(caps),'openai');
+});
+
+test('saved API choices survive startup and an explicit reset clears its model for Codex',async()=>{
+ const {createPresentationAiConnection}=await import('../vendor/foundation/presentation-ai-connection.js');
+ class Element {constructor(tag){this.tag=tag;this.children=[];this.value='';}append(...children){this.children.push(...children);}addEventListener(){}}
+ const doc={createElement:tag=>new Element(tag)},caps={openai:{available:true,model:'openai/gpt-4.1-nano'},oci:{available:false,profiles:[],regions:{},profile:'DEFAULT',region:'',model:'',compartment:''},cli:{available:true,tools:['claude','codex']}};
+ let saved;const storage={getItem:()=>saved,setItem:(_,value)=>saved=value};
+ const first=createPresentationAiConnection(doc,{storage,loadCapabilities:async()=>caps});await first.ready;
+ assert.equal(first.value().provider,'cli');assert.equal(first.value().tool,'codex');assert.equal(first.value().model,'');
+ first.setValue({provider:'openai',model:'my-explicit-model'});
+ const next=createPresentationAiConnection(doc,{storage,loadCapabilities:async()=>caps});await next.ready;
+ assert.equal(next.value().provider,'openai');assert.equal(next.value().model,'my-explicit-model');
+ const reset=next.root.children.find(el=>el.tag==='button');assert.equal(reset.disabled,false);
+ next.setDisabled(true);reset.onclick();assert.equal(next.value().provider,'openai');assert.equal(reset.disabled,true);
+ next.setDisabled(false);reset.onclick();assert.equal(next.value().provider,'cli');assert.equal(next.value().tool,'codex');assert.equal(next.value().model,'');
+ assert.equal(JSON.parse(saved).provider,'cli');
 });
