@@ -46,5 +46,18 @@ export async function preparePresentationPowerPointSlide(root:HTMLElement):Promi
 /** Export the unscaled 1600x900 page at 2x, preserving the currently finished DOM. */
 export async function capturePresentationPowerPointSlide(root:HTMLElement,toPng:PresentationPngRenderer,filter?:(node:Node)=>boolean):Promise<string>{
  await preparePresentationPowerPointSlide(root);const view=root.ownerDocument.defaultView!;
- return toPng(root,{width:1600,height:900,pixelRatio:2,skipFonts:true,backgroundColor:view.getComputedStyle(root).backgroundColor,filter:(node:Node)=>!(node instanceof view.HTMLIFrameElement)&&(!filter||filter(node)),style:{position:'relative',left:'0',top:'0',margin:'0',transform:'none',translate:'none',zoom:'1',width:'1600px',height:'900px'}});
+ // The PNG renderer caches CSS property names from its outer HTML document.
+ // Slide-only custom properties can disappear in the serialized SVG. Freeze
+ // resolved SVG paints as presentation attributes, then restore the source.
+ const paints=['fill','stroke','stop-color','flood-color','lighting-color'],restore:(()=>void)[]=[];
+ for(const node of root.querySelectorAll<SVGElement>('svg,svg *')){
+  const css=view.getComputedStyle(node);
+  for(const property of paints){const value=css.getPropertyValue(property);if(!value)continue;
+   const attribute=node.getAttribute(property),inline=node.style.getPropertyValue(property),priority=node.style.getPropertyPriority(property);
+   restore.push(()=>{if(attribute===null)node.removeAttribute(property);else node.setAttribute(property,attribute);if(inline)node.style.setProperty(property,inline,priority);else node.style.removeProperty(property);});
+   node.setAttribute(property,value);node.style.setProperty(property,value,'important');
+  }
+ }
+ try{return await toPng(root,{width:1600,height:900,pixelRatio:2,skipFonts:true,backgroundColor:view.getComputedStyle(root).backgroundColor,filter:(node:Node)=>!(node instanceof view.HTMLIFrameElement)&&(!filter||filter(node)),style:{position:'relative',left:'0',top:'0',margin:'0',transform:'none',translate:'none',zoom:'1',width:'1600px',height:'900px'}});}
+ finally{for(const undo of restore.reverse())undo();}
 }

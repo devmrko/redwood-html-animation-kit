@@ -8,7 +8,7 @@ import {capturePresentationPowerPointSlide} from '../vendor/foundation/presentat
 let imageLibrary;
 function loadImageLibrary(){return imageLibrary??=new Promise((resolve,reject)=>{if(window.htmlToImage)return resolve(window.htmlToImage);const script=document.createElement('script');script.src='./vendor/html-to-image/html-to-image.js';script.onload=()=>resolve(window.htmlToImage);script.onerror=()=>{imageLibrary=undefined;script.remove();reject(Error('화면 캡처 도구를 읽지 못했습니다.'));};document.head.append(script);});}
 
-async function api(path,body){const response=await fetch('/api/ai/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),cache:'no-store'});const value=await response.json().catch(()=>({error:'AI 서버 응답을 읽지 못했습니다. 연결을 확인해 주세요.'}));if(!response.ok||value.error)throw Object.assign(Error(value.error||'AI 편집 요청에 실패했습니다.'),{status:response.status});return value;}
+async function api(path,body){let response;try{response=await fetch('/api/ai/'+path,{...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),cache:'no-store'});}catch{throw Object.assign(Error('AI 서버에 연결하지 못했거나 응답을 받지 못했습니다. 연결을 확인해 주세요.'),{network:true});}const value=await response.json().catch(()=>({error:'AI 서버 응답을 읽지 못했습니다. 연결을 확인해 주세요.'}));if(!response.ok||value.error)throw Object.assign(Error(value.error||'AI 편집 요청에 실패했습니다.'),{status:response.status});return value;}
 export async function loadPresentationAiPages(project){
  const id=project.document.id;let pages={};
  const response=await fetch(`/api/ai/projects/${id}/state`,{cache:'no-store'});
@@ -33,7 +33,7 @@ export function openPresentationAiEditor({project,slideId,pages,onApplied,captur
  function message(text){status.textContent=text;}
  function setBusy(value){busy=value;generate.disabled=value||!state;prompt.disabled=value;apply.disabled=value||!proposal||!reviewed;review.disabled=value||!proposal;cancelProposal.disabled=writing||!proposal;reload.disabled=value;close.disabled=writing;connectionControl.setDisabled(value);for(const button of historyList.querySelectorAll('button'))button.disabled=value||!state||button.dataset.current==='true';}
  function discardProposal(){const old=proposal;proposal=undefined;reviewed=false;if(old)void api(path+'discard',{token:old.token}).catch(()=>{});}
- function invalidate(error){discardProposal();state=undefined;reload.hidden=false;if(!prompt.value.trim())prompt.value=lastRequest;message((error.status===409?'자료가 변경되어 작업을 중단했습니다.':error.message)+' 최신 버전을 불러온 뒤 다시 요청해 주세요.');}
+ function invalidate(error){discardProposal();state=undefined;reload.hidden=false;if(!prompt.value.trim())prompt.value=lastRequest;message((error.status===409?'자료가 변경되어 작업을 중단했습니다.':writing&&error.network?'저장 응답을 받지 못해 적용 여부를 확인할 수 없습니다.':error.message)+' 최신 버전을 불러온 뒤 다시 요청해 주세요.');}
  cancelProposal.onclick=()=>{if(writing||!proposal)return;discardProposal();if(!prompt.value.trim())prompt.value=lastRequest;setBusy(busy);message('편집안을 취소했습니다. 원본은 변경하지 않았습니다.');};
  function settings(){return connectionControl.value();}
  async function capture(snapshot){

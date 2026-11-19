@@ -9,6 +9,7 @@ import functools
 import http.server
 import json
 import os
+import socket
 from pathlib import Path
 import struct
 import sys
@@ -53,6 +54,17 @@ class FixtureWorkspace(PresentationAiWorkspace):
 
 class Handler(PresentationHandler):
     def log_message(self,*args):pass
+    def json_response(self,payload,status=200):
+        mode=getattr(getattr(self.server,'ai_workspace',None),'mode','')
+        endpoint='/propose' if mode=='generation-disconnect' else '/apply' if mode=='apply-disconnect' else None
+        if endpoint and self.path.endswith(endpoint) and status==200:
+            # Drop only the response, after the real workspace operation. This
+            # reproduces an uncertain result without killing unrelated requests.
+            self.close_connection=True
+            try:self.connection.shutdown(socket.SHUT_RDWR)
+            except OSError:pass
+            self.connection.close();return
+        super().json_response(payload,status)
     def do_GET(self):
         if self.path=='/fixture/png':self.json_response({'image':png()});return
         if self.path=='/fixture/report':
@@ -65,7 +77,7 @@ class Handler(PresentationHandler):
             length=int(self.headers.get('Content-Length','0'))
             if not 0<length<1000:self.send_error(400);return
             payload=json.loads(self.rfile.read(length));mode=payload.get('mode')
-            if mode not in ('normal','capture-delay','stale-source','generation-failure','write-delay','baseline-source'):self.send_error(400);return
+            if mode not in ('normal','capture-delay','stale-source','generation-failure','write-delay','baseline-source','generation-disconnect','apply-disconnect'):self.send_error(400);return
             project=json.loads((ROOT/'examples/presentation-project.json').read_text());project['document']['id']=str(uuid.uuid4())
             root=self.server.fixture_root/project['document']['id'];(root/'authoring').mkdir(parents=True)
             (root/'authoring/SLIDE_PRINCIPLES.md').write_text((ROOT/'authoring/SLIDE_PRINCIPLES.md').read_text())

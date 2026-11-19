@@ -53,3 +53,15 @@ test('still-frame capture decodes a paused video without starting playback',asyn
  const root={ownerDocument:{fonts:{ready:Promise.resolve()},defaultView:{setTimeout,clearTimeout}},querySelectorAll:n=>n==='video'?[video]:[],getBoundingClientRect:()=>({})};
  await preparePresentationPowerPointSlide(root);assert.equal(video.preload,'auto');assert.ok(time>0);assert.equal(paused,true);assert.equal(handlers.size,0);
 });
+
+test('PNG capture resolves SVG theme paints and restores source on success and failure',async()=>{
+ const {capturePresentationPowerPointSlide}=await import('../vendor/foundation/presentation-powerpoint.js');
+ const attributes=new Map([['fill','var(--rf-chart-1, #2C5967)']]),inline=new Map([['stroke',['var(--rf-border)','']]]);
+ const node={getAttribute:n=>attributes.get(n)??null,setAttribute:(n,v)=>attributes.set(n,v),removeAttribute:n=>attributes.delete(n),style:{getPropertyValue:n=>inline.get(n)?.[0]??'',getPropertyPriority:n=>inline.get(n)?.[1]??'',setProperty:(n,v,p='')=>inline.set(n,[v,p]),removeProperty:n=>inline.delete(n)}};
+ const root={ownerDocument:{fonts:{ready:Promise.resolve()},defaultView:{getComputedStyle:()=>({backgroundColor:'white',getPropertyValue:n=>({fill:'rgb(4, 83, 111)',stroke:'rgb(196, 199, 197)'}[n]??'')})}},querySelectorAll:selector=>selector==='svg,svg *'?[node]:[],getBoundingClientRect:()=>({})};
+ for(const fail of [false,true]){
+  const render=async()=>{assert.equal(attributes.get('fill'),'rgb(4, 83, 111)');assert.equal(attributes.get('stroke'),'rgb(196, 199, 197)');assert.deepEqual(inline.get('fill'),['rgb(4, 83, 111)','important']);if(fail)throw Error('capture failed');return png;};
+  if(fail)await assert.rejects(capturePresentationPowerPointSlide(root,render),/capture failed/);else assert.equal(await capturePresentationPowerPointSlide(root,render),png);
+  assert.deepEqual([...attributes],[['fill','var(--rf-chart-1, #2C5967)']]);assert.deepEqual([...inline],[['stroke',['var(--rf-border)','']]]);
+ }
+});

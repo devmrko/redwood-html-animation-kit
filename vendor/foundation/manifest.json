@@ -14,7 +14,7 @@
     "presentation-fullscreen.js": "73c0d5369c444a77c54ded436c5a42e0e6e169082481e59b35468a136289f85c",
     "index.js": "62c0d1860e15069799d84ab5e7e3916fbc0f2a6fd5ed2c14c52c320509fbcc5a",
     "presentation-subtitles.js": "dcfdb30a427530ffcaaaf4c6e220216e1518bbf1216ec2e7223d1b4b66819c89",
-    "presentation-video.js": "6d02c09da4a244289bde26f6e57886b8d8c7c9f0ae6077f8f8fc9e80b317d4cf",
+    "presentation-video.js": "b9c1079e2180a99b2bf9d4a26127d0bb7aa76b5454875f30c2156f560312eba2",
     "presentation-window.js": "fce7778deaed0715aea117b278050510eeb009221413740ccdb43d81c40727a1",
     "presentation-context.js": "09d37b3e6a4b19c7d7d5fddd32deb4fe65d5175afe8f7b6a1ef1d07a13a4a869",
     "presentation-document-view.js": "36a5a52f50648c115f2f701428e21a52c021c7def3f21db1ce1bb9958ada2cf0",
@@ -26,7 +26,7 @@
     "presentation-tables.js": "ff83e9b49789af943791cb0a9e281f7fe54b716e8462fc159bc819ed05f9abe0",
     "presentation-search.js": "f670841fae81ff71c4bbb4ef916a06959dea02084c12f0bd1c31bcca1166568d",
     "presentation-media.js": "4a3b0e876e3e4bdaad951bacfedfb1237be4fc3bb1d87f9166867347351be81b",
-    "presentation-powerpoint.js": "ef58583e35e55c9f16d9247b62a6f92d70cea3a28abb053de48e6e069432657e",
+    "presentation-powerpoint.js": "46e0734d76f624616b850bcc6dd8a76cec21aab306bea3b31306e83b79d9b581",
     "presentation-powerpoint-editable.js": "ca1c5980bb7038d4def58d9f0ad62d0381b225cb359b752fa4f1f686b37443de",
     "presentation-typography.js": "433d8c59509d8914d3a706d56cef34edba219aab3cd5777f533d11dce55a55ba",
     "presentation-ai-page.js": "87bf25b1d832bf7fb1df60d35bf394abc85437f4e1694de87b7f239e24cfecdb",
@@ -36,7 +36,7 @@
     "ui/tokens.css": "96b14e8643a2540ea0f041538b1a7e7a20a7068adcd027906b52cc4117f45a9c",
     "ui/ui.css": "41894b2e63b5759c802646075b8c161ac793b96f3555a0d5600ca853628ece5a",
     "ui/components.css": "8b98a756df26ab3b59c54f9706ac326d38ca48d94251d6984a38e54920424c04",
-    "ui/presentation.css": "f16096084806fc9d76b95fcb290a277fe14c76125e3b68869dce6497178a00ce"
+    "ui/presentation.css": "726953f5d6d71cd2484d69b2c74917aa7ac912f3171f2f10c364c34a036bf08d"
   },
   "package_sha256": "2b2f4719c93597f73925b4dfb69e1e3a897454a6e49385d6698d11f227240ce3",
   "status": "rebuilt from the bundled presentation source; upstream tarball is retained as provenance",

@@ -43,7 +43,7 @@ export async function recordPresentationVideo(options: PresentationVideoOptions)
   if (signal.aborted) throw new DOMException('취소했습니다.', 'AbortError');
   const crop = await cropFactory.fromElement(surface);
   const stream = await navigator.mediaDevices.getDisplayMedia({
-    video: { frameRate: { ideal: options.fps ?? 30 }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false,
+    video: { frameRate: { ideal: options.fps ?? 30 }, width: { ideal: 1920 }, height: { ideal: 1080 }, cursor: 'never' }, audio: false,
     preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude',
   } as DisplayMediaStreamOptions);
   const video = surface.ownerDocument.createElement('video');
@@ -62,6 +62,9 @@ export async function recordPresentationVideo(options: PresentationVideoOptions)
     const track = stream.getVideoTracks()[0] as CaptureTrack | undefined;
     if (!track?.cropTo || track.getSettings().displaySurface !== 'browser') throw new Error('전체 화면이나 창 대신 현재 «영상 내보내기» 탭을 선택해 주세요.');
     await track.cropTo(crop);
+    // Some browsers only honor cursor constraints after the source is selected.
+    // Unsupported constraints must not prevent an otherwise usable recording.
+    await track.applyConstraints({ cursor: 'never' } as MediaTrackConstraints).catch(() => {});
     track.addEventListener('ended', onEnded);
     signal.addEventListener('abort', onAbort, { once: true });
     surface.ownerDocument.addEventListener('visibilitychange', onHidden);

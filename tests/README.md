@@ -13,3 +13,16 @@
 AI 편집 실패·취소는 `python3 tests/serve_ai_editor_fixture.py`를 실행하고 출력 주소를 엽니다. 실제 편집 UI·HTTP·임시 Git 저장소를 사용하며 모델 응답과 캡처 PNG는 합성입니다. 시나리오를 고르고 새 자료를 열어 `Update title`을 요청합니다. 취소·캡처 대기 중 닫기·원본 변경 충돌·생성 실패·저장 중 Escape를 각각 확인하고, 패널을 닫은 뒤 **저장 상태 확인**으로 적용 요청 수·버전 수·제목·대본을 대조합니다. `Ctrl+C`로 종료하면 임시 자료를 정리합니다. 사용자 키나 장표를 사용하지 않습니다.
 
 실제 모델 연결 검사는 서버 실행 후 `python3 scripts/smoke_ai_connections.py --origin http://127.0.0.1:4189 --provider oci --output dist/live-ai-oci-review`로 실행합니다. 새 공개 예제에 제목·표 수정을 요청하고 미적용 원본·적용·새 버전 복원을 대조합니다. `--provider openai` 또는 `--provider cli --tool codex|claude`도 지원합니다. 실제 모델 요금이 발생할 수 있어 `npm test`에 포함하지 않으며 출력 폴더는 새 경로를 사용해야 합니다. 표 검사는 숫자 포함 여부가 아니라 각 행·열의 정확한 값과 공통 클래스를 확인합니다.
+
+화면 크기별 검사는 저장소 루트에서 다음 합성 영상(3초)을 준비하고 Python 서버의 `/tests/browser/layout.html`에서 **전체 검사**를 누릅니다. FFmpeg가 필요하며 실제 모델이나 API 키는 사용하지 않습니다.
+
+```sh
+mkdir -p dist/layout/media
+ffmpeg -v error -f lavfi -i testsrc2=size=640x360:rate=30 -t 3 -c:v libx264 -pix_fmt yuv420p -an -y dist/layout/media/fixture.mp4
+```
+
+실제 공통 렌더러를 5개 iframe 크기 × 2테마 × 2화면 모드 × 8구성으로 검사합니다. **선택 화면 보기**로 사례를 확인하고 결과 JSON을 저장할 수 있습니다. 영상 파일이 없으면 해당 사례를 실패로 표시합니다. 일반 화면의 도구 모음은 실제 HTML/CSS를 사용하지만 클릭 동작·발표자 연결을 검사하는 페이지는 아닙니다. iframe 크기 검사는 실기기·파일 실행 검증을 대체하지 않습니다.
+
+내보내기 실화면 검수용으로 `python3 tests/build_offline_fixture.py --output dist/export-review --export-review`를 사용합니다. FFmpeg가 필요하며 출력 경로는 새 폴더여야 합니다. 6장 자료·차트·긴 대본·3초 합성 영상과 실행본 ZIP, `workspace/` 제작 폴더를 만듭니다. `workspace/`에서 `python3 start.py --no-browser --port 4191`을 실행한 뒤 출력된 프로젝트의 PPT·영상·SRT 화면을 엽니다. PPT는 두 방식을 각각 PowerPoint에서 열고, SRT와 영상의 긴 자막 유지 시간·전환 경계를 대조합니다. MP4 녹화에는 보이는 Chrome/Edge의 현재 탭 공유가 필요합니다.
+
+AI 검증 서버에는 **생성 후 응답 연결 끊김**, **저장 후 응답 연결 끊김**이 있습니다. 후자는 저장 자체가 성공한 뒤 응답만 끊습니다. 실패 안내 뒤 **최신 버전 불러오기**로 결과를 확인하고, 패널을 닫아 적용 요청 1회·버전 2개인지 확인합니다. 같은 적용 요청을 반복하는 검사가 아닙니다. `test_ai_disconnect.py`도 실제 HTTP 연결을 끊고 최신 조회·새 버전 복원을 검사하며 `npm test`에 포함됩니다.
