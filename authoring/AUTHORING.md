@@ -2,7 +2,7 @@
 
 이 프로젝트는 입력한 발표 내용과 사진, Redwood 템플릿, 발표·영상 내보내기 기능을 포함합니다. Codex나 Claude로 이 폴더를 열고 `REQUEST.md`의 요청대로 페이지를 제작하세요. `pages/*.js`의 기본 본문은 **제작 전 초안**입니다.
 
-기획·작성·검수 전에 [발표 장표 작성 원칙](SLIDE_PRINCIPLES.md)을 읽고 적용하세요. 제품 비교뿐 아니라 설명·제안·교육·결과 보고에도 같은 원칙을 적용하며, 각 장표의 역할에 맞게 검수합니다.
+기획·작성·검수 전에 [발표 장표 작성 원칙](./SLIDE_PRINCIPLES.md)을 읽고 적용하세요. 제품 비교뿐 아니라 설명·제안·교육·결과 보고에도 같은 원칙을 적용하며, 각 장표의 역할에 맞게 검수합니다.
 
 ## 첫 실행
 
@@ -13,7 +13,7 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 - `presentation-project.json`: 제목, 섹션·목차, 핵심 내용 `items`, 발표 스크립트 `notes`, 사진 자산과 페이지별 제작 요청 `design`을 관리합니다. 사실·수치를 임의로 만들지 마세요.
 - `pages/<장표ID>.js`: 해당 페이지의 본문을 HTML·CSS·SVG·JavaScript로 작성합니다. 표·그림·차트·도식·다양한 효과를 내용에 맞게 구성하세요. 외부 라이브러리나 새 의존성은 필요한 이유가 있을 때만 추가합니다.
 - `authored-pages.js`: 프로젝트 ID와 장표 ID를 페이지 모듈에 연결합니다. JSON에는 실행할 코드나 모듈 경로를 넣지 않습니다. 장표를 추가하면 등록도 갱신합니다.
-- `template-theme.js`, `templates/oracle-corporate.css`, `templates/oracle-corporate.json`: 표지·간지·마지막 장, 글꼴·색상·제목·본문 좌표의 기준입니다. 본문은 1400×560 CSS px이고 슬라이드는 1600×900입니다. 제공된 디자인을 유지하세요.
+- `app/template-theme.js`, `templates/oracle-corporate.css`, `templates/oracle-corporate.json`: 표지·간지·마지막 장, 글꼴·색상·제목·본문 좌표의 기준입니다. 본문은 1400×560 CSS px이고 슬라이드는 1600×900입니다. 제공된 디자인을 유지하세요.
 - `framework/src`, `vendor/foundation`: 공통 원본과 브라우저 런타임입니다. 페이지마다 재생·자막·영상 기능을 다시 만들지 않습니다. 공통 원본을 바꿨다면 TypeScript로 빌드하고 `node scripts/sync-ui.mjs`로 배포 파일을 갱신하세요.
 
 영문·숫자는 원본 템플릿의 Oracle Sans Tab을 우선합니다. 한글은 같은 글꼴 집합의 대체 글꼴(Mac: Apple SD Gothic Neo, Windows: Malgun Gothic)을 사용합니다. 페이지 코드에서 별도 글꼴을 하드코딩하지 마세요. 본문 24px 이상, 도식 라벨 22px 이상을 우선하고 복잡한 내용은 문구·배치를 정리하거나 장표를 나눕니다. 로고를 글자로 흉내 내지 말고 제공된 공식 SVG를 사용하세요. 사진은 `assets` 맵의 ID로 참조합니다. HTML 전체를 이미지로 굽지 말고 텍스트·표·도식은 DOM·SVG로 만들어 확대 시 선명하게 유지하세요.
@@ -36,7 +36,7 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 
 ## 검수와 전달
 
-먼저 [장표 통과 기준](SLIDE_PRINCIPLES.md#장표-통과-기준)으로 제목·핵심 내용·근거·조건·가독성을 확인합니다.
+먼저 [장표 통과 기준](./SLIDE_PRINCIPLES.md#장표-통과-기준)으로 제목·핵심 내용·근거·조건·가독성을 확인합니다.
 
 1. 시나리오의 요구와 각 페이지의 실제 내용을 대조합니다. 표·사진·도식의 표현이 요청과 맞는지 확인합니다.
 2. 표지·목차 간지·본문·마지막 장을 모두 열어 글꼴·로고·여백과 잘림·겹침·읽기 크기를 확인합니다. 제작 전 초안 표시는 완성한 페이지에서 제거합니다.

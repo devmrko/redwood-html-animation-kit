@@ -17,7 +17,7 @@ from framework.python.presentation_ai import PresentationAiWorkspace
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,default=ROOT/'demo-output/usage-demo')
+    parser.add_argument('--output',type=Path,default=ROOT/'dist/usage-demo')
     args=parser.parse_args();source=ROOT/'examples/usage-demo';output=args.output
     project=json.loads((source/'project.json').read_text())
     for name in ('builder','draft','ai-edit','presenter','export'):
@@ -38,8 +38,8 @@ def main():
     (output/'usage-demo.zip').write_bytes(workspace.archive(identifier))
     (output/'watch.html').write_text((source/'watch-template.html').read_text().replace('__PROJECT_ID__',identifier))
     print(f'{len(project["document"]["slides"])} slides · {len(pages)} authored bodies')
-    print(f'Open /deck.html?project={identifier}')
-    print(f'Export /export.html?project={identifier}')
+    print(f'Open /app/deck.html?project={identifier}')
+    print(f'Export /app/export.html?project={identifier}')
     print(output/'usage-demo.zip')
 
 

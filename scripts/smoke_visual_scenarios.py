@@ -73,7 +73,7 @@ def main():
   slides.append({'id':identifier,'layout':'content','title':title,'subtitle':'','section':'그림·차트·효과 검증','items':items,'notes':'검증용 예제입니다. '+'. '.join(items)+'.','data':{'fixture':True}})
  doc['slides']=[cover,*slides,closing];project_id=doc['id'];api('/api/projects/'+project_id,project);state=api('/api/ai/projects/'+project_id+'/init',{'project':project});head=state['head'];snapshot=state['snapshot'];report=[]
  (output/'input.json').write_text(json.dumps(project,ensure_ascii=False,indent=2))
- print('OPEN '+origin+'/deck.html?project='+project_id,flush=True)
+ print('OPEN '+origin+'/app/deck.html?project='+project_id,flush=True)
  for identifier,_,_,request,kind in CASES:
   started=time.monotonic();print('START '+identifier,flush=True)
   try:

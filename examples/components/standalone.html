@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ko">
+<head><base href="../../">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foundation · HTML 디자인 부품</title>
+<link rel="icon" href="data:,"><style>/* Redwood-inspired Foundation tokens. Application overrides belong on .rf-theme. */
+.rf-theme {
+  --rf-bg: #f5f4f0;
+  --rf-surface: #ffffff;
+  --rf-text: #161513;
+  --rf-muted: #605d58;
+  --rf-border: #d5d3ce;
+  --rf-hover: #eeedeb;
+  --rf-selected: #e4f1f7;
+  --rf-accent: #227e9e;
+  --rf-action: #312d2a;
+  --rf-action-text: #ffffff;
+  --rf-gold: #e7c46b;
+  --rf-success: #366746;
+  --rf-success-bg: #eaf2e7;
+  --rf-warning: #805a16;
+  --rf-warning-bg: #fff3d6;
+  --rf-danger: #a32c25;
+  --rf-danger-bg: #fcecea;
+  --rf-space-1: .25rem;
+  --rf-space-2: .5rem;
+  --rf-space-3: .75rem;
+  --rf-space-4: 1rem;
+  --rf-space-6: 1.5rem;
+  --rf-space-8: 2rem;
+  --rf-text-title: 2rem;
+  --rf-text-heading: 1.5rem;
+  --rf-text-subheading: 1.25rem;
+  --rf-text-body-lg: 1.125rem;
+  --rf-text-body: 1rem;
+  --rf-text-small: .875rem;
+  --rf-text-caption: .75rem;
+  --rf-leading-body: 1.6;
+  --rf-leading-heading: 1.3;
+  --rf-weight-regular: 400;
+  --rf-weight-medium: 600;
+  --rf-weight-bold: 700;
+  --rf-font-slide: "Oracle Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --rf-font-headline: Georgia, "Apple SD Gothic Neo", "Malgun Gothic", serif;
+  --rf-slide-bg: #e0e2e1;
+  --rf-slide-text: #4e3629;
+  --rf-slide-padding-x: 100px;
+  --rf-slide-padding-y: 64px;
+  --rf-slide-title: 40px;
+  --rf-slide-heading: 30px;
+  --rf-slide-subheading: 24px;
+  --rf-slide-body: 24px;
+  --rf-slide-note: 18px;
+  --rf-radius: .375rem;
+  --rf-shadow: 0 2px 6px #1615130d;
+  --rf-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-family: var(--rf-font);
+  font-size: var(--rf-text-body);
+  line-height: var(--rf-leading-body);
+  color: var(--rf-text);
+  background: var(--rf-bg);
+  color-scheme: light;
+}
+
+/* Native HTML components: no reset outside the rf-theme boundary. */
+.rf-theme, .rf-theme :where(*) { box-sizing: border-box; }
+.rf-theme :where(button, input, select, textarea) { font: inherit; }
+.rf-theme :where(a) { color: var(--rf-accent); text-underline-offset: .2em; }
+.rf-theme :where(button, a, input, select, textarea, summary):focus-visible { outline: 3px solid var(--rf-accent); outline-offset: 3px; }
+.rf-theme :where(h1,h2,h3,p) { margin-block-start: 0; }
+.rf-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--rf-space-2);
+  min-height: 44px; padding: .625em 1em; border: 1px solid var(--rf-border);
+  border-radius: var(--rf-radius); background: var(--rf-surface); color: var(--rf-text);
+  font: inherit; font-weight: 600; line-height: 1.2; text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.rf-button:hover { background: var(--rf-hover); }
+.rf-button--primary { background: var(--rf-action); color: var(--rf-action-text); border-color: var(--rf-action); }
+.rf-button--primary:hover { background: #49443f; }
+.rf-button--quiet { background: transparent; border-color: transparent; }
+.rf-button[aria-pressed="true"] { background: var(--rf-selected); color: var(--rf-accent); border-color: var(--rf-accent); }
+.rf-button:disabled { opacity: .4; cursor: default; }
+.rf-card { min-width: 0; background: var(--rf-surface); border: 1px solid var(--rf-border); border-radius: var(--rf-radius); box-shadow: var(--rf-shadow); }
+.rf-card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--rf-space-4); padding: var(--rf-space-6); border-bottom: 1px solid var(--rf-border); }
+.rf-card__title { margin: 0; font-size: var(--rf-text-subheading); font-weight: 700; line-height: 1.4; }
+.rf-card__body { padding: var(--rf-space-6); line-height: var(--rf-leading-body); }
+.rf-card__body > :last-child { margin-bottom: 0; }
+.rf-card__footer { display: flex; justify-content: flex-end; gap: var(--rf-space-3); padding: var(--rf-space-4) var(--rf-space-6); border-top: 1px solid var(--rf-border); }
+.rf-badge { display: inline-flex; align-items: center; gap: .375em; padding: .3em .65em; border-radius: .25rem; background: var(--rf-hover); color: var(--rf-muted); font-size: var(--rf-text-small); font-weight: 600; line-height: 1.35; }
+.rf-badge--success { color: var(--rf-success); background: var(--rf-success-bg); }
+.rf-badge--warning { color: var(--rf-warning); background: var(--rf-warning-bg); }
+.rf-badge--danger { color: var(--rf-danger); background: var(--rf-danger-bg); }
+.rf-badge--info { color: var(--rf-accent); background: var(--rf-selected); }
+.rf-field { display: grid; gap: var(--rf-space-2); min-width: 0; }
+.rf-field__label { font-size: var(--rf-text-small); font-weight: 600; }
+.rf-input { width: 100%; min-height: 48px; padding: .75rem; border: 1px solid #85817b; border-radius: var(--rf-radius); background: var(--rf-surface); color: var(--rf-text); font-size: max(1em,16px); }
+.rf-input[aria-invalid="true"] { border: 2px solid var(--rf-danger); }
+.rf-field__hint { color: var(--rf-muted); font-size: var(--rf-text-small); line-height: 1.5; }
+.rf-field__error { color: var(--rf-danger); font-size: var(--rf-text-small); }
+.rf-notice { padding: var(--rf-space-4); border-inline-start: 4px solid var(--rf-accent); border-radius: 0 var(--rf-radius) var(--rf-radius) 0; background: var(--rf-selected); color: var(--rf-text); line-height: var(--rf-leading-body); }
+.rf-notice--success { background: var(--rf-success-bg); border-color: var(--rf-success); }
+.rf-notice--warning { background: var(--rf-warning-bg); border-color: var(--rf-warning); }
+.rf-list { list-style: none; padding: 0; margin: 0; }
+.rf-list__row { display: flex; align-items: center; justify-content: space-between; gap: var(--rf-space-4); padding: var(--rf-space-4) var(--rf-space-6); border-bottom: 1px solid var(--rf-border); }
+.rf-list__row:last-child { border-bottom: 0; }
+.rf-list__row[aria-current="true"] { background: var(--rf-selected); box-shadow: inset 3px 0 var(--rf-accent); }
+.rf-page-header { position: relative; padding: var(--rf-space-8); background: #ead8ae; border-bottom: 4px solid var(--rf-gold); }
+.rf-page-header__title { margin: 0 0 var(--rf-space-2); font-size: var(--rf-text-title); line-height: 1.3; font-weight: 700; }
+.rf-page-header__description { margin: 0; color: #4d4435; line-height: var(--rf-leading-body); }
+.rf-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--rf-space-3); padding: var(--rf-space-3) var(--rf-space-6); background: var(--rf-surface); border-bottom: 1px solid var(--rf-border); }
+.rf-stack { display: flex; flex-direction: column; gap: var(--rf-space-4); }
+.rf-inline { display: flex; align-items: center; flex-wrap: wrap; gap: var(--rf-space-3); }
+.rf-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: var(--rf-space-6); }
+.rf-muted { color: var(--rf-muted); }
+.rf-details { border-top: 1px solid var(--rf-border); padding-top: var(--rf-space-4); }
+.rf-details > summary { cursor: pointer; font-weight: 600; min-height: 44px; display: list-item; }
+@media (prefers-reduced-motion: reduce) { .rf-theme :where(.rf-button,.rf-card) { transition: none; } }
+
+.rf-title { font-size: var(--rf-text-title); line-height: var(--rf-leading-heading); font-weight: var(--rf-weight-bold); }
+.rf-heading { font-size: var(--rf-text-heading); line-height: var(--rf-leading-heading); font-weight: var(--rf-weight-bold); }
+.rf-subheading { font-size: var(--rf-text-subheading); line-height: 1.4; font-weight: var(--rf-weight-bold); }
+.rf-body-lg { font-size: var(--rf-text-body-lg); line-height: var(--rf-leading-body); }
+.rf-body { font-size: var(--rf-text-body); line-height: var(--rf-leading-body); }
+.rf-small { font-size: var(--rf-text-small); line-height: 1.5; }
+.rf-caption { font-size: var(--rf-text-caption); line-height: 1.5; }
+.rf-metric { font-variant-numeric: tabular-nums; }
+
+/* Redwood landing composition: warm illustrated header and dark navigation. */
+.rf-banner { position: relative; isolation: isolate; overflow: hidden; background: #dab77a; }
+.rf-banner::before, .rf-banner::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.rf-banner::before { width: 48%; height: 230%; right: -8%; top: -90%; background: #e78353; border-radius: 44% 56% 35% 65%; transform: rotate(-26deg); }
+.rf-banner::after { width: 17%; height: 190%; right: 14%; top: -90%; background: #53777a; border: 24px solid #e6c76c; border-radius: 48% 52% 58% 42%; transform: rotate(23deg); }
+.rf-banner > * { position: relative; z-index: 1; }
+.rf-tabbar { display: flex; align-items: stretch; gap: 4px; background: #242220; color: #fff; padding: 0 24px; overflow-x: auto; }
+.rf-tabbar__item { border: 0; border-top: 4px solid transparent; padding: 14px 20px; background: transparent; color: #d5d3ce; font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.rf-tabbar__item:hover { background: #ffffff12; color: #fff; }
+.rf-tabbar__item[aria-current="page"] { color: #fff; border-top-color: var(--rf-gold); background: #ffffff0a; }
+.rf-dialog { width: min(680px,calc(100vw - 32px)); max-height: calc(100dvh - 48px); padding: 0; color: var(--rf-text); background: var(--rf-surface); border: 1px solid var(--rf-border); border-radius: var(--rf-radius); box-shadow: 0 20px 80px #0005; }
+.rf-dialog::backdrop { background: #16151399; }
+.rf-dialog .rf-list__row > button { width: 100%; justify-content: flex-start; text-align: left; white-space: normal; }
+
+.rf-sidebar { background: #242220; color: #fff; padding: 24px 16px; overflow-y: auto; }
+.rf-sidebar__heading { margin: 0 12px 20px; color: #c6c2bb; font-size: 12px; letter-spacing: .08em; }
+.rf-sidebar__item { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 14px 16px; margin-bottom: 6px; border: 0; border-left: 3px solid transparent; border-radius: 0 var(--rf-radius) var(--rf-radius) 0; color: #d5d3ce; background: transparent; font: inherit; font-size: 14px; cursor: pointer; }
+.rf-sidebar__item:hover { background: #ffffff10; color: #fff; }
+.rf-sidebar__item[aria-current="page"] { background: #ffffff14; border-left-color: var(--rf-gold); color: #fff; font-weight: 700; }
+.rf-sidebar__number { color: #b9a782; font-variant-numeric: tabular-nums; font-size: 12px; }
+.rf-slide { font-family: var(--rf-font-slide); color: var(--rf-slide-text); background: var(--rf-slide-bg); padding: var(--rf-slide-padding-y) var(--rf-slide-padding-x); }
+.rf-slide__title { font-family: var(--rf-font-slide); font-size: var(--rf-slide-title); font-weight: 700; line-height: 1.25; letter-spacing: normal; }
+.rf-slide__headline { font-family: var(--rf-font-headline); font-size: 73.333px; font-weight: 400; line-height: 1.1; }
+.rf-chart { min-width: 0; }
+.rf-chart > svg { display: block; width: 100%; height: auto; font-family: var(--rf-font-slide); }
+.rf-chart__label { font-size: 19px; fill: var(--rf-slide-text); }
+.rf-chart__total { font-size: 34px; font-weight: 700; fill: var(--rf-slide-text); }
+.rf-chart__grid { stroke: #bbbdb9; stroke-width: 1; }
+.rf-ai-connection{margin:12px 0;padding:12px 16px;border:1px solid #bdcdce;border-radius:5px;background:#f4f8f7;color:#2a2f2f;font:14px/1.5 "Apple SD Gothic Neo","Malgun Gothic",sans-serif}.rf-ai-connection summary{cursor:pointer;font-weight:700;color:#04536f}.rf-ai-connection label{display:grid;gap:4px;margin:10px 0}.rf-ai-connection select,.rf-ai-connection input{box-sizing:border-box;width:100%;min-width:0;padding:8px;border:1px solid #afbfbd;border-radius:4px;background:#fff;color:#2a2f2f;font:inherit}.rf-ai-connection [hidden]{display:none}.rf-ai-connection-status{margin:8px 0 0;color:#526965;font-size:12px}
+
+/* Content-driven presentation layouts. Branding is supplied by the host. */
+.rf-document-slide{position:relative;isolation:isolate;width:1600px;height:900px;padding:72px 96px 76px;background:var(--rf-bg,#f4f2ed);color:var(--rf-text,#312d2a);overflow:hidden;font-family:"Oracle Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;text-align:left;box-sizing:border-box}
+.rf-document-eyebrow{font-size:19px;font-weight:650;letter-spacing:.02em;color:var(--rf-accent,#315f70);margin:0 210px 24px 0;min-height:27px}
+.rf-document-logo{position:absolute;right:96px;top:70px;max-width:155px;max-height:32px;object-fit:contain}
+.rf-document-heading{position:relative;z-index:1;max-width:100%;margin-bottom:34px}
+.rf-document-slide h1{font-size:50px;line-height:1.25;font-weight:750;letter-spacing:-1px;margin:0;overflow-wrap:anywhere}
+.rf-document-subtitle{font-size:26px;line-height:1.5;color:var(--rf-muted,#6e695f);margin:18px 0 0;white-space:pre-line}
+.rf-document-body{position:relative;display:flex;gap:48px;align-items:stretch;min-height:0;height:520px;z-index:1}
+.rf-document-copy{flex:1;min-width:0;align-self:center}
+.rf-document-items{padding:0;list-style:none;margin:0;display:grid;gap:16px}
+.rf-document-item{font-size:28px;line-height:1.45;padding:16px 22px;border-left:4px solid var(--rf-accent,#315f70);background:var(--rf-surface,#fff);border-radius:0 8px 8px 0;overflow-wrap:anywhere}
+.rf-document-photo{flex:1.1;min-width:0;margin:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:10px;background:var(--rf-surface,#fff)}
+.rf-document-photo img{display:block;width:100%;height:100%;max-height:520px;object-fit:contain}
+.rf-document-footer{position:absolute;left:96px;right:96px;bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:24px;font-size:16px;color:var(--rf-muted,#6e695f)}
+.rf-document-presenter{font-size:27px;line-height:1.55;white-space:pre-line}
+.rf-document-slide--cover .rf-document-heading,.rf-document-slide--closing .rf-document-heading{margin-top:140px;max-width:1050px}
+.rf-document-slide--cover h1,.rf-document-slide--closing h1{font-size:72px;line-height:1.22}
+.rf-document-slide--cover .rf-document-body,.rf-document-slide--closing .rf-document-body{height:230px}
+.rf-document-slide--cover .rf-document-copy,.rf-document-slide--closing .rf-document-copy{align-self:flex-start}
+.rf-document-slide--cover .rf-document-photo,.rf-document-slide--closing .rf-document-photo{height:210px;max-width:430px}
+.rf-document-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;opacity:.12;pointer-events:none}
+.rf-document-slide--closing{background:#4b2328;color:#fff}.rf-document-slide--closing .rf-document-eyebrow,.rf-document-slide--closing .rf-document-footer,.rf-document-slide--closing .rf-document-subtitle{color:#e8cfc8}
+.rf-document-slide--section{background:#315f70;color:#fff}.rf-document-slide--section .rf-document-eyebrow,.rf-document-slide--section .rf-document-footer{color:#d7e6e4}.rf-document-slide--section .rf-document-heading{margin-top:150px;max-width:1150px}.rf-document-slide--section h1{font-size:74px}
+.rf-document-slide--comparison .rf-document-items{grid-template-columns:1fr 1fr;gap:24px}.rf-document-slide--comparison .rf-document-item{min-height:150px;border-top:5px solid var(--rf-accent,#315f70);border-left:0;padding:26px}.rf-document-slide--comparison .rf-document-item:nth-child(2n){border-top-color:#ad4b37}
+.rf-document-slide--steps .rf-document-body{display:grid;grid-template-columns:.95fr 1.05fr;gap:36px}.rf-document-slide--steps .rf-document-copy{grid-column:2;grid-row:1 / 3;align-self:center}.rf-document-slide--steps .rf-document-items{gap:10px}.rf-document-slide--steps .rf-document-item{font-size:24px;line-height:1.35;padding:12px 16px;display:flex;gap:14px;border-left-color:transparent}.rf-document-slide--steps .rf-document-item.is-current{border-left-color:var(--rf-accent,#315f70);background:var(--rf-selected,#e3eff1)}
+.rf-document-step-number{font-weight:750;color:var(--rf-accent,#315f70);font-variant-numeric:tabular-nums}
+.rf-document-diagram{width:100%;height:100%;max-height:520px;align-self:center}.rf-document-node rect{fill:var(--rf-surface,#fff);stroke:#b9c5c3;stroke-width:2}.rf-document-node text{fill:var(--rf-text,#312d2a);font:600 22px "Apple SD Gothic Neo","Malgun Gothic",sans-serif}.rf-document-node.is-current rect{fill:var(--rf-selected,#e3eff1);stroke:var(--rf-accent,#315f70);stroke-width:4}.rf-document-connector{fill:none;stroke:#8da29b;stroke-width:3}
+.rf-document-slide--steps .rf-document-photo{grid-column:1;grid-row:2;max-height:160px}.rf-document-slide--steps:has(.rf-document-photo) .rf-document-diagram{max-height:340px}
+@media print{.rf-document-slide{break-after:page}.rf-document-item{opacity:1!important}}
+.rf-document-slide--dense .rf-document-item{font-size:22px;padding:10px 16px;line-height:1.35}.rf-document-slide--dense .rf-document-items{gap:10px}.rf-document-slide--steps.rf-document-slide--dense .rf-document-item{font-size:20px;padding:8px 12px}.rf-document-slide--long-title h1{font-size:36px}.rf-document-slide--comparison .rf-document-photo{max-width:400px}
+/* Reserve real rows for the heading, content and footer; long text cannot push
+   the footer out of the canvas. Reveal owns display:none for inactive pages. */
+.rf-document-slide{display:grid;grid-template-rows:32px auto minmax(0,1fr) 28px;row-gap:24px;padding:64px 80px 32px}
+.reveal .slides>.rf-document-slide.present{display:grid!important}
+.rf-document-eyebrow{margin:0 210px 0 0;align-self:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-document-logo{right:80px;top:64px}
+.rf-document-heading{margin:0;align-self:start}
+.rf-document-subtitle{margin-top:12px}
+.rf-document-body{height:auto;min-height:0;max-height:100%;align-self:stretch}
+.rf-document-footer{position:static;align-self:end;min-width:0;line-height:1.4}
+.rf-document-footer>span:first-child{max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-document-photo img{max-height:100%;min-height:0}
+.rf-document-diagram{max-height:100%;min-height:0}
+.rf-document-copy{max-height:100%;min-height:0}
+.rf-document-item-text{min-width:0}
+.rf-document-item-title{display:block;color:var(--rf-accent,#315f70);font-size:22px;margin-bottom:18px}
+.rf-document-slide--comparison .rf-document-item{display:flex;flex-direction:column;justify-content:center;font-size:30px;line-height:1.5;min-height:190px}
+.rf-document-slide--comparison .rf-document-item:nth-child(2n) .rf-document-item-title{color:#ad4b37}
+.rf-document-slide--photo-only .rf-document-copy{display:none}
+.rf-document-slide--photo-only .rf-document-photo{flex:1}
+.rf-document-slide--empty .rf-document-copy{display:none}
+.rf-document-empty{align-self:center;max-width:900px;padding:28px;border:1px dashed #ad4b37;color:#85432f;font-size:26px;line-height:1.6}
+.rf-document-slide--cover,.rf-document-slide--closing{grid-template-rows:32px minmax(0,1fr) auto 28px}
+.rf-document-slide--cover .rf-document-heading,.rf-document-slide--closing .rf-document-heading{margin:0;align-self:center}
+.rf-document-slide--cover .rf-document-body,.rf-document-slide--closing .rf-document-body{height:auto;min-height:80px;max-height:220px;align-self:start}
+.rf-document-slide--cover .rf-document-art{opacity:1;z-index:-2}
+.rf-document-slide--cover::before{content:"";position:absolute;inset:18px;background:var(--rf-bg,#f4f2ed);z-index:-1}
+.rf-document-slide--closing .rf-document-heading,.rf-document-slide--closing .rf-document-body{max-width:58%}
+.rf-document-slide--closing .rf-document-art{inset:0 0 0 auto;width:36%;height:100%;opacity:1}
+.rf-document-slide--closing .rf-document-logo{filter:brightness(0) invert(1);right:43%}
+.rf-document-slide--section .rf-document-heading{margin:0;align-self:center}
+.rf-document-slide--section{grid-template-rows:32px minmax(0,1fr) auto 28px}
+.rf-document-slide--cards .rf-document-items{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.rf-document-slide--cards .rf-document-item{min-height:330px;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:32px;border-left:0;border-top:5px solid var(--rf-accent,#315f70);box-shadow:0 10px 24px #342c2310;border-radius:8px;font-size:25px;line-height:1.65}
+.rf-document-slide--cards .rf-document-item-title{font-size:30px;margin:0;line-height:1.3}
+.rf-document-slide--cards .rf-document-item:nth-child(2){border-top-color:#a77e43}.rf-document-slide--cards .rf-document-item:nth-child(3){border-top-color:#ad4b37}
+.rf-document-slide--steps.rf-document-slide--dense .rf-document-item{font-size:24px;line-height:1.45;padding:10px 14px}
+.rf-document-slide--comparison.rf-document-slide--dense .rf-document-item{min-height:125px;font-size:24px;padding:18px}
+.rf-document-slide{word-break:keep-all;overflow-wrap:break-word}
+.rf-document-slide h1{word-break:keep-all;overflow-wrap:normal;text-wrap:balance}
+.rf-document-item{word-break:keep-all;overflow-wrap:break-word}
+.rf-document-slide--cards .rf-document-item{justify-content:flex-start;padding-top:44px}
+.rf-document-slide--section .rf-document-logo{filter:brightness(0) invert(1)}
+.rf-document-slide--closing .rf-document-footer>span:last-child{background:#4b2328dc;color:#fff;padding:4px 8px;border-radius:4px}
+.rf-document-slide--authored .rf-document-body{display:block!important}
+.rf-evidence{margin:0;min-width:0;max-width:100%;display:grid;gap:8px;align-content:start}.rf-evidence button{border:1px solid #a77e43;padding:0;background:transparent;cursor:zoom-in}.rf-evidence img{display:block;width:100%;max-height:240px;object-fit:contain;margin:0}.rf-evidence figcaption{font-size:20px;line-height:1.4;text-align:left}
+.rf-evidence-dialog{max-width:94vw;max-height:94vh;width:1200px;overflow:auto;background:#f4f2ed;color:#4e3629;border:1px solid #a77e43;padding:24px}.rf-evidence-dialog::backdrop{background:#000a}.rf-evidence-dialog>button{float:right;padding:10px 20px}.rf-evidence-dialog img{display:block;max-width:100%;height:auto;margin:20px auto}.rf-evidence-hash{font-size:12px;overflow-wrap:anywhere}
+.rf-comparison-table{width:100%;border-collapse:collapse;font:inherit;font-size:26px;line-height:1.4}.rf-comparison-table :is(th,td){padding:14px 18px;border-bottom:1px solid #a77e43;text-align:left;vertical-align:top}.rf-comparison-table thead{background:#4e3629;color:white}.rf-comparison-table small{display:block;font-size:20px;margin-top:8px}.rf-comparison-table [data-status=success]{color:#315f45}.rf-comparison-table [data-status=error]{color:#9b3028}.rf-comparison-table [data-status=limited]{color:#795518}
+.rf-document-slide[data-text-motion=off] :is(h1,p,li,span){translate:none!important}
+.rf-document-slide--navigation .rf-document-agenda li{opacity:1!important;color:inherit!important}.rf-document-slide--navigation .rf-document-agenda button{background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.rf-document-evidence-strip{position:absolute;left:101px;right:110px;bottom:105px;display:flex;gap:24px;height:200px}.rf-document-evidence-strip>.rf-evidence{flex:1;max-width:430px}.rf-document-evidence-strip img{max-height:135px}.rf-document-slide--with-evidence .rf-document-body{height:245px!important}
+.rf-search-dialog{width:min(850px,92vw);max-height:85vh;overflow:auto;background:#f4f2ed;color:#4e3629;border:1px solid #a77e43;padding:24px}.rf-search-dialog::backdrop{background:#0009}.rf-search-dialog>button:first-child{float:right}.rf-search-dialog input{box-sizing:border-box;width:100%;font-size:20px;padding:12px;border:1px solid #a77e43}.rf-search-result{display:grid;gap:8px;width:100%;padding:16px 12px;text-align:left;border:0;border-bottom:1px solid #d2c8b9;background:none;color:inherit;cursor:pointer}.rf-search-result strong{font-size:20px}.rf-search-result span{font-size:16px;line-height:1.5}
+/* Media has its own stage; captions and evidence never overlap the player. */
+.rf-document-slide .rf-document-body--media{display:grid!important;grid-template-columns:minmax(0,1fr);gap:32px}
+.rf-document-slide .rf-document-body--media.rf-media-with-copy{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.rf-document-slide .rf-document-body--media[data-media-layout=focus].rf-media-with-copy{grid-template-columns:minmax(0,1fr) minmax(0,3fr)}
+.rf-document-slide .rf-document-body--media[data-media-layout=balanced].rf-media-with-copy{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.rf-media-copy{min-width:0;min-height:0;align-self:center;max-height:100%}
+.rf-media-copy>*{max-width:100%}
+.rf-media-grid{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+.rf-media-grid[data-count="2"],.rf-media-grid[data-count="3"],.rf-media-grid[data-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rf-media-grid[data-count="3"],.rf-media-grid[data-count="4"]{grid-template-rows:repeat(2,minmax(0,1fr));width:100%;max-width:760px;justify-self:center}
+.rf-media{margin:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:12px;height:100%;min-height:0;min-width:0}
+.rf-media-viewport{container-type:size;min-width:0;min-height:0;display:grid;place-items:center}
+.rf-media-stage{position:relative;width:min(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9;min-width:0;min-height:0;background:#151613;overflow:hidden;display:grid;place-items:center}
+.rf-media-stage video,.rf-media-stage iframe{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;object-fit:contain}
+.rf-media figcaption{text-align:center;font:inherit;font-size:20px;line-height:1.4;overflow-wrap:anywhere}
+.rf-media-stage>button{width:100%;height:100%;font:inherit;font-size:24px;background:transparent;color:#fff;border:1px solid #a77e43;cursor:pointer}
+.rf-media-stage>button[hidden]{display:none}
+[data-template="redwood-2019"].rf-document-slide--media .rf-document-body{height:470px!important}
+[data-template="redwood-2019"].rf-document-slide--media.rf-document-slide--with-evidence .rf-document-body{height:340px!important}
+.rf-document-slide--media .rf-document-evidence-strip{height:120px;gap:32px}
+.rf-document-slide--media .rf-document-evidence-strip>.rf-evidence{max-width:none;grid-template-columns:144px minmax(0,1fr);align-items:center;gap:16px}
+.rf-document-slide--media .rf-document-evidence-strip img{height:88px;max-height:88px}
+
+</style><style>body { margin: 0; }
+[hidden] { display: none !important; }
+.back-link { margin-left: auto; font-size: .875rem; }
+.catalog-shell { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+.catalog-eyebrow { font-size: .75rem; letter-spacing: .1em; font-weight: 600; margin-bottom: 12px; }
+.catalog-layout { display: grid; grid-template-columns: 240px minmax(0,1fr); gap: 48px; padding: 40px 0; min-height: 540px; }
+.catalog-sidebar p { font-size: .875rem; line-height: 1.7; }
+.catalog-sidebar .source-note { font-size: .75rem; line-height: 1.8; margin-top: auto; }
+.catalog-content h2 { font-size: 1.5rem; margin-bottom: 8px; }
+.catalog-content header p { margin-bottom: 8px; line-height: 1.6; }
+.preview { min-height: 120px; }
+.catalog-content pre { margin: 0; padding: 20px; border: 1px solid var(--rf-border); border-radius: var(--rf-radius); background: #eeede9; max-height: 300px; overflow: auto; font-size: .8125rem; line-height: 1.6; }
+.catalog-footer { border-top: 1px solid var(--rf-border); padding: 20px 0; font-size: .75rem; color: var(--rf-muted); }
+.token-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+.swatch { display: block; height: 56px; border: 1px solid #16151320; border-radius: var(--rf-radius); margin-bottom: 8px; }
+.token-grid code { font-size: .75rem; }
+@media (max-width: 760px) { .catalog-shell { padding: 0 16px; margin: 16px auto; } .catalog-layout { grid-template-columns: 1fr; gap: 24px; padding: 24px 0; } .catalog-sidebar p,.catalog-sidebar .rf-notice { display: none; } .token-grid { grid-template-columns: repeat(2,1fr); } }
+</style>
+</head>
+<body class="rf-theme">
+<header class="rf-toolbar"><strong>Foundation UI</strong><span class="rf-badge">Redwood 참조</span><a class="rf-button rf-button--quiet back-link" href="./examples/animations/samples.html#/effect-presets">애니메이션 샘플 →</a></header>
+<main class="catalog-shell">
+<header class="rf-page-header rf-banner"><p class="catalog-eyebrow">HTML · CSS · 공통 컴포넌트</p><h1 class="rf-page-header__title">디자인 부품</h1><p class="rf-page-header__description">같은 클래스와 색상 변수를 장표·웹 화면·Python 템플릿에서 사용합니다.</p></header>
+<div class="catalog-layout">
+<aside class="catalog-sidebar rf-stack">
+<label class="rf-field" for="component-category"><span class="rf-field__label">컴포넌트 선택</span><select class="rf-input" id="component-category"><option value="buttons">버튼</option><option value="cards">카드</option><option value="fields">입력 폼</option><option value="status">상태와 알림</option><option value="lists">목록</option><option value="typography">글꼴과 크기</option><option value="tokens">색상과 간격</option></select></label>
+<p class="rf-muted">부품을 선택한 뒤 HTML 예제를 펼치면 그대로 재사용할 수 있습니다.</p>
+<div class="rf-notice">기본: <code>rf-*</code> 클래스<br>테마: <code>--rf-*</code> 변수</div>
+<p class="source-note"><a href="https://redwood.oracle.com/" target="_blank" rel="noreferrer">Oracle Redwood 참조 ↗</a><br>공식 JET 컴포넌트와 구분되는 자체 구현입니다.</p>
+</aside>
+<div class="catalog-content">
+<section data-panel="buttons" aria-labelledby="buttons-title" class="rf-stack"><header><h2 id="buttons-title">버튼</h2><p class="rf-muted">주요 동작·일반 동작·보조 동작을 구분합니다.</p></header><div class="preview rf-card rf-card__body rf-stack" data-example><div class="rf-inline"><button class="rf-button rf-button--primary" type="button">저장</button><button class="rf-button" type="button">미리 보기</button><button class="rf-button rf-button--quiet" type="button">닫기</button><button class="rf-button" type="button" disabled>사용 불가</button></div><div class="rf-inline"><button class="rf-button" type="button" aria-pressed="true" data-toggle>선택됨</button><span class="rf-field__hint">선택 버튼을 클릭하면 상태가 바뀝니다.</span></div></div></section>
+<section data-panel="cards" aria-labelledby="cards-title" class="rf-stack" hidden><header><h2 id="cards-title">카드</h2><p class="rf-muted">제목·내용·작업 영역을 같은 구조로 구성합니다.</p></header><div class="rf-grid preview" data-example><article class="rf-card"><header class="rf-card__header"><h3 class="rf-card__title">업무 지식</h3><span class="rf-badge rf-badge--success">사용 가능</span></header><div class="rf-card__body"><p>용어·규칙·문서의 연결 상태를 확인합니다.</p><strong>128개 항목</strong></div><footer class="rf-card__footer"><button type="button" class="rf-button">상세 보기</button></footer></article></div><div id="factory-example"></div></section>
+<section data-panel="fields" aria-labelledby="fields-title" class="rf-stack" hidden><header><h2 id="fields-title">입력 폼</h2><p class="rf-muted">레이블·도움말·오류 메시지를 입력과 연결합니다.</p></header><form id="sample-form" class="preview rf-card rf-card__body rf-stack" data-example><div class="rf-field"><label class="rf-field__label" for="project-name">프로젝트 이름 *</label><input class="rf-input" id="project-name" name="project-name" required aria-describedby="project-name-hint" placeholder="예: 지식 관리"><small class="rf-field__hint" id="project-name-hint">화면에서 구분할 이름을 입력합니다.</small></div><div class="rf-field"><label class="rf-field__label" for="sample-error">오류 상태 예제</label><input class="rf-input" id="sample-error" value="" aria-invalid="true" aria-describedby="sample-error-hint"><small class="rf-field__error" id="sample-error-hint">이름을 입력해 주세요.</small></div><div><button class="rf-button rf-button--primary" type="submit">입력 확인</button></div></form><p id="form-result" role="status" class="rf-muted"></p></section>
+<section data-panel="status" aria-labelledby="status-title" class="rf-stack" hidden><header><h2 id="status-title">상태와 알림</h2><p class="rf-muted">색상과 텍스트를 함께 표시합니다.</p></header><div class="preview rf-card rf-card__body rf-stack" data-example><div class="rf-inline"><span class="rf-badge">대기</span><span class="rf-badge rf-badge--info">진행 중</span><span class="rf-badge rf-badge--success">완료</span><span class="rf-badge rf-badge--warning">확인 필요</span><span class="rf-badge rf-badge--danger">오류</span></div><div class="rf-notice">안내 · 저장 전에 변경 내용을 확인해 주세요.</div><div class="rf-notice rf-notice--success">완료 · 변경 내용을 확인했습니다.</div><div class="rf-notice rf-notice--warning">확인 필요 · 연결 정보를 검토해 주세요.</div></div></section>
+<section data-panel="lists" aria-labelledby="lists-title" class="rf-stack" hidden><header><h2 id="lists-title">목록</h2><p class="rf-muted">선택된 항목과 상태를 같은 규칙으로 표시합니다.</p></header><div class="preview rf-card" data-example><ul class="rf-list"><li class="rf-list__row" aria-current="true"><div><strong>업무 용어</strong><div class="rf-field__hint">질문에 사용할 용어와 코드값</div></div><span class="rf-badge rf-badge--success">준비됨</span></li><li class="rf-list__row"><div><strong>문서 연결</strong><div class="rf-field__hint">설명과 근거 문서</div></div><span class="rf-badge rf-badge--info">진행 중</span></li><li class="rf-list__row"><div><strong>실행 기록</strong><div class="rf-field__hint">결과와 승인 이력</div></div><span class="rf-badge">대기</span></li></ul></div></section>
+<section data-panel="typography" aria-labelledby="typography-title" class="rf-stack" hidden><header><h2 id="typography-title">글꼴과 크기</h2><p class="rf-muted">본문·제목·설명은 정해진 역할의 클래스를 사용합니다.</p></header><div class="preview rf-card rf-card__body rf-stack" data-example><div class="rf-title">화면 제목 · 32px</div><div class="rf-heading">섹션 제목 · 24px</div><div class="rf-subheading">카드 제목 · 20px</div><div class="rf-body-lg">강조 본문 · 18px</div><div class="rf-body">기본 본문 · 16px / 줄간격 1.6</div><div class="rf-small rf-muted">보조 설명 · 14px</div><div class="rf-caption rf-muted">캡션 · 12px</div></div><div class="rf-notice">기본은 시스템 글꼴입니다. <code>--rf-font</code> 변수로 교체합니다.<br>장표는 1600×900 기준의 별도 크기를 사용하며 화면에 맞춰 함께 축소됩니다.</div></section>
+<section data-panel="tokens" aria-labelledby="tokens-title" class="rf-stack" hidden><header><h2 id="tokens-title">색상과 간격</h2><p class="rf-muted">앱은 공통 변수를 덮어써 테마를 바꿀 수 있습니다.</p></header><div class="rf-card rf-card__body rf-stack preview" data-example><div class="token-grid"><div><span class="swatch" style="background:var(--rf-bg)"></span><code>--rf-bg</code></div><div><span class="swatch" style="background:var(--rf-action)"></span><code>--rf-action</code></div><div><span class="swatch" style="background:var(--rf-accent)"></span><code>--rf-accent</code></div><div><span class="swatch" style="background:var(--rf-gold)"></span><code>--rf-gold</code></div><div><span class="swatch" style="background:var(--rf-success)"></span><code>--rf-success</code></div><div><span class="swatch" style="background:var(--rf-danger)"></span><code>--rf-danger</code></div></div><p class="rf-muted">간격: 4 · 8 · 12 · 16 · 24 · 32px<br>기본 글자: 시스템 글꼴 · 입력 16px 이상 · 버튼 높이 44px 이상</p></div></section>
+</div></div>
+<footer class="catalog-footer">Foundation 공통 CSS · JavaScript 없이도 클래스만으로 사용할 수 있습니다.</footer>
+</main>
+<script type="application/json" id="sample-modules">{"vendor/foundation/ui-components.js": {"source": "export function createUiButton(doc, options) {\n    const button = doc.createElement('button');\n    button.type = 'button';\n    button.className = 'rf-button';\n    button.textContent = options.label;\n    if (options.variant && options.variant !== 'default') {\n        if (!['primary', 'quiet'].includes(options.variant))\n            throw new TypeError('Invalid button variant');\n        button.classList.add(`rf-button--${options.variant}`);\n    }\n    button.disabled = options.disabled ?? false;\n    return button;\n}\nexport function createUiBadge(doc, options) {\n    const badge = doc.createElement('span');\n    badge.className = 'rf-badge';\n    badge.textContent = options.label;\n    const tone = options.tone ?? 'neutral';\n    if (!['neutral', 'info', 'success', 'warning', 'danger'].includes(tone))\n        throw new TypeError('Invalid badge tone');\n    if (tone !== 'neutral')\n        badge.classList.add(`rf-badge--${tone}`);\n    return badge;\n}\nexport function createUiCard(doc, options) {\n    const card = doc.createElement('article');\n    card.className = 'rf-card';\n    const header = doc.createElement('header');\n    header.className = 'rf-card__header';\n    const heading = doc.createElement('h2');\n    heading.className = 'rf-card__title';\n    heading.textContent = options.title;\n    header.append(heading);\n    const body = doc.createElement('div');\n    body.className = 'rf-card__body';\n    body.append(options.content);\n    card.append(header, body);\n    if (options.actions?.length) {\n        const footer = doc.createElement('footer');\n        footer.className = 'rf-card__footer';\n        footer.append(...options.actions);\n        card.append(footer);\n    }\n    return card;\n}\nexport function createUiField(doc, options) {\n    if (!options.id || /\\s/.test(options.id))\n        throw new TypeError('Provide a nonempty input id without whitespace');\n    const element = doc.createElement('div');\n    element.className = 'rf-field';\n    const label = doc.createElement('label');\n    label.className = 'rf-field__label';\n    label.htmlFor = options.id;\n    label.textContent = options.label;\n    const input = doc.createElement('input');\n    input.className = 'rf-input';\n    input.id = options.id;\n    input.name = options.id;\n    input.value = options.value ?? '';\n    input.required = options.required ?? false;\n    element.append(label, input);\n    if (options.hint) {\n        const hint = doc.createElement('small');\n        hint.className = 'rf-field__hint';\n        hint.id = `${options.id}-hint`;\n        hint.textContent = options.hint;\n        input.setAttribute('aria-describedby', hint.id);\n        element.append(hint);\n    }\n    return { element, input };\n}\n", "refs": {}}, "examples/components/main.js": {"source": "import { createUiButton, createUiCard } from '../../vendor/foundation/ui-components.js';\n\nconst panels = [...document.querySelectorAll('[data-panel]')];\nconst select = document.querySelector('#component-category');\nfunction show(value) {\n  panels.forEach(panel => { panel.hidden = panel.dataset.panel !== value; });\n}\nselect.addEventListener('change', () => show(select.value));\ndocument.querySelectorAll('[data-example]').forEach(example => {\n  const details = document.createElement('details'); details.className = 'rf-details';\n  const summary = document.createElement('summary'); summary.textContent = 'HTML 예제';\n  const pre = document.createElement('pre'); const code = document.createElement('code');\n  code.textContent = example.innerHTML.trim().replace(/>\u003c/g, '>\\n\u003c');\n  pre.append(code); details.append(summary, pre); example.after(details);\n});\ndocument.querySelector('[data-toggle]').addEventListener('click', event => {\n  const button = event.currentTarget; const pressed = button.getAttribute('aria-pressed') !== 'true';\n  button.setAttribute('aria-pressed', String(pressed)); button.textContent = pressed ? '선택됨' : '선택 안 됨';\n});\ndocument.querySelector('#sample-form').addEventListener('submit', event => {\n  event.preventDefault();\n  document.querySelector('#form-result').textContent = '입력을 확인했습니다. 서버에는 전송하지 않았습니다.';\n});\nconst content = document.createElement('p'); content.textContent = '같은 카드를 공통 JavaScript 함수로도 생성할 수 있습니다.';\nconst button = createUiButton(document, { label: '공통 버튼', variant: 'primary' });\nconst card = createUiCard(document, { title: '공통 함수로 생성', content, actions: [button] });\ndocument.querySelector('#factory-example').append(card);\n", "refs": {"../../vendor/foundation/ui-components.js": "vendor/foundation/ui-components.js"}}, "offline-entry.js": {"source": "import './examples/components/main.js';", "refs": {"./examples/components/main.js": "examples/components/main.js"}}}</script><script>const graph=JSON.parse(document.getElementById('sample-modules').textContent),urls=new Map();function moduleUrl(id){if(urls.has(id))return urls.get(id);const node=graph[id];let source=node.source;for(const [ref,target] of Object.entries(node.refs)){const url=moduleUrl(target);source=source.split(JSON.stringify(ref)).join(JSON.stringify(url)).split("'"+ref+"'").join(JSON.stringify(url));}const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));urls.set(id,url);return url;}import(moduleUrl('offline-entry.js')).catch(e=>{const n=document.createElement('p');n.textContent='샘플 실행 오류: '+e.message;document.body.prepend(n);});</script>
+</body></html>

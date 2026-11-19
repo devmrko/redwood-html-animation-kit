@@ -57,7 +57,7 @@ def presentation_command(origin, payload):
     project = payload.get('project')
     if project is not None and (not isinstance(project, str) or not re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', project)):
         raise ValueError('Invalid project ID')
-    page = f'/deck.html?project={project}&audience#/{slide}' if project else f'/?audience#/{slide}'
+    page = f'/app/deck.html?project={project}&audience#/{slide}' if project else f'/examples/animations/index.html?audience#/{slide}'
     browser=payload.get('browser','auto')
     if browser not in ('auto','edge','chrome'):raise ValueError('지원하지 않는 앱 브라우저입니다.')
     token=payload.get('launchToken')
@@ -71,6 +71,17 @@ def presentation_command(origin, payload):
 class PresentationHandler(http.server.SimpleHTTPRequestHandler):
     launch_lock=threading.Lock()
     def send_head(self):
+        parsed=urllib.parse.urlsplit(self.path)
+        routes=pathlib.Path(self.directory)/'app/legacy-routes.json'
+        if routes.is_file():
+            target=json.loads(routes.read_text()).get(parsed.path)
+            if target:
+                self.send_response(302)
+                self.send_header('Location',target+('?' + parsed.query if parsed.query else ''))
+                self.send_header('Cache-Control','no-store')
+                self.send_header('Content-Length','0')
+                self.end_headers()
+                return None
         # Different extracted decks reuse the same loopback origin. Modification
         # times are not content identities: an older module can replace a newer one.
         for header in ('If-Modified-Since','If-None-Match'):
@@ -396,7 +407,7 @@ def main():
             if source.stat().st_size>MAX_PROJECT_BYTES:raise SystemExit('프로젝트 JSON은 36MB 이내여야 합니다.')
             project=validate_authoring_project(json.loads(source.read_text()))
             server.projects.put(project['document']['id'],json.dumps(project,ensure_ascii=False).encode())
-            url+=f'deck.html?project={project["document"]["id"]}'
+            url+=f'app/deck.html?project={project["document"]["id"]}'
         session_path=None;session_text=None
         if args.ai:
             origin=f'http://127.0.0.1:{server.server_port}'
@@ -404,7 +415,7 @@ def main():
             if args.provider:selection['ai-provider']=args.provider
             if args.tool:selection['ai-tool']=args.tool
             if source.is_file():selection['project']=project['document']['id']
-            url=origin+'/ai-start.html?'+urllib.parse.urlencode(selection)
+            url=origin+'/app/ai-start.html?'+urllib.parse.urlencode(selection)
             session_path=root/'ai-session.js'
             if session_path.is_symlink():raise SystemExit('AI session path must not be a symlink.')
             session_text='window.redwoodAiSession='+json.dumps({'origin':origin,'id':uuid.uuid4().hex})+';\n'

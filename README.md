@@ -2,9 +2,9 @@
 
 시나리오와 사진으로 HTML 장표를 만들고, 내용을 수정해 발표하거나 PPTX·MP4·SRT로 저장하는 도구입니다. 제목·목차·핵심 내용·스크립트는 JSON으로 관리하고, Codex·Claude가 템플릿과 공통 기능을 이용해 실제 페이지를 제작합니다. Oracle Corporate 템플릿의 밝은·어두운 테마를 선택할 수 있으며, 표지·간지·마지막 장을 포함한 예제 13장과 효과 33종을 제공합니다.
 
-[![사용법 영상 — 시나리오 입력부터 발표·PPT·자막 영상 저장까지](assets/usage-demo-poster.jpg)](assets/usage-demo.mp4)
+[![사용법 영상 — 시나리오 입력부터 발표·PPT·자막 영상 저장까지](./docs/media/usage-demo-poster.jpg)](./docs/media/usage-demo.mp4)
 
-[사용법 영상 보기 · MP4 3.72MB](assets/usage-demo.mp4) · [SRT 자막](assets/usage-demo.srt) — 3분 15초 · 1080p · 30fps · 한글 자막 포함 · 무음
+[사용법 영상 보기 · MP4 3.72MB](./docs/media/usage-demo.mp4) · [SRT 자막](./docs/media/usage-demo.srt) — 3분 15초 · 1080p · 30fps · 한글 자막 포함 · 무음
 
 ## 사용법 데모
 
@@ -12,11 +12,11 @@
 
 `python3 start.py`로 서버를 실행한 뒤 [`http://127.0.0.1:4173/examples/usage-demo/open.html`](http://127.0.0.1:4173/examples/usage-demo/open.html)을 엽니다. **데모 장표 열기**는 새 프로젝트 복사본을 만들며 AI 모델을 호출하지 않습니다. Python과 Git이 필요합니다. 포트를 바꿨다면 주소의 포트도 맞추세요.
 
-제목·스크립트와 본문 원본은 [사용법 데모 소스](examples/usage-demo/README.md)에서 수정할 수 있습니다. 이 데모도 장표의 **PPT·영상·SRT**에서 영상으로 저장합니다.
+제목·스크립트와 본문 원본은 [사용법 데모 소스](./examples/usage-demo/README.md)에서 수정할 수 있습니다. 이 데모도 장표의 **PPT·영상·SRT**에서 영상으로 저장합니다.
 
 ## 애니메이션 샘플
 
-기존 **13장·33종**은 첫 화면 `index.html`과 **애니메이션 샘플** 링크에서 엽니다. 더블클릭용 카탈로그는 `samples.html`, 디자인 부품은 `design-components.html`입니다. 제작용·발표용 ZIP에도 두 카탈로그를 포함합니다. 샘플의 **추가 기능** 메뉴에서 테마·마지막 장면·PPT/영상 내보내기·장표 만들기·디자인 부품을 엽니다.
+기존 **13장·33종**은 첫 화면 `index.html`의 연결과 **애니메이션 샘플** 링크에서 엽니다. 더블클릭용 카탈로그는 `examples/animations/samples.html`, 디자인 부품은 `examples/components/standalone.html`입니다. 제작용·발표용 ZIP에도 두 카탈로그를 포함합니다. 샘플의 **추가 기능** 메뉴에서 테마·마지막 장면·PPT/영상 내보내기·장표 만들기·디자인 부품을 엽니다.
 
 ## 발표용 배포본 열기
 
@@ -77,15 +77,15 @@ HTML 파일을 직접 더블 클릭하면 모듈 로딩이 제한될 수 있으�
 
 5. 제작한 폴더에서 `python3 start.py --no-browser`를 실행하고 표시된 주소를 엽니다. **발표 시작**, **발표자 보기**, **PPT·영상·SRT**는 제작한 페이지 코드를 공통 재생기로 실행합니다.
 
-페이지 화면은 `pages/*.js`에서 작성하므로 고정 레이아웃 종류로 제한하지 않습니다. 제목·목차·핵심 내용·스크립트·사진은 `presentation-project.json`, 코드 연결은 `authored-pages.js`에서 관리합니다. JSON을 불러온다는 이유로 외부 코드를 실행하지 않습니다. 상세한 제작·검수 계약은 [Codex·Claude 제작 지침](authoring/AUTHORING.md)과 [모듈 설계](docs/agent-authoring-design.md)에 있습니다.
+페이지 화면은 `pages/*.js`에서 작성하므로 고정 레이아웃 종류로 제한하지 않습니다. 제목·목차·핵심 내용·스크립트·사진은 `presentation-project.json`, 코드 연결은 `authored-pages.js`에서 관리합니다. JSON을 불러온다는 이유로 외부 코드를 실행하지 않습니다. 상세한 제작·검수 계약은 [Codex·Claude 제작 지침](./authoring/AUTHORING.md)과 [모듈 설계](./docs/agent-authoring-design.md)에 있습니다.
 
-모든 발표의 기획·작성·검수에는 [발표 장표 작성 원칙과 통과 기준](authoring/SLIDE_PRINCIPLES.md)을 적용합니다. 해당 원칙은 제작용 ZIP에도 포함됩니다.
+모든 발표의 기획·작성·검수에는 [발표 장표 작성 원칙과 통과 기준](./authoring/SLIDE_PRINCIPLES.md)을 적용합니다. 해당 원칙은 제작용 ZIP에도 포함됩니다.
 
-**JSON 저장** 또는 **Ctrl/Cmd+S**로 내용 JSON을 내려받습니다. **Ctrl/Cmd+F**로 제목·본문·스크립트를 찾습니다. 제작 폴더에서 편집한 내용은 같은 프로젝트의 원본 JSON에도 자동 반영됩니다. 완성본은 코드·증거·로컬 영상을 포함한 ZIP으로 전달할 수 있습니다. [본문 데이터·증거·동영상·완성본 ZIP 사용법](docs/presentation-workspace.md)을 참고하세요.
+**JSON 저장** 또는 **Ctrl/Cmd+S**로 내용 JSON을 내려받습니다. **Ctrl/Cmd+F**로 제목·본문·스크립트를 찾습니다. 제작 폴더에서 편집한 내용은 같은 프로젝트의 원본 JSON에도 자동 반영됩니다. 완성본은 코드·증거·로컬 영상을 포함한 ZIP으로 전달할 수 있습니다. [본문 데이터·증거·동영상·완성본 ZIP 사용법](./docs/presentation-workspace.md)을 참고하세요.
 
 LLM 내용 정리는 `.env`의 OpenAI 호환 설정으로 시나리오와 사진 파일명을 제공자에 전송합니다. 사진 내용 인식은 포함하지 않습니다. 이미지 입력은 PNG·JPEG·WebP, 최대 20개·각 5MB·전체 25MB이며 문서는 최대 60장입니다. ZIP 생성에는 외부 모델을 사용하지 않습니다.
 
-기존 JSON 문서는 기본 레이아웃으로 계속 표시할 수 있습니다. 형식은 [프로젝트 JSON 예제](examples/presentation-project.json)와 [JSON Schema](schemas/presentation-project.schema.json)를 참조하세요. 제작 요청은 문서의 `brief`와 페이지의 `design`에 기록합니다.
+기존 JSON 문서는 기본 레이아웃으로 계속 표시할 수 있습니다. 형식은 [프로젝트 JSON 예제](./examples/presentation-project.json)와 [JSON Schema](./schemas/presentation-project.schema.json)를 참조하세요. 제작 요청은 문서의 `brief`와 페이지의 `design`에 기록합니다.
 
 사용자 제공 Oracle Corporate PPT Template의 밝은·어두운 표지(18~19장), 간지(51~52장), 본문(72·87장), 마지막 장(121~122장)을 공통 템플릿으로 사용합니다. 문서 기본 테마와 장표별 테마를 선택할 수 있습니다. 표지·간지·마지막 장과 글꼴·로고·색상·여백은 유지하고 본문은 사용자 요청에 맞춰 제작합니다.
 
@@ -115,7 +115,7 @@ LLM 내용 정리는 `.env`의 OpenAI 호환 설정으로 시나리오와 사진
 
 ### 발표 대본 수정
 
-제작한 문서는 편집 화면의 발표 스크립트 또는 JSON의 `notes`를 수정합니다. 기본 13장 예제는 `index.html`에서 해당 장표의 `data-notes` 내용을 바꿉니다. 기본 예제 노트가 각 장표에 들어 있습니다.
+제작한 문서는 편집 화면의 발표 스크립트 또는 JSON의 `notes`를 수정합니다. 기본 13장 예제는 `examples/animations/index.html`에서 해당 장표의 `data-notes` 내용을 바꿉니다. 기본 예제 노트가 각 장표에 들어 있습니다.
 
 ```html
 <section id="cover" class="slide rf-slide bookend-slide cover-slide"
@@ -155,9 +155,9 @@ LLM 내용 정리는 `.env`의 OpenAI 호환 설정으로 시나리오와 사진
 
 LLM 초안은 `.env.example`을 참고해 `.env`에 `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`을 설정합니다. 기존 `OPENROUTER_API` 키도 지원합니다. 서버 실행 중 설정을 바꿔도 다음 요청에 반영됩니다. **LLM으로 자막 초안**을 누를 때만 선택한 장표의 제목·본문·발표 노트·애니메이션 등장 시각을 설정한 제공자에 전송합니다. 이미지 자체를 분석하지 않으므로 그림 안에만 있는 설명은 발표 노트에 적어 주세요. LLM이 제안한 설명과 시각은 확인 후 수정할 수 있습니다.
 
-본문에는 로컬 MP4·WebM과 YouTube를 임베드할 수 있습니다. 로컬 영상 구간은 장표의 재생시간에 반영됩니다. 현재 내보내기는 영상 오디오를 포함하지 않으며, YouTube 장표는 MP4 녹화에서 제외해야 합니다. [동영상 등록과 재생 조건](docs/presentation-workspace.md#동영상)을 참고하세요.
+본문에는 로컬 MP4·WebM과 YouTube를 임베드할 수 있습니다. 로컬 영상 구간은 장표의 재생시간에 반영됩니다. 현재 내보내기는 영상 오디오를 포함하지 않으며, YouTube 장표는 MP4 녹화에서 제외해야 합니다. [동영상 등록과 재생 조건](./docs/presentation-workspace.md#동영상)을 참고하세요.
 
-공통 모듈과 입력 계약은 [영상 내보내기 설계](docs/video-export-design.md)에 정리되어 있습니다.
+공통 모듈과 입력 계약은 [영상 내보내기 설계](./docs/video-export-design.md)에 정리되어 있습니다.
 
 ## 샘플
 
@@ -184,11 +184,20 @@ LLM 초안은 `.env.example`을 참고해 `.env`에 `OPENAI_API_KEY`, `OPENAI_BA
 
 | 위치 | 역할 |
 | --- | --- |
-| `index.html`, `slides/` | 내용과 페이지별 타이밍·데이터 |
-| `style.css`, `components.css` | 페이지 배치 |
+| `examples/animations/` | 애니메이션 샘플과 페이지별 타이밍·데이터 |
+| `app/` | 편집·발표·내보내기·AI 화면과 호스트 연결 |
 | `framework/src/` | 공통 동작 원본 |
 | `framework/ui/` | 공통 CSS 토큰·컴포넌트 원본 |
 | `vendor/` | 실행에 필요한 로컬 라이브러리 |
+| `templates/` | 현재 Oracle Corporate 템플릿, `legacy/`의 이전 스타일 |
+| `examples/usage-demo/` | 사용법 장표 원본·화면 캡처·데모 열기 |
+| `assets/`, `docs/media/` | 발표 공통 자산, README 소개 영상·자막 |
+| `tests/` | 자동 검사, `browser/`의 실제 화면 검사 |
+| `scripts/` | 빌드·가져오기·ZIP 제작 도구 |
+| `AI/` | 사용자용 AI 연결 시작 파일 |
+| `dist/` | 생성한 ZIP·영상. Git 제외 |
+
+루트에는 실행 진입점과 프로젝트 설정을 둡니다. 기존 `/builder.html`·`/deck.html`·`/export.html` 주소도 Python 서버에서 새 `app/` 경로로 연결합니다. 전체 구조와 ZIP 포함 범위는 [저장소 구성](docs/design.md)을 참고하세요.
 
 기본 실행에는 npm과 인터넷이 필요하지 않습니다. 공통 모듈을 수정해 다시 빌드할 때만 Node.js 22.12 이상과 아래 명령이 필요합니다.
 
@@ -198,10 +207,10 @@ npm run build:framework
 npm run check
 ```
 
-- [공통 HTML·CSS 사용법](docs/html-ui.md)
-- [구성과 설계](docs/design.md)
-- [검증 범위](docs/validation.md)
-- [공통 모듈 빌드](framework/README.md)
+- [공통 HTML·CSS 사용법](./docs/html-ui.md)
+- [구성과 설계](./docs/design.md)
+- [검증 범위](./docs/validation.md)
+- [공통 모듈 빌드](./framework/README.md)
 
 ## 출처와 사용 범위
 
@@ -209,4 +218,4 @@ Redwood 웹사이트와 사용자 제공 PPT 템플릿을 참고했습니다. Or
 Oracle Sans Tab이 로컬에 있으면 장표에 사용하며, 없으면 시스템 글꼴로 대체합니다. 폰트 파일과 전체 PPT 템플릿은 포함하지 않습니다.
 
 reveal.js 5.2.1과 Anime.js 4.5.0은 MIT 라이선스이며 각 `vendor/` 하위에 원문이 있습니다.
-Oracle 브랜드 이미지에는 이 오픈소스 라이선스가 적용되지 않습니다. [자산 출처](assets/REDWOOD-SOURCE.txt)를 확인하세요.
+Oracle 브랜드 이미지에는 이 오픈소스 라이선스가 적용되지 않습니다. [자산 출처](./assets/REDWOOD-SOURCE.txt)를 확인하세요.

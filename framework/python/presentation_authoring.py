@@ -11,12 +11,20 @@ import zipfile
 from .presentation_structure import validate_structure,verify_evidence_files
 from .presentation_media import validate_media,verify_media_files
 
-ROOT_FILES = ('start.py','builder.html','builder.css','builder.js','deck.html','deck.css','deck.js',
-              'export.html','export.css','export.js','ai-editor.js','ai-editor.css','ai-connection.js','ai-start.html','ai-start.js','offline-ai.js','AI/start.command','AI/start.cmd','AI/start-openai.command','AI/start-openai.cmd','AI/start-oci.command','AI/start-oci.cmd','AI/start-codex.command','AI/start-codex.cmd','AI/start-claude.command','AI/start-claude.cmd','offline.js','offline.css','main.js','style.css','components.html','components.css','components.js','samples.html','design-components.html','project-store.js','template-theme.js','presentation-launch.js','.env.example','.gitignore','package.json','package-lock.json')
-RUNTIME_DIRS = ('vendor','framework','templates','authoring','scripts','examples','slides')
+# Application/runtime sources are explicit. Developer tests and unrelated demos
+# never enter a user's presentation workspace.
+ROOT_FILES = ('start.py','authored-pages.js','.env.example','.gitignore','package-lock.json',
+              'AI/start.command','AI/start.cmd','AI/start-openai.command','AI/start-openai.cmd',
+              'AI/start-oci.command','AI/start-oci.cmd','AI/start-codex.command','AI/start-codex.cmd',
+              'AI/start-claude.command','AI/start-claude.cmd',
+              'scripts/sync-ui.mjs','scripts/build_samples.py','scripts/check.mjs',
+              'scripts/export_presentation.py','scripts/import_evidence.py','scripts/import_media.py',
+              'templates/oracle-corporate.css','templates/oracle-corporate.json')
+RUNTIME_DIRS = ('app','vendor','framework','authoring','examples/animations','examples/components')
 ASSETS = ('oracle-wordmark.svg','oracle-o.svg','redwood-cover.jpeg','redwood-closing.jpg',
           'redwood-agenda-art.png','redwood-template-pattern.jpg','REDWOOD-SOURCE.txt')
-ALLOWED_SUFFIXES = {'.js','.mjs','.css','.ts','.py','.json','.md','.txt'}
+ALLOWED_SUFFIXES = {'.js','.mjs','.css','.ts','.py','.json','.md','.txt','.html'}
+
 ID = r'[a-z0-9-]{1,80}'
 UUID = r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}'
 
@@ -121,7 +129,13 @@ def create_authoring_bundle(root, input_project):
         def add(path,name=None):
             if path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(root):
                 archive.write(path,name or path.relative_to(root).as_posix())
-        for name in ROOT_FILES:add(root/name)
+        for name in ROOT_FILES:
+            if name!='authored-pages.js':add(root/name)
+        package=root/'package.json'
+        if package.is_file():
+            configuration=json.loads(package.read_text())
+            configuration['scripts']={key:value for key,value in configuration.get('scripts',{}).items() if key in ('start','check','build:framework')}
+            archive.writestr('package.json',json.dumps(configuration,indent=2)+'\n')
         portable=root/'presentation-ai-pages.json'
         if portable.is_file() and not portable.is_symlink() and portable.stat().st_size<4000000:
             value=json.loads(portable.read_text())
@@ -133,7 +147,8 @@ def create_authoring_bundle(root, input_project):
                 archive.writestr('presentation-ai-pages.json',json.dumps({'projectId':doc['id'],'pages':clean},ensure_ascii=False))
         for directory in RUNTIME_DIRS:
             for path in sorted((root/directory).rglob('*')):
-                if '__pycache__' not in path.parts and (path.suffix in ALLOWED_SUFFIXES or path.name=='LICENSE'):add(path)
+                if path.relative_to(root).as_posix()=='app/legacy-routes.json':continue
+                if not any(part.startswith('.') or part=='__pycache__' for part in path.relative_to(root).parts) and (path.suffix in ALLOWED_SUFFIXES or path.name=='LICENSE'):add(path)
         for name in ASSETS:add(root/'assets'/name)
         for path in sorted((root/'assets/oracle-corporate').glob('*')):add(path)
         for path in evidence_paths:add(path)
@@ -148,9 +163,14 @@ def create_authoring_bundle(root, input_project):
         archive.writestr('authored-pages.js',registry)
         archive.writestr('presentation-release.json',json.dumps({'version':1,'status':'draft','files':['authored-pages.js',*page_sources],'source':{'template':'oracle-corporate','kitVersion':'0.1.0'}},ensure_ascii=False,indent=2)+'\n')
         for name,source in page_sources.items():archive.writestr(name,source)
+        routes=root/'app/legacy-routes.json'
+        if routes.is_file() and not routes.is_symlink():
+            available=set(archive.namelist())
+            aliases={key:value for key,value in json.loads(routes.read_text()).items() if value.lstrip('/') in available}
+            archive.writestr('app/legacy-routes.json',json.dumps(aliases,indent=2)+'\n')
         requests='\n\n'.join(f'### {i+1}. {s["title"]}\n{s.get("design","")}' for i,s in enumerate(slides) if s['layout'] not in ('cover','section','closing'))
         archive.writestr('REQUEST.md',f'# 제작 요청\n\n이 폴더의 AGENTS.md·AUTHORING.md·SLIDE_PRINCIPLES.md를 읽고 작성 원칙과 통과 기준에 따라 아래 발표를 제작해 주세요. 본문은 고정 레이아웃에 제한하지 말고 사용자 요청과 내용을 고려해 표·사진·SVG·효과로 구성하고 실제 브라우저에서 검수해 주세요.\n\n## 발표\n\n{doc["title"]}\n\n## 전체 화면 구성 요청\n\n{doc.get("brief","") or "내용에 맞게 구성해 주세요."}\n\n## 페이지별 요청\n\n{requests}\n\n## 원본 시나리오\n\n{doc.get("scenario","")}\n')
         archive.writestr('README.md',f'# {doc["title"]}\n\nCodex·Claude에서 이 폴더를 열고 REQUEST.md에 따라 페이지 제작을 요청하세요. 본문은 제작 전 초안입니다.\n\n실행: `python3 start.py --no-browser`\n\n자세한 제작·검수 방법은 [AUTHORING.md](AUTHORING.md)를 확인하세요. 실제 페이지 코드를 포함하는 이 폴더 전체를 보관하세요. API 키는 포함하지 않았습니다.\n')
         title=html.escape(doc['title']);project_id=doc['id']
-        archive.writestr('index.html',f'<!doctype html><html lang="ko"><meta charset="utf-8"><title>{title}</title><h1>{title}</h1><p>제작용 프로젝트입니다. REQUEST.md를 확인하세요.</p><p><a href="./deck.html?project={project_id}">발표 화면</a> · <a href="./builder.html?project={project_id}">내용·스크립트 편집</a> · <a href="./export.html?project={project_id}">영상·SRT</a></p></html>')
+        archive.writestr('index.html',f'<!doctype html><html lang="ko"><meta charset="utf-8"><title>{title}</title><h1>{title}</h1><p>제작용 프로젝트입니다. REQUEST.md를 확인하세요.</p><p><a href="./app/deck.html?project={project_id}">발표 화면</a> · <a href="./app/builder.html?project={project_id}">내용·스크립트 편집</a> · <a href="./app/export.html?project={project_id}">영상·SRT</a></p></html>')
     return output.getvalue()

@@ -15,11 +15,6 @@ __pycache__/
 !/assets/oracle-logo.png
 !/assets/REDWOOD-SOURCE.txt
 !/assets/preview.png
-!/assets/preview.gif
-!/assets/preview-current.gif
-!/assets/usage-demo.mp4
-!/assets/usage-demo-poster.jpg
-!/assets/usage-demo.srt
 
 !/assets/redwood-cover.jpeg
 !/assets/redwood-closing.jpg
@@ -39,3 +34,6 @@ ai-session.js
 
 # Generated usage demo packages and recorded media
 /demo-output/
+
+# Generated release and recording output
+/dist/
