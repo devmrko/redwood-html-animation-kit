@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build and tests (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Install FFmpeg for real conversion tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ffmpeg
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Install locked development dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build browser distribution
+        run: npm run build:framework
+
+      - name: Verify generated files are committed
+        run: git diff --exit-code -- vendor/foundation examples/animations/samples.html examples/components/standalone.html
+
+      - name: Run Node and Python tests
+        run: npm test
+
+      - name: Check links, syntax and distribution hashes
+        run: npm run check
