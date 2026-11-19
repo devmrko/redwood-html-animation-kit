@@ -3,3 +3,10 @@ html,body{height:100%;margin:0;background:#202727;color:#2a2f2f;font-family:"Ora
 .offline-toolbar>a{padding:7px 10px;border:1px solid #b8c2c1;border-radius:4px;background:#fff;color:#234b57;text-decoration:none;white-space:nowrap}
 
 :root{--offline-toolbar-height:52px}.offline-toolbar{height:auto;min-height:52px;flex-wrap:wrap}.offline-toolbar>*{flex:0 0 auto;white-space:nowrap}.offline-toolbar button{flex-shrink:0}#offline-status{flex:1 1 150px;max-width:320px;white-space:normal;overflow-wrap:anywhere}#offline-stage{top:var(--offline-toolbar-height)}.offline-speaker #offline-notes{top:var(--offline-toolbar-height)}.offline-audience .offline-toolbar{min-height:0}
+
+@media(max-width:900px){
+ .offline-speaker #offline-stage{right:0;bottom:auto;height:calc((100dvh - var(--offline-toolbar-height)) * .42)}
+ .offline-speaker #offline-notes{left:0;top:calc(var(--offline-toolbar-height) + (100dvh - var(--offline-toolbar-height)) * .42);padding:16px 20px;border-top:1px solid #c5cecc}
+ .offline-speaker #offline-notes-body{font-size:22px;line-height:1.6}
+ .offline-speaker #offline-notes h2{font-size:20px;margin-top:0}
+}

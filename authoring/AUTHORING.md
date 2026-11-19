@@ -20,7 +20,13 @@ Python 3로 `python3 start.py --no-browser`를 실행하고 터미널에 표시�
 
 표·숫자·페이지별 내용은 `slide.data`(인수 `data`)에서 읽고 JS에 중복 하드코딩하지 않습니다. 구조·상위 장표·증거·동영상·완성본 ZIP은 [작업별 제작 계약](../docs/presentation-workspace.md)을 읽고 적용합니다. 사용자 요청에 맞는 자유 본문을 제작하며 공통 표·증거·영상 부품은 필요한 경우 사용합니다.
 
+디자인은 **재사용하는 HTML/SVG 컴포넌트 + 공통 CSS 클래스 + 테마 변수**로 만듭니다. 내용은 JSON, 반복되는 구조·동작은 공통 컴포넌트, 글꼴·색·여백·상태 표시는 공통 CSS가 담당합니다. 장표는 이 부품을 조합하고 필요한 옵션을 지정합니다. 같은 디자인을 페이지별 inline style로 복제하지 않습니다. 새로운 구성·도식은 작성할 수 있으며, 반복해서 쓸 구성은 공통 부품으로 확장합니다. AI도 기존 컴포넌트와 클래스를 우선 사용합니다.
+
 본문의 표는 `table`·`thead`·`tbody`로 작성합니다. 공통 렌더러가 `rf-comparison-table`을 붙여 Redwood 머리글·교차 행 배경·구분선·글꼴·셀 여백을 적용합니다. AI 표도 같은 규칙을 사용합니다. 표의 테마 색상·글꼴·테두리를 개별 inline style로 덮어쓰지 말고 열 너비와 내용 구성을 조정하세요. 밝은/어두운 테마와 편집형 PPT에서 같은 디자인을 유지합니다.
+
+표의 기본 여백으로 내용이 넘치면 `rf-comparison-table--compact` 클래스를 추가합니다. Oracle Corporate에서 글자는 28px로 유지하고 셀 세로/가로 여백만 10px/16px로 바꿉니다. `createComparisonTable(doc,{...data,density:'compact'})`도 같은 클래스를 적용합니다. `data-density="compact"`는 동일 옵션의 선언형 표기입니다. 특수 배치는 `--rf-table-cell-padding-y`·`--rf-table-cell-padding-x`로 여백을 지정할 수 있습니다. 그래도 넘치면 내용을 나누세요.
+
+상태는 `data-status="success|limited|error|unsupported|untested"` 중 실제 값 하나로 표시하고 색과 기호·문구를 함께 씁니다. 예전 `data-tone`도 같은 값이면 호환하며, 두 속성이 함께 있으면 `data-status`가 우선합니다.
 
 문서 `appearance`는 `light` 또는 `dark`이고, 장표의 `appearance`가 있으면 그 장표에 우선 적용합니다. 본문 색은 `--rf-text`, 배경은 `--rf-bg`·`--rf-surface`, 강조는 `--rf-accent`를 사용해 두 테마에서 읽히게 작성합니다.
 

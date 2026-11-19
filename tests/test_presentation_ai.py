@@ -165,6 +165,13 @@ class AiMarkupTest(unittest.TestCase):
   self.assertIn('<svg',validate_page(PAGE,set())['html'])
   self.assertNotIn('font-family',validate_page({**PAGE,'html':'<p class="item" style="font-family:Arial;font-size:28px">본문</p>'},set())['html'])
   value=validate_page({**PAGE,'html':'<table class="item"><tr><td>성공</td></tr></table><img data-asset-id="photo" alt="증거">'},{'photo'});self.assertIn('data-asset-id',value['html'])
+
+ def test_table_component_options_and_legacy_statuses_are_bounded(self):
+  for attribute in ('data-status','data-tone'):
+   html=f'<table class="rf-comparison-table rf-comparison-table--compact" data-density="compact"><tbody><tr><td {attribute}="limited">△ 조건부</td></tr></tbody></table>'
+   self.assertIn(f'{attribute}="limited"',validate_page({'html':html,'duration':8,'effects':[]},set())['html'])
+  for html in ['<table data-density="tiny"></table>','<div data-density="compact"></div>','<td data-status="unknown">x</td>','<svg data-tone="success"></svg>']:
+   with self.subTest(html=html),self.assertRaises(ValueError):validate_page({'html':html,'duration':8,'effects':[]},set())
  def test_script_css_network_event_handlers_and_broken_timeline_rejected(self):
   for html in ['<img src="https://example.com/a.png">','<p onclick="alert(1)">x</p>','<iframe></iframe>','<p style="background:url(https://example.com)">x</p>','<p style="position:fixed">x</p>','<svg><foreignObject>x</foreignObject></svg>','<p><div>x</p></div>']:
    with self.subTest(html=html),self.assertRaises(ValueError):validate_page({**PAGE,'html':html},set())

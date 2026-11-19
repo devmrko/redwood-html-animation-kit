@@ -73,3 +73,16 @@ export function createPresentationShortcuts(doc, actions) {
     doc.addEventListener('keydown', handle, true);
     return () => doc.removeEventListener('keydown', handle, true);
 }
+/** Leave browser shortcuts and IME input to the browser. */
+export function presentationPlaybackCommand(event) {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.defaultPrevented || event.isComposing)
+        return;
+    if (event.key === 'ArrowRight' || event.key === ' ')
+        return 'next';
+    if (event.key === 'ArrowLeft')
+        return 'previous';
+    if (event.key.toLowerCase() === 'p')
+        return 'pause';
+    if (event.key.toLowerCase() === 'r')
+        return 'replay';
+}

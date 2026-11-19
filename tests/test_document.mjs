@@ -1,12 +1,23 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createComparisonTable} from '../vendor/foundation/presentation-tables.js';
 import {createDocumentFromScenario,validatePresentationDocument,validatePresentationProject,firstContentSlide,assertPresentationContent} from '../vendor/foundation/presentation-document.js';
 import {createPresentationExportPlan,createSubtitleDraft,serializeSrt} from '../vendor/foundation/presentation-subtitles.js';
 import {validatePageData,validateEvidence,presentationPath,inspectPresentationCopy} from '../vendor/foundation/presentation-structure.js';
 const id='11111111-1111-4111-8111-111111111111';
 const photo={id:'photo-1',name:'표지.jpeg',type:'image/jpeg',dataUrl:`data:image/jpeg;base64,${readFileSync(new URL('../assets/redwood-cover.jpeg',import.meta.url)).toString('base64')}`};
 const scenario='# 새 발표\n## 처리 순서\n1. 자료를 입력합니다.\n2. 검토합니다.\n3. 결과를 저장합니다.\n## 이전과 이후 비교\n- 이전 방식\n- 이후 방식';
+
+test('comparison spacing is an explicit component option and keeps status text and symbols',()=>{
+ class Element {constructor(tag){this.tag=tag;this.children=[];this.dataset={};}append(...children){this.children.push(...children);}}
+ const doc={createElement:tag=>new Element(tag)},data={columns:['결과'],rows:[{label:'API',cells:[{text:'성공',status:'success',condition:'검증 환경'}]}]};
+ const normal=createComparisonTable(doc,data),compact=createComparisonTable(doc,{...data,density:'compact'});
+ assert.equal(normal.className,'rf-comparison-table');assert.equal(normal.dataset.density,undefined);
+ assert.equal(compact.dataset.density,'compact');assert.match(compact.className,/rf-comparison-table--compact/);
+ const cell=compact.children[1].children[0].children[1];assert.equal(cell.dataset.status,'success');assert.equal(cell.textContent,'✓ 성공');assert.equal(cell.children[0].textContent,'검증 환경');
+ assert.throws(()=>createComparisonTable(doc,{...data,density:'tiny'}),/표 여백/);
+});
 
 test('scenario and photos produce an editable JSON document with steps and comparison',()=>{
  const document=createDocumentFromScenario(scenario,[photo],{id});

@@ -1,7 +1,8 @@
 /** Optional data helpers. Authored pages may render any HTML/SVG instead. */
-export function createComparisonTable(doc:Document,data:{columns:string[];rows:{label:string;cells:{text:string;status?:'success'|'limited'|'error'|'unsupported'|'untested';condition?:string}[]}[]}):HTMLTableElement{
+export function createComparisonTable(doc:Document,data:{columns:string[];rows:{label:string;cells:{text:string;status?:'success'|'limited'|'error'|'unsupported'|'untested';condition?:string}[]}[];density?:'comfortable'|'compact'}):HTMLTableElement{
  if(data.columns.length<1||data.columns.length>8||data.rows.some(row=>row.cells.length!==data.columns.length))throw Error('비교 열과 각 행의 값 개수를 맞춰 주세요.');
- const table=doc.createElement('table');table.className='rf-comparison-table';const head=doc.createElement('thead'),tr=doc.createElement('tr');
+ if(data.density!==undefined&&!['comfortable','compact'].includes(data.density))throw Error('표 여백은 comfortable 또는 compact를 사용해 주세요.');
+ const table=doc.createElement('table');table.className='rf-comparison-table';if(data.density)table.dataset.density=data.density;if(data.density==='compact')table.className+=' rf-comparison-table--compact';const head=doc.createElement('thead'),tr=doc.createElement('tr');
  for(const title of ['항목',...data.columns]){const th=doc.createElement('th');th.scope='col';th.textContent=title;tr.append(th);}head.append(tr);table.append(head);
  const body=doc.createElement('tbody'),symbols={success:'✓',limited:'△',error:'×',unsupported:'—',untested:'?'};
  for(const row of data.rows){const line=doc.createElement('tr'),label=doc.createElement('th');label.scope='row';label.textContent=row.label;line.append(label);

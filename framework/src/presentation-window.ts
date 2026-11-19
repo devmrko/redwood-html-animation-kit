@@ -1,28 +1,82 @@
 export interface PresentationWindowRequest { slide: string; width: number; height: number; left: number; top: number; project?: string }
 
 /** Open synchronously from a user gesture; resolve only when this child is ready. */
-export function openBrowserPresentation(view:Window,url:string,request:PresentationWindowRequest,timeout=12000):Promise<void>{
- const target=new URL(url,view.location.href);if(target.origin!==view.location.origin)throw Error('같은 출처의 발표 화면만 열 수 있습니다.');
+export function openPresentationPopup(view:Window,url:string,request:PresentationWindowRequest,timeout=12000,windowName?:string):Promise<Window>{
+ const source=new URL(view.location.href),target=new URL(url,source);if(target.origin!==source.origin||target.protocol!==source.protocol)throw Error('같은 출처의 발표 화면만 열 수 있습니다.');
  const token=view.crypto.randomUUID();target.searchParams.set('presentationLaunch',token);
  return new Promise((resolve,reject)=>{
   let child:Window|null=null,timer:number|undefined,poll:number|undefined,done=false;
-  function end(error?:Error){if(done)return;done=true;view.removeEventListener('message',receive);view.clearTimeout(timer);view.clearInterval(poll);error?reject(error):resolve();}
+  function end(error?:Error){if(done)return;done=true;view.removeEventListener('message',receive);view.clearTimeout(timer);view.clearInterval(poll);error?reject(error):resolve(child!);}
   function receive(event:MessageEvent){if(event.origin!==target.origin||event.source!==child||event.data?.type!=='presentation-ready'||event.data.token!==token)return;end(event.data.error?new Error('발표 화면 준비 실패: '+String(event.data.error).slice(0,300)):undefined);}
   view.addEventListener('message',receive);
-  try{child=view.open(target.href,`presentation-${token}`,`popup=yes,width=${request.width},height=${request.height},left=${request.left},top=${request.top}`);}catch(error){end(error instanceof Error?error:new Error(String(error)));return;}
+  try{child=view.open(target.href,windowName??`presentation-${token}`,`popup=yes,width=${request.width},height=${request.height},left=${request.left},top=${request.top}`);}catch(error){end(error instanceof Error?error:new Error(String(error)));return;}
   if(!child){end(new Error('팝업이 차단됐습니다. 이 사이트의 팝업을 허용한 뒤 발표 시작을 다시 누르세요.'));return;}
   timer=view.setTimeout(()=>end(new Error('청중 창의 준비를 확인하지 못했습니다. 새 창의 오류를 확인하고 다시 시도해 주세요.')),timeout);
   poll=view.setInterval(()=>{if(child?.closed)end(new Error('발표 준비 전에 청중 창이 닫혔습니다.'));},200);
  });
+}
+export function openBrowserPresentation(view:Window,url:string,request:PresentationWindowRequest,timeout=12000):Promise<void>{
+ return openPresentationPopup(view,url,request,timeout).then(()=>{});
 }
 export function notifyPresentationReady(view:Window,error?:string):void{
  const token=new URL(view.location.href).searchParams.get('presentationLaunch');
  if(token&&view.opener)view.opener.postMessage({type:'presentation-ready',token,error},new URL(view.location.href).protocol==='file:'?'*':view.location.origin);
 }
 
+export interface PresentationPeerState {id:string;time:number;state:'idle'|'running'|'paused'|'finished'}
+type PresentationCommand='next'|'previous'|'pause'|'replay';
+/** One audience and one notes window. A token survives owner reloads in the host URL. */
+export function createPresentationPeerSession(options:{
+ view:Window;project:string;token:string;receiver:boolean;peer?:Window|null;
+ acceptReceiver:(sender:Window)=>boolean;state:()=>PresentationPeerState;
+ apply:(state:PresentationPeerState)=>void;command:(name:PresentationCommand)=>void;
+ navigate:(id:string)=>void;onConnection?:(connected:boolean)=>void;
+}){
+ const {view,project,token,receiver}=options,url=new URL(view.location.href),origin=url.origin,target=url.protocol==='file:'?'*':origin;
+ let peer=options.peer??null,connected=false,destroyed=false;
+ function connection(value:boolean){if(connected===value)return;connected=value;options.onConnection?.(value);}
+ function send(type:string,payload:object={}):boolean{
+  if(destroyed||!peer)return false;
+  if(peer.closed){peer=null;connection(false);return false;}
+  try{peer.postMessage({type,project,session:token,...payload},target);return true;}
+  catch{peer=null;connection(false);return false;}
+ }
+ function publish(){if(!receiver)send('presentation-peer-state',options.state());}
+ function receive(event:MessageEvent){
+  const data=event.data,sender=event.source as Window|null;
+  if(destroyed||event.origin!==origin||!sender||!data||data.project!==project||data.session!==token)return;
+  if(!receiver&&data.type==='presentation-peer-ready'){
+   if(sender!==peer){
+    if(peer&&!peer.closed)return;
+    try{if(!options.acceptReceiver(sender))return;}catch{return;}
+    peer=sender;
+   }
+   connection(true);publish();return;
+  }
+  if(sender!==peer)return;
+  if(receiver){
+   if(data.type!=='presentation-peer-state'||typeof data.id!=='string'||!/^[a-z0-9-]{1,80}$/.test(data.id)||typeof data.time!=='number'||!Number.isFinite(data.time)||data.time<0||data.time>600000||!['idle','running','paused','finished'].includes(data.state))return;
+   connection(true);options.apply({id:data.id,time:data.time,state:data.state});return;
+  }
+  if(data.type==='presentation-peer-command'&&['next','previous','pause','replay'].includes(data.name)){options.command(data.name);publish();}
+  if(data.type==='presentation-peer-navigate'&&typeof data.id==='string'&&/^[a-z0-9-]{1,80}$/.test(data.id)){options.navigate(data.id);publish();}
+ }
+ view.addEventListener('message',receive);
+ function tick(){if(receiver)send('presentation-peer-ready');else publish();}
+ const timer=view.setInterval(tick,250);tick();
+ return {
+  get peer(){return peer;},get connected(){return connected;},
+  attach(child:Window){if(destroyed)return;peer=child;connection(true);publish();},
+  publish,
+  sendCommand(name:PresentationCommand){return receiver&&send('presentation-peer-command',{name});},
+  sendNavigation(id:string){return receiver&&send('presentation-peer-navigate',{id});},
+  destroy(){destroyed=true;view.removeEventListener('message',receive);view.clearInterval(timer);peer=null;connected=false;}
+ };
+}
+
 /** A notes preview forwards commands to its audience, and mirrors that clock. */
 export function createPresentationMirror(options:{view:Window;project:string;peer?:Window;acceptReceiver:(sender:Window)=>boolean;state:()=>{id:string;time:number};apply:(state:{id:string;time:number})=>void;command:(name:'next'|'previous'|'pause'|'replay')=>void}):{sendCommand(name:'next'|'previous'|'pause'|'replay'):boolean;destroy():void}{
- const {view,peer,project}=options,receivers=new Set<Window>(),origin=view.location.origin;
+ const {view,peer,project}=options,receivers=new Set<Window>(),url=new URL(view.location.href),origin=url.origin,targetOrigin=url.protocol==='file:'?'*':origin;
  function receive(event:MessageEvent){
   const data=event.data;if(event.origin!==origin||!data||data.project!==project)return;
   if(peer){if(event.source===peer&&data.type==='presentation-clock'&&typeof data.id==='string'&&/^[a-z0-9-]{1,80}$/.test(data.id)&&typeof data.time==='number'&&Number.isFinite(data.time)&&data.time>=0&&data.time<=600000)options.apply({id:data.id,time:data.time});return;}
@@ -31,11 +85,11 @@ export function createPresentationMirror(options:{view:Window;project:string;pee
   if(data.type==='presentation-receiver')receivers.add(sender);
   if(data.type==='presentation-command'&&['next','previous','pause','replay'].includes(data.name))options.command(data.name);
  }
- function publish(){if(peer)return;for(const receiver of receivers){try{if(receiver.closed){receivers.delete(receiver);continue;}receiver.postMessage({type:'presentation-clock',project,...options.state()},origin);}catch{receivers.delete(receiver);}}}
+ function publish(){if(peer)return;for(const receiver of receivers){try{if(receiver.closed){receivers.delete(receiver);continue;}receiver.postMessage({type:'presentation-clock',project,...options.state()},targetOrigin);}catch{receivers.delete(receiver);}}}
  view.addEventListener('message',receive);
- if(peer)peer.postMessage({type:'presentation-receiver',project},origin);
+ if(peer)peer.postMessage({type:'presentation-receiver',project},targetOrigin);
  const timer=peer?undefined:view.setInterval(publish,200);
- return {sendCommand(name){if(!peer)return false;peer.postMessage({type:'presentation-command',project,name},origin);return true;},destroy(){view.removeEventListener('message',receive);view.clearInterval(timer);receivers.clear();}};
+ return {sendCommand(name){if(!peer||peer.closed)return false;try{peer.postMessage({type:'presentation-command',project,name},targetOrigin);return true;}catch{return false;}},destroy(){view.removeEventListener('message',receive);view.clearInterval(timer);receivers.clear();}};
 }
 /** The application supplies the native launch adapter; this module has no HTTP route dependency. */
 export function createPresentationWindowControl(options: {

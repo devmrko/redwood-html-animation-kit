@@ -5,12 +5,25 @@ import {createChartsSlide} from '../../examples/animations/slides/charts.js';
 import {createAiPresentationPage} from '../../vendor/foundation/presentation-ai-page.js';
 import {renderPresentationDocument} from '../../vendor/foundation/presentation-document-view.js';
 import {presentationTheme} from '../../app/template-theme.js';
+import {createComparisonTable} from '../../vendor/foundation/presentation-tables.js';
+import {createPresentationTimeline} from '../../vendor/foundation/presentation-timeline.js';
 const stage=document.querySelector('#stage'),summary=document.querySelector('#summary'),results=document.querySelector('#results'),run=document.querySelector('#run');
 const groups=[['effect-presets',createEffectsSlide],...['motion-effects','text-effects','svg-effects','metric-effects'].map(id=>[id,createCatalogSlide]),['charts',createChartsSlide]];
 let source,active;
 const assert=(condition,message)=>{if(!condition)throw Error(message);};
 function mount(id,factory){active?.destroy();const root=source.getElementById(id).cloneNode(true);root.classList.add('present');root.dataset.template='oracle-corporate';root.dataset.appearance='light';stage.replaceChildren(root);active=factory(root,()=>{});return {root,player:active.player};}
 function appearanceState(root){return JSON.stringify([...root.querySelectorAll('*')].map(el=>{const css=getComputedStyle(el),box=el.getBoundingClientRect();return [el.textContent,css.opacity,css.transform,css.translate,css.scale,css.rotate,css.clipPath,css.boxShadow,css.strokeDashoffset,css.strokeDasharray,el.getAttribute('stroke-dasharray'),el.getAttribute('stroke-dashoffset'),box.width,box.height,el.getAttribute('d')];}));}
+function mountTable(appearance,density){
+ active?.destroy();const statuses=['success','limited','error','unsupported','untested'];let table,button;
+ const project={assets:[],document:{version:1,id:'11111111-1111-4111-8111-111111111111',title:'표 호환 검사',presenter:'',scenario:'',appearance,slides:[{id:'table-check',title:'같은 상태는 같은 색으로 표시합니다',layout:'content',items:[],notes:'공개 합성 검증 자료',authored:true}]}};
+ const factory=({body,document:doc})=>{
+  table=createComparisonTable(doc,{density,columns:['이전 속성','현재 속성'],rows:[...statuses.map(status=>({label:status,cells:[{text:status,status},{text:status,status}]})),{label:'명시한 상태 우선',cells:[{text:'success',status:'success'},{text:'success',status:'success'}]}]});
+  [...table.tBodies[0].rows].forEach((row,index)=>{const cell=row.cells[1];if(index<statuses.length){cell.dataset.tone=cell.dataset.status;delete cell.dataset.status;}else cell.dataset.tone='error';});
+  body.append(table);if(density==='compact'){button=doc.createElement('button');button.textContent='하단 이동 버튼';button.style.cssText='position:absolute;bottom:0;left:0;height:50px;font:inherit';body.append(button);}
+  return {player:createPresentationTimeline({duration:1000,tracks:[{element:table,keyframes:[{opacity:1},{opacity:1}]}]})};
+ };
+ active=renderPresentationDocument(project,stage,presentationTheme,{pages:new Map([['table-check',factory]]),textMotion:false});active.slides[0].player.finish();return {table,button};
+}
 run.onclick=async()=>{
  run.disabled=true;results.replaceChildren();let passed=0,total=0;const records=[];
  try{
@@ -32,6 +45,18 @@ run.onclick=async()=>{
     const row=document.createElement('tr'),name=document.createElement('td'),state=document.createElement('td'),action=document.createElement('td'),view=document.createElement('button');name.textContent=label;state.textContent=error||'통과 · 재생/탐색/일시정지/완료/해제';state.className=error?'failed':'passed';view.textContent='보기';view.onclick=()=>{const {root}=mount(id,factory);root.querySelector(`[${attribute}="${key}"]`).click();};action.append(view);row.append(name,state,action);results.append(row);records.push({id,key,error});summary.textContent=`검사 중 · ${passed}/${total}`;
    }
   }
+  let tablePassed=0,tableTotal=0;
+  for(const appearance of ['light','dark'])for(const density of ['comfortable','compact']){
+   tableTotal++;let error='';
+   try{
+    const {table,button}=mountTable(appearance,density),cell=table.tBodies[0].rows[0].cells[1],style=getComputedStyle(cell);
+    assert(style.fontSize==='28px','표 글자 크기가 달라졌습니다.');assert(style.paddingTop===(density==='compact'?'10px':'18px'),'표 세로 여백 옵션 불일치');
+    for(const row of table.tBodies[0].rows)assert(getComputedStyle(row.cells[1]).color===getComputedStyle(row.cells[2]).color,'이전/현재 상태 속성의 색상 불일치');
+    const colors=[...table.tBodies[0].rows].slice(0,3).map(row=>getComputedStyle(row.cells[2]).color);assert(new Set(colors).size===3,'성공/조건부/오류 색상이 구분되지 않습니다.');
+    if(button)assert(table.getBoundingClientRect().bottom<=button.getBoundingClientRect().top,'표가 하단 이동 버튼을 덮습니다.');tablePassed++;
+   }catch(e){error=e.message;}
+   const row=document.createElement('tr'),name=document.createElement('td'),state=document.createElement('td'),action=document.createElement('td'),view=document.createElement('button');name.textContent=`표 ${appearance} · ${density}`;state.textContent=error||'통과 · 28px/여백/상태 호환/하단 버튼';state.className=error?'failed':'passed';view.textContent='보기';view.onclick=()=>mountTable(appearance,density);action.append(view);row.append(name,state,action);results.append(row);records.push({kind:'table',appearance,density,error});
+  }
   const projectId=new URLSearchParams(location.search).get('project');let aiPassed=0,aiTotal=0;
   if(projectId){
    const response=await fetch(`/api/ai/projects/${encodeURIComponent(projectId)}/state`,{cache:'no-store'});assert(response.ok,'AI 검증 자료를 읽지 못했습니다.');const {snapshot}=await response.json();
@@ -49,7 +74,7 @@ run.onclick=async()=>{
     const row=document.createElement('tr'),name=document.createElement('td'),state=document.createElement('td');name.textContent=`AI ${id} · ${appearance}`;state.textContent=error||'통과 · 이미지/영역/장표 경계/타임라인';state.className=error?'failed':'passed';row.append(name,state,document.createElement('td'));results.append(row);records.push({id,appearance,error});
    }
   }
-  summary.textContent=`${passed}/${total} 통과${aiTotal?` · AI ${aiPassed}/${aiTotal} 통과`:''} · 동작 줄이기 설정 ${matchMedia('(prefers-reduced-motion: reduce)').matches?'켜짐':'꺼짐'}`;
-  const link=document.createElement('a');link.textContent='검사 결과 JSON 저장';link.download='browser-smoke.json';link.href=URL.createObjectURL(new Blob([JSON.stringify({passed,total,aiPassed,aiTotal,records},null,2)],{type:'application/json'}));summary.append(' · ',link);mount('charts',createChartsSlide).player.finish();
+  summary.textContent=`${passed}/${total} 통과 · 표 ${tablePassed}/${tableTotal} 통과${aiTotal?` · AI ${aiPassed}/${aiTotal} 통과`:''} · 동작 줄이기 설정 ${matchMedia('(prefers-reduced-motion: reduce)').matches?'켜짐':'꺼짐'}`;
+  const link=document.createElement('a');link.textContent='검사 결과 JSON 저장';link.download='browser-smoke.json';link.href=URL.createObjectURL(new Blob([JSON.stringify({passed,total,tablePassed,tableTotal,aiPassed,aiTotal,records},null,2)],{type:'application/json'}));summary.append(' · ',link);mount('charts',createChartsSlide).player.finish();
  }catch(error){summary.textContent=error.message;}finally{run.disabled=false;}
 };

@@ -5,7 +5,7 @@ import math
 import re
 
 TAGS=set('div section article header footer p span strong em b i small h2 h3 h4 ul ol li dl dt dd table colgroup col thead tbody tfoot tr td th caption figure figcaption img br svg title desc g rect circle ellipse line path polyline polygon text tspan defs marker lineargradient radialgradient stop'.split())
-ATTRS=set('class id style role aria-label aria-labelledby aria-hidden xmlns data-asset-id alt loading decoding width height viewbox x y x1 y1 x2 y2 cx cy r rx ry d points fill fill-rule fill-opacity stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin pathlength vector-effect marker-start marker-mid marker-end markerwidth markerheight markerunits refx refy orient opacity text-anchor dominant-baseline font-size font-weight transform offset stop-color stop-opacity colspan rowspan preserveaspectratio'.split())
+ATTRS=set('class id style role aria-label aria-labelledby aria-hidden xmlns data-asset-id data-density data-status data-tone alt loading decoding width height viewbox x y x1 y1 x2 y2 cx cy r rx ry d points fill fill-rule fill-opacity stroke stroke-width stroke-opacity stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin pathlength vector-effect marker-start marker-mid marker-end markerwidth markerheight markerunits refx refy orient opacity text-anchor dominant-baseline font-size font-weight transform offset stop-color stop-opacity colspan rowspan preserveaspectratio'.split())
 CSS=set('fill stroke stroke-width stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stop-color stop-opacity transform-box display flex flex-direction flex-wrap flex-grow flex-shrink flex-basis align-items align-self justify-content justify-items place-items gap row-gap column-gap grid-template-columns grid-template-rows grid-column grid-row width height min-width max-width min-height max-height padding padding-top padding-right padding-bottom padding-left margin margin-top margin-right margin-bottom margin-left box-sizing border border-top border-right border-bottom border-left border-color border-width border-style border-radius box-shadow background background-color color font-size font-weight font-style line-height letter-spacing text-align text-decoration white-space word-break overflow overflow-wrap object-fit object-position position top left right bottom opacity transform transform-origin vertical-align table-layout border-collapse border-spacing'.split())
 
 
@@ -33,6 +33,8 @@ class PageParser(HTMLParser):
             if name=='font-family':continue
             if name not in ATTRS or value is None or len(value)>6000:raise ValueError('허용하지 않는 본문 속성입니다: '+name)
             if name=='style':value=safe_style(value)
+            if name=='data-density' and (tag!='table' or value not in ('comfortable','compact')):raise ValueError('표 여백 옵션을 확인해 주세요.')
+            if name in ('data-status','data-tone') and (tag not in ('td','th','span','strong') or value not in ('success','limited','error','unsupported','untested')):raise ValueError('표 상태 표시를 확인해 주세요.')
             if name=='xmlns' and (tag!='svg' or value!='http://www.w3.org/2000/svg'):raise ValueError('SVG 네임스페이스를 확인해 주세요.')
             if name=='class':self.selectors.update('.'+token for token in value.split())
             if name=='id':self.selectors.add('#'+value)

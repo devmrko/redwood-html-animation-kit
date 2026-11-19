@@ -210,6 +210,7 @@ npm run check
 - [공통 HTML·CSS 사용법](./docs/html-ui.md)
 - [구성과 설계](./docs/design.md)
 - [검증 범위](./docs/validation.md)
+- [알파 이후 개선 순서와 배포본 검수](./docs/alpha-roadmap.md)
 - [공통 모듈 빌드](./framework/README.md)
 
 ## 출처와 사용 범위

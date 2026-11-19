@@ -21,3 +21,12 @@ export function createPresentationShortcuts(doc:Document,actions:{find():void;sa
  const handle=(event:KeyboardEvent)=>{if(!(event.ctrlKey||event.metaKey)||event.altKey||event.shiftKey)return;const key=event.key.toLowerCase();if(key==='f'||key==='s'&&actions.save){event.preventDefault();event.stopImmediatePropagation();if(key==='f')actions.find();else actions.save?.();}};
  doc.addEventListener('keydown',handle,true);return ()=>doc.removeEventListener('keydown',handle,true);
 }
+
+/** Leave browser shortcuts and IME input to the browser. */
+export function presentationPlaybackCommand(event:Pick<KeyboardEvent,'key'|'ctrlKey'|'metaKey'|'altKey'|'shiftKey'|'defaultPrevented'|'isComposing'>):'next'|'previous'|'pause'|'replay'|undefined{
+ if(event.ctrlKey||event.metaKey||event.altKey||event.shiftKey||event.defaultPrevented||event.isComposing)return;
+ if(event.key==='ArrowRight'||event.key===' ')return 'next';
+ if(event.key==='ArrowLeft')return 'previous';
+ if(event.key.toLowerCase()==='p')return 'pause';
+ if(event.key.toLowerCase()==='r')return 'replay';
+}
