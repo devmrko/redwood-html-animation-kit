@@ -1,5 +1,9 @@
 # 검증 범위
 
+## 베타 1 · Ubuntu CI · 2026-11-19
+
+베타 태그 대상 `d853ec4`에서 [GitHub Actions 실행](https://github.com/devmrko/redwood-html-animation-kit/actions/runs/44483490675)이 통과했습니다. Ubuntu 24.04·Node 22·Python 3.12에서 FFmpeg/FFprobe를 준비하고, TypeScript 빌드·배포 파일 동기화 검사·자동 검사 120개(Node 48·Python 72)·정적 검사를 실행했습니다. 브라우저·PowerPoint 실화면, 파일 직접 실행·Windows를 CI에서 검사한 것은 아닙니다. 베타의 알려진 제한은 [베타 1 안내](releases/v0.1.0-beta.1.md)에 모았습니다.
+
 
 ## 알파 2 배포 ZIP 시작 경로 · 2026-11-19
 

@@ -2,7 +2,7 @@
 
 시나리오와 사진으로 HTML 장표를 만들고, 내용을 수정해 발표하거나 PPTX·MP4·SRT로 저장하는 도구입니다. 제목·목차·핵심 내용·스크립트는 JSON으로 관리하고, Codex·Claude가 템플릿과 공통 기능을 이용해 실제 페이지를 제작합니다. Oracle Corporate 템플릿의 밝은·어두운 테마를 선택할 수 있으며, 표지·간지·마지막 장을 포함한 예제 13장과 효과 33종을 제공합니다.
 
-현재 공개 버전은 **v0.1.0-alpha.2**입니다. [변경 사항과 검증 범위](./docs/releases/v0.1.0-alpha.2.md)를 확인하세요. Mac Chrome·PowerPoint에서 검증했으며 파일 더블클릭과 Windows 동작은 추가 검증이 필요합니다.
+현재 공개 버전은 **v0.1.0-beta.1**입니다. 소수 사용자의 실제 제작·발표 흐름을 확인하는 베타이며, [변경 사항과 검증 범위](./docs/releases/v0.1.0-beta.1.md)를 확인하세요. Mac Chrome·PowerPoint에서 검증했으며 파일 더블클릭과 Windows 동작은 추가 검증이 필요합니다.
 
 [![사용법 영상 — 시나리오 입력부터 발표·PPT·자막 영상 저장까지](./docs/media/usage-demo-poster.jpg)](./docs/media/usage-demo.mp4)
 
@@ -214,7 +214,7 @@ npm run check
 - [공통 HTML·CSS 사용법](./docs/html-ui.md)
 - [구성과 설계](./docs/design.md)
 - [검증 범위](./docs/validation.md)
-- [알파 이후 개선 순서와 배포본 검수](./docs/alpha-roadmap.md)
+- [베타 개선 순서와 배포본 검수](./docs/alpha-roadmap.md)
 - [공통 모듈 빌드](./framework/README.md)
 
 ## 출처와 사용 범위
