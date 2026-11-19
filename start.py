@@ -231,7 +231,10 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 workspace=self.ai_workspace()
                 if ai[2]=='history':result=workspace.history(ai[1])
-                else:result={'head':workspace.head(ai[1]),'snapshot':workspace.read(ai[1],ai[3])}
+                else:
+                    snapshot=workspace.current(ai[1],verify_source=True) if ai[2]=='state' else workspace.read(ai[1],ai[3])
+                    result={'head':workspace.head(ai[1]),'snapshot':snapshot}
+                    if ai[2]=='state' and snapshot is None:result['sourceProject']=workspace.source_project(ai[1])
                 self.json_response(result)
             except (ValueError,RuntimeError,OSError):self.json_response({'error':'편집 이력을 불러오지 못했습니다.'},400)
             return
@@ -286,7 +289,7 @@ class PresentationHandler(http.server.SimpleHTTPRequestHandler):
                 payload=json.loads(self.rfile.read(length))
                 if not isinstance(payload,dict):raise ValueError('썸네일 형식을 확인해 주세요.')
                 self.json_response(self.ai_workspace().save_thumbnail(*thumbnail.groups(),payload.get('image')));return
-            ai=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/(init|propose|apply|restore)',self.path)
+            ai=re.fullmatch(r'/api/ai/projects/('+PROJECT_ID+r')/(init|propose|apply|restore|discard)',self.path)
             if ai:
                 if not 0<length<=MAX_PROJECT_BYTES:raise ValueError('AI 편집 요청 용량을 확인해 주세요.')
                 payload=json.loads(self.rfile.read(length))

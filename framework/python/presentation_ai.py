@@ -82,10 +82,12 @@ class PresentationAiWorkspace:
     def ensure(self,project,*,initial_pages=None):
         project=validate_authoring_project(copy.deepcopy(project));project_id=project['document']['id']
         with self.lock:
-            previous=self.read(project_id)
+            previous=self.current(project_id,verify_source=True)
             if previous is not None:
                 if fingerprint(previous['project'])!=fingerprint(project):raise RevisionConflict('다른 창에서 자료가 변경됐습니다. 새로고침 후 다시 시도해 주세요.')
                 return self.head(project_id)
+            source=self.source_project(project_id)
+            if source is not None and fingerprint(source)!=fingerprint(project):raise RevisionConflict('원본 JSON이 브라우저 자료와 다릅니다. 최신 버전을 불러와 주세요.')
             pages={};portable=self.root/'presentation-ai-pages.json'
             if portable.is_file() and not portable.is_symlink():
                 value=json.loads(portable.read_text())
@@ -103,12 +105,19 @@ class PresentationAiWorkspace:
                 if path.is_file() and not path.is_symlink() and path.stat().st_size<=100000:sources[slide['id']]=path.read_text()
             return self.save(project_id,{'project':project,'pages':pages,'sources':sources},{'summary':'편집 시작 전 원본','kind':'baseline'})
 
-    def current(self,project_id):
+    def source_project(self,project_id):
+        source=self.root/'presentation-project.json'
+        if not source.is_file() or source.is_symlink():return None
+        if source.stat().st_size>36*1024*1024:raise ValueError('발표 JSON 용량을 확인해 주세요.')
+        project=validate_authoring_project(json.loads(source.read_text()))
+        return project if project['document']['id']==project_id else None
+
+    def current(self,project_id,*,verify_source=False):
         with self.lock:
             snapshot=self.read(project_id);source=self.root/'presentation-project.json'
             if snapshot is None or not source.is_file() or source.is_symlink():return snapshot
             saved_at=(self.repo(project_id)/'snapshot.json').stat().st_mtime_ns
-            if source.stat().st_mtime_ns>saved_at:
+            if verify_source or source.stat().st_mtime_ns>saved_at:
                 project=validate_authoring_project(json.loads(source.read_text()))
                 if project['document']['id']==project_id and fingerprint(project)!=fingerprint(snapshot['project']):
                     snapshot['project']=project;self.save(project_id,snapshot,{'summary':'원본 JSON 파일에서 내용 수정','kind':'manual'})
@@ -171,6 +180,7 @@ class PresentationAiWorkspace:
         if not isinstance(request,str) or not 1<=len(request.strip())<=4000:raise ValueError('변경 요청은 1~4000자로 입력해 주세요.')
         page_required=bool(re.search(r'(?:표|도식|차트|그래프|흐름도)(?:로|으로)|(?:본문|화면).*(?:배치|레이아웃)|행.*(?:나타|등장)|애니메이션|등장\s*효과|\b(?:table|diagram|layout|animation)\b',request,re.I))
         with self.lock:
+            self.current(project_id,verify_source=True)
             if self.head(project_id)!=base:raise RevisionConflict('편집 기준 버전이 바뀌었습니다. 새로고침 후 다시 요청해 주세요.')
             snapshot=self.read(project_id);project=snapshot['project'];slide=next((s for s in project['document']['slides'] if s['id']==slide_id),None)
             if not slide:raise ValueError('장표를 선택해 주세요.')
@@ -237,6 +247,7 @@ class PresentationAiWorkspace:
             try:candidate=validate_result(result)
             except ValueError as final_error:raise ValueError('선택한 AI가 유효한 편집안을 만들지 못했습니다. AI 연결에서 다른 모델이나 프로그램을 선택해 다시 요청해 주세요. 상세: '+str(final_error)) from None
         with self.lock:
+            self.current(project_id,verify_source=True)
             if self.head(project_id)!=base:raise RevisionConflict('AI 응답 중 자료가 변경됐습니다. 다시 요청해 주세요.')
             self.proposals={k:v for k,v in self.proposals.items() if time.monotonic()-v['created']<1800}
             token=uuid.uuid4().hex;self.proposals[token]={'created':time.monotonic(),'projectId':project_id,'base':base,'snapshot':candidate,'summary':result['summary'],'slideId':slide_id,'request':request,'provider':payload.get('connection',{}).get('provider')}
@@ -246,9 +257,18 @@ class PresentationAiWorkspace:
         with self.lock:
             p=self.proposals.get(payload.get('token'))
             if not p or p['projectId']!=project_id or time.monotonic()-p['created']>1800:raise ValueError('편집안이 만료됐습니다. 다시 요청해 주세요.')
+            self.current(project_id,verify_source=True)
             if self.head(project_id)!=p['base']:raise RevisionConflict('다른 변경이 적용됐습니다. 새로고침 후 다시 요청해 주세요.')
             rev=self.save(project_id,p['snapshot'],{k:p[k] for k in ('summary','slideId','request','provider')});del self.proposals[payload['token']]
             return {'revision':rev,'project':p['snapshot']['project']}
+
+    def discard(self,project_id,payload):
+        token=payload.get('token')
+        if not isinstance(token,str) or not re.fullmatch(r'[a-f0-9]{32}',token):raise ValueError('편집안 토큰을 확인해 주세요.')
+        with self.lock:
+            proposal=self.proposals.get(token)
+            if proposal and proposal['projectId']!=project_id:raise ValueError('이 프로젝트의 편집안이 아닙니다.')
+            return {'discarded':self.proposals.pop(token,None) is not None}
 
     def archive(self,project_id):
         import io,zipfile
@@ -272,6 +292,7 @@ class PresentationAiWorkspace:
 
     def restore(self,project_id,payload):
         with self.lock:
+            self.current(project_id,verify_source=True)
             if self.head(project_id)!=payload.get('base'):raise RevisionConflict('기준 버전이 변경됐습니다. 새로고침해 주세요.')
             snapshot=self.read(project_id,payload.get('revision'))
             if not snapshot:raise ValueError('복원할 버전을 찾을 수 없습니다.')

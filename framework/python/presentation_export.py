@@ -94,7 +94,10 @@ def request_presentation_json(settings, system, content, max_tokens=1200):
             text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip())
         return json.loads(text)
     except urllib.error.HTTPError as error:
-        raise RuntimeError(f"LLM 요청에 실패했습니다 (HTTP {error.code}). 키·모델·제공자 설정을 확인해 주세요.") from None
+        guidance={400:'모델 이름·요청 형식을 확인해 주세요.',401:'API 키와 인증 설정을 확인해 주세요.',402:'제공자의 결제·크레딧·사용 한도 설정을 확인해 주세요.',403:'계정과 모델의 접근 권한을 확인해 주세요.',404:'모델 이름과 API 주소를 확인해 주세요.',429:'요청 또는 사용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.'}
+        message=guidance.get(error.code,'제공자 상태를 확인하고 잠시 후 다시 시도해 주세요.' if error.code>=500 else '키·모델·제공자 설정을 확인해 주세요.')
+        code=error.code;error.close()
+        raise RuntimeError(f"LLM 요청에 실패했습니다 (HTTP {code}). "+message) from None
     except (urllib.error.URLError, TimeoutError, OSError):
         raise RuntimeError("LLM 제공자에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.") from None
     except (KeyError, TypeError, ValueError, AttributeError):

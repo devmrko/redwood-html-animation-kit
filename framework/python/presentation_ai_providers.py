@@ -19,6 +19,18 @@ def parse_json(text):
     except ValueError:raise RuntimeError('AI가 JSON 편집안을 반환하지 않았습니다. 다시 요청해 주세요.') from None
 
 
+def cli_error_message(stdout,stderr):
+    # Classify known diagnostics locally. Never return CLI output: it may contain
+    # account identifiers, configuration paths or credentials.
+    text=re.sub(r'\s+',' ',str(stdout)[-12000:]+' '+str(stderr)[-12000:]).lower()
+    if re.search(r'not logged in|please (?:run.{0,50})?(?:log in|login)|authentication.?error|authentication failed|invalid.api.key|unauthorized|invalid_grant|token.{0,40}expired|\b401\b',text):return 'AI CLI 인증에 실패했습니다. 해당 CLI에서 로그인 상태를 확인해 주세요.'
+    if re.search(r'model.{0,160}(?:does not exist|not found|not available|not supported|unsupported|invalid|unknown)|(?:invalid|unknown|unsupported).{0,50}model|model_not_found|not_found_error.{0,160}model',text):return 'AI CLI 모델을 사용할 수 없습니다. 모델 이름과 계정의 모델 접근 권한을 확인해 주세요.'
+    if re.search(r'rate.limit|too many requests|\b429\b|quota|credit balance|insufficient.credit|usage limit|reached.{0,40}limit',text):return 'AI CLI 사용 한도에 도달했습니다. 제공자의 사용량·크레딧을 확인하고 다시 시도해 주세요.'
+    if re.search(r'connection (?:error|refused|reset)|could not resolve|name resolution|network (?:error|unreachable)|unable to connect|failed to connect|timed out|certificate verify failed',text):return 'AI CLI가 제공자에 연결하지 못했습니다. 네트워크·인증서 설정을 확인해 주세요.'
+    if re.search(r'\b403\b|permission denied|access denied|forbidden',text):return 'AI CLI 접근 권한이 없습니다. 계정과 모델의 사용 권한을 확인해 주세요.'
+    return 'AI CLI 요청이 실패했습니다. 해당 CLI의 로그인·모델·권한 설정을 확인해 주세요.'
+
+
 def cli_run(command,*,cwd,input=None,timeout=180):
     # The CLI sees a disposable empty folder, never this project's .env or private assets.
     env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','USER','SHELL','TMPDIR','LANG','LC_ALL','SYSTEMROOT','APPDATA','LOCALAPPDATA','CODEX_HOME','XDG_CONFIG_HOME')}
@@ -26,7 +38,7 @@ def cli_run(command,*,cwd,input=None,timeout=180):
         result=subprocess.run(command,cwd=cwd,input=input,text=True,capture_output=True,timeout=timeout,env=env)
     except subprocess.TimeoutExpired:raise RuntimeError('AI 응답 시간이 초과됐습니다. 요청을 줄이고 다시 시도해 주세요.') from None
     except OSError:raise RuntimeError('선택한 CLI를 실행하지 못했습니다. 설치와 로그인을 확인해 주세요.') from None
-    if result.returncode:raise RuntimeError('AI CLI 요청이 실패했습니다. 해당 CLI의 로그인·모델·권한 설정을 확인해 주세요.')
+    if result.returncode:raise RuntimeError(cli_error_message(result.stdout,result.stderr))
     if len(result.stdout)>2000000:raise RuntimeError('AI CLI 응답이 너무 큽니다.')
     return result.stdout
 
@@ -46,7 +58,7 @@ class PresentationAiProviders:
         return {'openai':{'available':bool(settings['key']),'model':settings['model']},
                 'oci':{'available':bool(shutil.which('oci') and profiles),'profiles':profiles,'regions':regions,
                        'profile':values.get('OCI_CLI_PROFILE','DEFAULT'),'region':values.get('OCI_AI_REGION',''),
-                       'model':values.get('OCI_AI_MODEL',''),'compartment':values.get('OCI_AI_COMPARTMENT_ID','')},
+                       'model':values.get('OCI_AI_MODEL',''),'compartment':values.get('OCI_AI_COMPARTMENT_ID') or values.get('OCI_AI_COMPARTMENT_NAME',''),'apiFormat':values.get('OCI_AI_API_FORMAT','GENERIC')},
                 'cli':{'available':bool(shutil.which('codex') or shutil.which('claude')),'tools':[n for n in ('codex','claude') if shutil.which(n)]}}
 
     def generate(self,options,system,content,*,max_tokens=8000):
@@ -75,17 +87,38 @@ class PresentationAiProviders:
             command=[exe,'-p','--output-format','json','--tools','','--strict-mcp-config','--mcp-config','{"mcpServers":{}}','--no-session-persistence']
             if model:command+=['--model',model]
             result=parse_json(cli_run(command,cwd=work,input=prompt))
-            if result.get('is_error'):raise RuntimeError('Claude 요청이 실패했습니다. 로그인·모델 설정을 확인해 주세요.')
+            if result.get('is_error'):raise RuntimeError(cli_error_message(result.get('result',''),''))
             return result.get('structured_output') or parse_json(result.get('result',''))
+
+    @staticmethod
+    def resolve_oci_compartment(exe,compartment,region,profile,config,work):
+        if not isinstance(compartment,str) or not compartment or len(compartment)>255:raise ValueError('OCI 컴파트먼트 이름 또는 OCID를 지정해 주세요.')
+        if re.fullmatch(r'ocid1\.(?:compartment|tenancy)\.[A-Za-z0-9_.-]+',compartment):return compartment
+        if compartment.startswith(('ocid1.','-')) or not re.fullmatch(r'[A-Za-z0-9_.-]+',compartment):raise ValueError('OCI 컴파트먼트 이름 또는 OCID를 확인해 주세요.')
+        # Root-inclusive lookup also accepts the tenancy name. Never pick a
+        # similarly named or ambiguous compartment, or expose the IAM response.
+        command=[exe,'iam','compartment','list','--compartment-id-in-subtree','true','--include-root','--lifecycle-state','ACTIVE','--all','--region',region,'--profile',profile,'--config-file',config,'--output','json','--read-timeout','30','--max-retries','0']
+        try:
+            data=json.loads(cli_run(command,cwd=work,timeout=45))
+            if not isinstance(data,dict) or not isinstance(data.get('data'),list):raise ValueError()
+        except (ValueError,TypeError):raise RuntimeError('OCI 컴파트먼트 조회 응답을 확인해 주세요.') from None
+        matches=[row.get('id') for row in data.get('data',[]) if isinstance(row,dict) and row.get('name')==compartment and row.get('lifecycle-state')=='ACTIVE']
+        if len(matches)!=1:raise ValueError('OCI 컴파트먼트 이름이 없거나 중복됩니다. 접근 가능한 정확한 이름 또는 OCID를 설정해 주세요.')
+        resolved=matches[0]
+        if not isinstance(resolved,str) or not re.fullmatch(r'ocid1\.(?:compartment|tenancy)\.[A-Za-z0-9_.-]+',resolved):raise RuntimeError('OCI 컴파트먼트 조회 응답을 확인해 주세요.')
+        return resolved
 
     def oci(self,options,model,system,content,work,*,max_tokens=8000):
         values=load_env_values(self.root/'.env');exe=shutil.which('oci')
         if not exe:raise ValueError('OCI CLI가 설치돼 있지 않습니다.')
         region=options.get('region') or values.get('OCI_AI_REGION','');profile=options.get('profile') or values.get('OCI_CLI_PROFILE','DEFAULT')
-        compartment=options.get('compartment') or values.get('OCI_AI_COMPARTMENT_ID','');model=model or values.get('OCI_AI_MODEL','')
-        if not re.fullmatch(r'[a-z]{2}-[a-z0-9-]+-\d+',region) or not model or not re.fullmatch(r'ocid1\.(?:compartment|tenancy)\.[A-Za-z0-9_.-]+',compartment):raise ValueError('OCI region·model·compartment OCID를 지정해 주세요.')
+        compartment=options.get('compartment') or values.get('OCI_AI_COMPARTMENT_ID') or values.get('OCI_AI_COMPARTMENT_NAME','');model=model or values.get('OCI_AI_MODEL','')
+        region={'seoul':'ap-seoul-1','서울':'ap-seoul-1'}.get(region,region)
+        if not isinstance(region,str) or not re.fullmatch(r'[a-z]{2}-[a-z0-9-]+-\d+',region) or not model:raise ValueError('OCI region·model을 .env 또는 AI 연결에서 지정해 주세요.')
         if not isinstance(profile,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}',profile) or profile.startswith('-'):raise ValueError('OCI 프로파일을 확인해 주세요.')
-        api=options.get('apiFormat','GENERIC');text=json.dumps(content,ensure_ascii=False)
+        config=str(Path(values.get('OCI_CLI_CONFIG_FILE','~/.oci/config')).expanduser())
+        compartment=self.resolve_oci_compartment(exe,compartment,region,profile,config,work)
+        api=options.get('apiFormat') or values.get('OCI_AI_API_FORMAT','GENERIC');text=json.dumps(content,ensure_ascii=False)
         if api=='GENERIC':request={'apiFormat':'GENERIC','maxTokens':max_tokens,'isStream':False,'messages':[{'role':'SYSTEM','content':[{'type':'TEXT','text':system}]},{'role':'USER','content':[{'type':'TEXT','text':text}]}]}
         elif api=='COHERE':request={'apiFormat':'COHERE','maxTokens':max_tokens,'isStream':False,'preambleOverride':system,'message':text}
         else:raise ValueError('OCI API 형식을 확인해 주세요.')

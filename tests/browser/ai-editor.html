@@ -1,0 +1,7 @@
+<!doctype html><html lang="ko"><head><base href="../../"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI 편집 실패·취소 검사</title>
+<link rel="stylesheet" href="./vendor/foundation/ui/ui.css"><link rel="stylesheet" href="./templates/oracle-corporate.css"><link rel="stylesheet" href="./app/ai-editor.css">
+<style>body{font:18px/1.6 sans-serif;margin:32px;background:#fbf9f8;color:#2a2f2f}button,select{font:inherit;padding:8px 16px}pre{white-space:pre-wrap}#result{padding:16px;background:#e5f0f1}</style></head><body>
+<h1>AI 편집 실패·취소 검사</h1><p>실제 편집 UI·HTTP·Git을 사용합니다. 모델 응답과 캡처는 합성 자료이며 외부 모델을 호출하지 않습니다.</p>
+<label>시나리오 <select id="mode" aria-label="시나리오"><option value="normal">정상 적용·편집안 취소</option><option value="capture-delay">적용 전 캡처 대기 중 닫기</option><option value="stale-source">적용 직전 외부 JSON 변경</option><option value="baseline-source">편집 시작 전 외부 JSON 변경</option><option value="generation-failure">생성 연결 실패</option><option value="write-delay">저장 중 닫기 차단</option></select></label>
+<button id="open">새 검증 자료로 AI 편집 열기</button><button id="inspect" disabled>저장 상태 확인</button><p id="status" role="status">실행 전</p><pre id="result"></pre>
+<script type="module" src="./tests/browser/ai-editor.mjs"></script></body></html>

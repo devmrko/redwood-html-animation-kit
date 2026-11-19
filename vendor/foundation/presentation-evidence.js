@@ -1,15 +1,23 @@
 const labels = { capture: '제품·실행 화면', revisit: '사후 재열람', log: '저장 로그 화면', mock: '모의·재현 화면' };
 /** Modal Esc must not reach the deck's global keyboard navigation. */
-export function guardPresentationDialog(dialog) {
+export function guardPresentationDialog(dialog, options = {}) {
     const doc = dialog.ownerDocument;
+    const allowed = () => { if (options.canClose && !options.canClose()) {
+        options.onBlocked?.();
+        return false;
+    } return true; };
+    const cancel = (event) => { if (!allowed())
+        event.preventDefault(); };
+    dialog.addEventListener('cancel', cancel);
     const capture = (event) => { if ((event.key === 'Escape' || event.keyCode === 27) && dialog.open && Array.from(doc.querySelectorAll('dialog[open]')).at(-1) === dialog) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        dialog.close();
+        if (allowed())
+            dialog.close();
     } };
     doc.addEventListener('keydown', capture, true);
     dialog.addEventListener('keydown', event => event.stopPropagation());
-    dialog.addEventListener('close', () => doc.removeEventListener('keydown', capture, true), { once: true });
+    dialog.addEventListener('close', () => { doc.removeEventListener('keydown', capture, true); dialog.removeEventListener('cancel', cancel); }, { once: true });
 }
 /** The manifest owns provenance; the full raster is loaded when expanded. */
 export function createEvidenceFigure(doc, e) {

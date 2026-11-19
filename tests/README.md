@@ -9,3 +9,7 @@
 `test_repository_layout.py`는 제작용 ZIP을 따로 풀고 내부 파일만으로 정적 경로와 카탈로그 빌드를 확인합니다. 개발 검사 파일은 사용자 제작용 ZIP에서 제외됩니다. 확인 범위와 실화면 검수 기록은 [검증 범위](../docs/validation.md)를 참조하세요.
 
 파일·독립 ZIP의 발표자 보기와 로컬 영상은 `python3 tests/build_offline_fixture.py`로 공개 합성 자료를 만듭니다. Python 3·FFmpeg가 필요하며 모델을 호출하지 않습니다. 검사 순서는 [배포본 검수 방법](../docs/alpha-roadmap.md#배포본-검수-방법)에 있습니다.
+
+AI 편집 실패·취소는 `python3 tests/serve_ai_editor_fixture.py`를 실행하고 출력 주소를 엽니다. 실제 편집 UI·HTTP·임시 Git 저장소를 사용하며 모델 응답과 캡처 PNG는 합성입니다. 시나리오를 고르고 새 자료를 열어 `Update title`을 요청합니다. 취소·캡처 대기 중 닫기·원본 변경 충돌·생성 실패·저장 중 Escape를 각각 확인하고, 패널을 닫은 뒤 **저장 상태 확인**으로 적용 요청 수·버전 수·제목·대본을 대조합니다. `Ctrl+C`로 종료하면 임시 자료를 정리합니다. 사용자 키나 장표를 사용하지 않습니다.
+
+실제 모델 연결 검사는 서버 실행 후 `python3 scripts/smoke_ai_connections.py --origin http://127.0.0.1:4189 --provider oci --output dist/live-ai-oci-review`로 실행합니다. 새 공개 예제에 제목·표 수정을 요청하고 미적용 원본·적용·새 버전 복원을 대조합니다. `--provider openai` 또는 `--provider cli --tool codex|claude`도 지원합니다. 실제 모델 요금이 발생할 수 있어 `npm test`에 포함하지 않으며 출력 폴더는 새 경로를 사용해야 합니다. 표 검사는 숫자 포함 여부가 아니라 각 행·열의 정확한 값과 공통 클래스를 확인합니다.

@@ -14,7 +14,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from framework.python.presentation_ai import PresentationAiWorkspace,RevisionConflict
 from framework.python.presentation_ai_markup import validate_page
-from framework.python.presentation_ai_providers import PresentationAiProviders,parse_json
+from framework.python.presentation_ai_providers import PresentationAiProviders,parse_json,cli_error_message
 from framework.python.presentation_export import load_settings
 
 PAGE={'html':'<div class="item" style="display:flex;gap:30px;color:var(--rf-text)"><p>검토 후 보관</p><svg viewBox="0 0 200 100"><rect x="0" y="0" width="100" height="40" fill="var(--rf-accent)"/></svg></div>','duration':8,'effects':[{'selector':'.item','at':.5,'duration':.6,'type':'fade'}]}
@@ -43,6 +43,47 @@ class AiWorkspaceTest(unittest.TestCase):
   with self.assertRaises(RevisionConflict):self.ws.apply(self.id,{'token':b['token']})
   with self.assertRaises(RevisionConflict):self.ws.update_project(self.project,self.base)
   with self.assertRaises(RevisionConflict):self.ws.ensure(self.project)
+
+ def test_cancelled_and_expired_proposals_do_not_modify_original(self):
+  proposal=self.propose();self.assertTrue(self.ws.discard(self.id,{'token':proposal['token']})['discarded'])
+  self.assertFalse(self.ws.discard(self.id,{'token':proposal['token']})['discarded'])
+  with self.assertRaises(ValueError):self.ws.apply(self.id,{'token':proposal['token']})
+  expired=self.propose();self.ws.proposals[expired['token']]['created']-=1801
+  with self.assertRaises(ValueError):self.ws.apply(self.id,{'token':expired['token']})
+  self.assertEqual(self.ws.head(self.id),self.base);self.assertEqual(self.ws.read(self.id)['project'],self.project)
+
+ def test_unread_external_json_edit_prevents_apply_and_restore(self):
+  import os
+  source=self.root/'presentation-project.json';source.write_text(json.dumps(self.project));proposal=self.propose()
+  edited=copy.deepcopy(self.project);edited['document']['slides'][2]['notes']='외부에서 수정한 대본';source.write_text(json.dumps(edited))
+  stamp=(self.ws.repo(self.id)/'snapshot.json').stat().st_mtime_ns+1000000;os.utime(source,ns=(stamp,stamp))
+  with self.assertRaises(RevisionConflict):self.ws.apply(self.id,{'token':proposal['token']})
+  with self.assertRaises(RevisionConflict):self.ws.restore(self.id,{'base':self.base,'revision':self.base})
+  self.assertEqual(json.loads(source.read_text()),edited);self.assertEqual(self.ws.read(self.id)['project'],edited);self.assertEqual(self.ws.read(self.id)['pages'],{})
+
+ def test_external_json_changed_during_generation_is_not_replaced(self):
+  import os
+  source=self.root/'presentation-project.json';source.write_text(json.dumps(self.project));edited=copy.deepcopy(self.project);edited['document']['title']='생성 도중 변경한 제목'
+  def generate(*args):
+   source.write_text(json.dumps(edited));stamp=(self.ws.repo(self.id)/'snapshot.json').stat().st_mtime_ns+1000000;os.utime(source,ns=(stamp,stamp))
+   return {'summary':'본문 제안','changes':{},'page':PAGE}
+  with patch.object(self.ws.providers,'generate',side_effect=generate),self.assertRaises(RevisionConflict):self.ws.propose(self.id,{'base':self.base,'slideId':self.slide,'request':'본문을 표로 변경','connection':{'provider':'openai'}})
+  self.assertEqual(self.ws.proposals,{});self.assertEqual(self.ws.read(self.id)['project'],edited)
+
+ def test_preserved_source_timestamp_cannot_bypass_apply_conflict_check(self):
+  import os
+  source=self.root/'presentation-project.json';source.write_text(json.dumps(self.project));proposal=self.propose()
+  edited=copy.deepcopy(self.project);edited['document']['title']='이전 시각을 유지한 외부 변경';source.write_text(json.dumps(edited))
+  stamp=(self.ws.repo(self.id)/'snapshot.json').stat().st_mtime_ns-1000000;os.utime(source,ns=(stamp,stamp))
+  with self.assertRaises(RevisionConflict):self.ws.apply(self.id,{'token':proposal['token']})
+  self.assertEqual(json.loads(source.read_text()),edited);self.assertEqual(self.ws.read(self.id)['project'],edited)
+
+ def test_initial_baseline_does_not_overwrite_a_newer_source_project(self):
+  edited=copy.deepcopy(self.project);edited['document']['id']='22222222-2222-4222-8222-222222222222';original=copy.deepcopy(edited);edited['document']['title']='편집 창을 열기 전에 변경한 원본'
+  source=self.root/'presentation-project.json';source.write_text(json.dumps(edited))
+  with self.assertRaises(RevisionConflict):self.ws.ensure(original)
+  self.assertEqual(self.ws.head(edited['document']['id']),'');self.assertEqual(json.loads(source.read_text()),edited)
+  self.assertEqual(self.ws.source_project(edited['document']['id']),edited);self.assertTrue(self.ws.ensure(edited))
  def test_restart_recovers_head_and_original_and_does_not_copy_env(self):
   (self.root/'.env').write_text('OPENAI_API_KEY=SECRET')
   proposal=self.propose();self.ws.apply(self.id,{'token':proposal['token']});other=PresentationAiWorkspace(self.root)
@@ -178,6 +219,19 @@ class AiMarkupTest(unittest.TestCase):
   with self.assertRaises(ValueError):validate_page({**PAGE,'effects':[{'selector':'body','at':0,'duration':9,'type':'fade'}]},set())
 
 class ProvidersTest(unittest.TestCase):
+ def test_cli_errors_are_classified_without_returning_private_diagnostics(self):
+  for diagnostic,expected in [('Not logged in. Please run login','인증'),('The requested model example does not exist','모델'),('not_found_error: model: example','모델'),('credit balance is too low','한도'),('Connection refused','연결'),('403 Forbidden','권한'),('unrecognized failure','실패')]:
+   with self.subTest(diagnostic=diagnostic):
+    message=cli_error_message('',diagnostic+' secret-token-example account@example.invalid')
+    self.assertIn(expected,message);self.assertNotIn('secret-token-example',message);self.assertNotIn('account@',message)
+ def test_http_payment_and_limit_errors_hide_remote_bodies(self):
+  import urllib.error
+  from framework.python.presentation_export import request_presentation_json
+  for code,expected in [(401,'인증'),(402,'크레딧'),(403,'권한'),(404,'모델'),(429,'한도'),(503,'제공자 상태')]:
+   error=urllib.error.HTTPError('https://example.invalid',code,'private diagnostic',{},io.BytesIO(b'secret-token-example'))
+   with patch('framework.python.presentation_export.urllib.request.urlopen',side_effect=error),self.assertRaises(RuntimeError) as caught:
+    request_presentation_json({'key':'secret-key-example','base_url':'https://example.invalid/v1','model':'example'},'system',{})
+   self.assertIn(expected,str(caught.exception));self.assertIn(str(code),str(caught.exception));self.assertNotIn('secret',str(caught.exception))
  def test_existing_openai_env_config_is_reused_without_returning_key(self):
   with tempfile.TemporaryDirectory() as folder:
    root=Path(folder);(root/'.env').write_text('OPENAI_API_KEY=secret\nOPENAI_MODEL=cheap\n');provider=PresentationAiProviders(root)
@@ -207,6 +261,21 @@ class ProvidersTest(unittest.TestCase):
    with patch('framework.python.presentation_ai_providers.shutil.which',return_value='/bin/oci'),patch('framework.python.presentation_ai_providers.cli_run',side_effect=run):
     for api in ('GENERIC','COHERE'):self.assertEqual(provider.generate({'provider':'oci','model':'test-model','region':'us-chicago-1','compartment':'ocid1.compartment.oc1..example','apiFormat':api},'system',{}),{'ok':True})
    with self.assertRaises(ValueError):provider.generate({'provider':'cli','tool':'sh'},'',{})
+ def test_oci_name_resolution_is_exact_unique_and_env_defaults_are_used(self):
+  with tempfile.TemporaryDirectory() as folder:
+   root=Path(folder);(root/'.env').write_text('OCI_AI_REGION=seoul\nOCI_AI_MODEL=test-model\nOCI_AI_COMPARTMENT_NAME=Demo\nOCI_AI_API_FORMAT=COHERE\n')
+   provider=PresentationAiProviders(root)
+   def run(command,**kwargs):
+    self.assertEqual(command[command.index('--region')+1],'ap-seoul-1')
+    if 'iam' in command:return json.dumps({'data':[{'name':'Demo','id':'ocid1.compartment.oc1..example','lifecycle-state':'ACTIVE'}]})
+    payload=json.loads(Path(command[command.index('--from-json')+1][7:]).read_text());self.assertEqual(payload['compartmentId'],'ocid1.compartment.oc1..example');self.assertEqual(payload['chatRequest']['apiFormat'],'COHERE')
+    return json.dumps({'data':{'chat-response':{'text':'{"ok":true}'}}})
+   with patch('framework.python.presentation_ai_providers.shutil.which',return_value='/bin/oci'),patch('framework.python.presentation_ai_providers.cli_run',side_effect=run):
+    self.assertEqual(provider.generate({'provider':'oci'},'system',{}),{'ok':True})
+   for names in ([],['demo'],['Demo','Demo']):
+    rows=[{'name':n,'id':'ocid1.compartment.oc1..example','lifecycle-state':'ACTIVE'} for n in names]
+    with patch('framework.python.presentation_ai_providers.cli_run',return_value=json.dumps({'data':rows})),self.assertRaises(ValueError):
+     provider.resolve_oci_compartment('/bin/oci','Demo','ap-seoul-1','DEFAULT','config',folder)
  def test_malformed_json_and_model_rejected(self):
   for value in ['not-json','[]','```json\n{broken}\n```']:
    with self.assertRaises(RuntimeError):parse_json(value)

@@ -21,7 +21,7 @@ export function createPresentationAiConnection(doc, options) {
         option.textContent = text;
         input.append(option);
     } field.append(input); return { field, input }; };
-    const provider = makeInput('연결 방식', [['openai', 'OpenAI 호환 API'], ['oci', 'OCI CLI'], ['cli', '설치된 Codex·Claude']]), model = makeInput('모델 (비우면 기본값)'), tool = makeInput('프로그램', []), profile = makeInput('OCI 프로파일', []), region = makeInput('OCI 리전'), compartment = makeInput('컴파트먼트 OCID'), format = makeInput('OCI 모델 API', [['GENERIC', 'Generic'], ['COHERE', 'Cohere']]);
+    const provider = makeInput('연결 방식', [['openai', 'OpenAI 호환 API'], ['oci', 'OCI CLI'], ['cli', '설치된 Codex·Claude']]), model = makeInput('모델 (비우면 기본값)'), tool = makeInput('프로그램', []), profile = makeInput('OCI 프로파일', []), region = makeInput('OCI 리전'), compartment = makeInput('컴파트먼트 이름 또는 OCID'), format = makeInput('OCI 모델 API', [['GENERIC', 'Generic'], ['COHERE', 'Cohere']]);
     const oci = doc.createElement('div');
     oci.className = 'rf-ai-oci';
     oci.append(profile.field, region.field, compartment.field, format.field);
@@ -74,6 +74,7 @@ export function createPresentationAiConnection(doc, options) {
         profile.input.value = caps.oci.profile;
         region.input.value = caps.oci.region || caps.oci.regions[profile.input.value] || '';
         compartment.input.value = caps.oci.compartment;
+        format.input.value = caps.oci.apiFormat || 'GENERIC';
         appearance(true);
         let stored = {};
         try {

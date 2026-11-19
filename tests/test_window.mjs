@@ -43,9 +43,17 @@ test('playback keys leave reload, print, history and composing input to the brow
 test('modal Escape closes only the dialog before global deck keyboard handling',()=>{
  let capture,closed=0,prevented=false,stopped=false,closeListener;
  const doc={addEventListener:(name,fn,phase)=>{if(phase)capture=fn;},removeEventListener(){},querySelectorAll:()=>[dialog]};
- const dialog={ownerDocument:doc,open:true,close:()=>{closed++;closeListener();},addEventListener:(name,fn)=>{if(name==='close')closeListener=fn;}};
+ const dialog={ownerDocument:doc,open:true,close:()=>{closed++;closeListener();},addEventListener:(name,fn)=>{if(name==='close')closeListener=fn;},removeEventListener(){}};
  guardPresentationDialog(dialog);capture({key:'Escape',preventDefault:()=>prevented=true,stopImmediatePropagation:()=>stopped=true});
  assert.equal(closed,1);assert.ok(prevented&&stopped);
+});
+
+test('a dialog blocks Escape and native cancel only while a save is in progress',()=>{
+ let capture,cancel,allowed=false,closed=0,blocked=0;
+ const dialog={ownerDocument:{addEventListener:(_name,fn)=>capture=fn,removeEventListener(){},querySelectorAll:()=>[dialog]},open:true,close:()=>closed++,addEventListener:(name,fn)=>{if(name==='cancel')cancel=fn;},removeEventListener(){}};
+ guardPresentationDialog(dialog,{canClose:()=>allowed,onBlocked:()=>blocked++});
+ let prevented=0;capture({key:'Escape',preventDefault:()=>prevented++,stopImmediatePropagation(){}});cancel({preventDefault:()=>prevented++});assert.equal(closed,0);assert.equal(blocked,2);assert.equal(prevented,2);
+ allowed=true;capture({key:'Escape',preventDefault(){},stopImmediatePropagation(){}});assert.equal(closed,1);
 });
 
 test('file popup readiness uses an opaque-origin target while HTTP keeps its origin',()=>{
